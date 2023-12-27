@@ -1,0 +1,168 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using PallyWad.Auth.Extensions;
+using PallyWad.Domain;
+using PallyWad.Infrastructure.Data;
+using PallyWad.Services.Extensions;
+using PallyWad.Services.Generics;
+using System.Text;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
+
+
+ConfigurationManager configuration = builder.Configuration;
+
+builder.Services.AddDbContext<AppIdentityDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ConnStr")));
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ConnStr")));
+builder.Services.AddDbContext<DbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ConnStr")));
+
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+//builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork<DbContext>>();
+builder.Services.AddApiVersioning();
+
+builder.Services.RegisterServices(builder.Configuration);
+
+// For Identity
+builder.Services.AddIdentity<AppIdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<AppIdentityDbContext>()
+.AddDefaultTokenProviders();
+
+var jwtAppSettingOptions = configuration.GetSection(nameof(JwtIssuerOptions));
+var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.GetSection("JWT:Secret").Value));
+
+builder.Services.Configure<JwtIssuerOptions>(options =>
+{
+    options.Issuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
+    options.Audience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)];
+    options.Authority = jwtAppSettingOptions[nameof(JwtIssuerOptions.Authority)];
+    options.SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+});
+
+// Adding Authentication
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.SaveToken = true;
+    options.RequireHttpsMetadata = false;
+    options.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateLifetime = true,
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidAudience = configuration["JWT:ValidAudience"],
+        ValidIssuer = configuration["JWT:ValidIssuer"],
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"])),
+    };
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.DefaultPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .AddAuthenticationSchemes("Bearer", JwtBearerDefaults.AuthenticationScheme)
+        //.AddAuthenticationSchemes("ADFS", JwtBearerDefaults.AuthenticationScheme)
+        .Build();
+
+    options.AddPolicy("Administrator", new AuthorizationPolicyBuilder()
+        .RequireRole("Admin")
+        .AddAuthenticationSchemes("Bearer", JwtBearerDefaults.AuthenticationScheme)
+        .RequireAuthenticatedUser()
+        .Build());
+});
+
+// Add services to the container.
+
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "PallyWad Auth Server",
+        Version = "v1",
+        Contact = new OpenApiContact
+        {
+            Name = "RoadAlly Dev",
+            Email = "dev@roadally.com",
+            Url = new Uri("https://pallywad.com/contact"),
+        },
+    });
+    c.SwaggerDoc("v2", new OpenApiInfo
+    {
+        Title = "PallyWad Developers Auth Server",
+        Version = "v2",
+        Description = "An example of an ASP.NET Core Web API",
+        Contact = new OpenApiContact
+        {
+            Name = "Oduwole Oluwasegun",
+            Email = "segun@impartlab.com",
+            Url = new Uri("https://impartlab.com/contact"),
+        },
+    });
+    c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "JWT Authorization header using the Bearer scheme."
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                          new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
+                                }
+                            },
+                            new string[] {}
+
+                    }
+                });
+});
+
+var app = builder.Build();
+
+app.MapDefaultEndpoints();
+
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    
+}
+
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "RoadALly Authentication Server V1");
+    c.SwaggerEndpoint("/swagger/v2/swagger.json", "RoadALly Authentication Server V2");
+});
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();

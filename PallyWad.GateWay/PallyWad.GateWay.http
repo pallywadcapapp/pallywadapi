@@ -1,0 +1,6 @@
+@PallyWad.GateWay_HostAddress = http://localhost:5160
+
+GET {{PallyWad.GateWay_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

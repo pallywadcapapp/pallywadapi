@@ -1,0 +1,6 @@
+@PallyWad.Auth_HostAddress = http://localhost:5186
+
+GET {{PallyWad.Auth_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
