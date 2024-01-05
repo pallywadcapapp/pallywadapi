@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 namespace PallyWad.Services.Repository
 {
     [TransientRegistration]
-    public class LoanSetupRepository : RepositoryBase<LoanSetup, AppDbContext>, ILoanSetupRepository
+    public class LoanSetupRepository : RepositoryBase<LoanSetup, SetupDbContext>, ILoanSetupRepository
     {
-        public LoanSetupRepository(AppDbContext databaseFactory) : base(databaseFactory)
+        public LoanSetupRepository(SetupDbContext databaseFactory) : base(databaseFactory)
         {
         }
 

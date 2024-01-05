@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PallyWad.Domain
 {
-    public partial class GLAccountBase
+    public partial class GLAccountBase: BaseModel
     {
         public string glaccta { get; set; }
 

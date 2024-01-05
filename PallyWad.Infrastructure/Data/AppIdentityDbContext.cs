@@ -2,9 +2,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using PallyWad.Domain;
+using PallyWad.Infrastructure.EntityConfig;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -37,6 +42,18 @@ namespace PallyWad.Infrastructure.Data
         //public virtual DbSet<UserVehicle> UserVehicle { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            //builder.Entity<AppIdentityUser>()
+            //.HasOne(a => a.UserProfile)
+            //.WithOne(a => a.AppIdentityUser)
+            //.HasForeignKey<UserProfile>(c => c.memberid);
+
+            //builder.Entity<AppIdentityUser>()
+            //.HasMany(a => a.account)
+            //.WithOne(a => a.member);
+
+            //builder.ApplyConfiguration(new UserConfiguration());
+            builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
             base.OnModelCreating(builder);
         }
     }

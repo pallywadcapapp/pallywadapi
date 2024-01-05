@@ -12,9 +12,9 @@ namespace PallyWad.Services.Repository
 {
 
     [TransientRegistration]
-    public class DocumentRepository : RepositoryBase<Document, AppDbContext>, IDocumentRepository
+    public class DocumentRepository : RepositoryBase<Document, SetupDbContext>, IDocumentRepository
     {
-        public DocumentRepository(AppDbContext databaseFactory) : base(databaseFactory)
+        public DocumentRepository(SetupDbContext databaseFactory) : base(databaseFactory)
         {
         }
 

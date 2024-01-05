@@ -1,3 +1,4 @@
+using Amazon.SimpleEmail;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -7,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PallyWad.Auth.Extensions;
 using PallyWad.Domain;
+using PallyWad.Domain.Entities;
 using PallyWad.Infrastructure.Data;
 using PallyWad.Services.Extensions;
 using PallyWad.Services.Generics;
@@ -22,12 +24,20 @@ ConfigurationManager configuration = builder.Configuration;
 builder.Services.AddDbContext<AppIdentityDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ConnStr")));
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ConnStr")));
 builder.Services.AddDbContext<DbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ConnStr")));
+builder.Services.AddDbContext<SetupDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ConnStr")));
+builder.Services.AddDbContext<AccountDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ConnStr")));
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 //builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork<DbContext>>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork<AppIdentityDbContext>>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork<SetupDbContext>>();
 builder.Services.AddApiVersioning();
 
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+
+builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+builder.Services.AddAWSService<IAmazonSimpleEmailService>();
 builder.Services.RegisterServices(builder.Configuration);
 
 // For Identity

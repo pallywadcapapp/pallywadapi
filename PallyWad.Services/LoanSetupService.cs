@@ -41,7 +41,7 @@ namespace PallyWad.Services
 
         public LoanSetup GetLoanSetup(string id)
         {
-            return _loanSetupRepository.Get(x => x.Loancode == id);
+            return _loanSetupRepository.Get(x => x.loancode == id);
         }
 
         public LoanSetup GetLoanSetup(int id)

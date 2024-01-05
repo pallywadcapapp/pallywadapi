@@ -38,13 +38,13 @@ namespace PallyWad.Infrastructure.Data
             base.OnConfiguring(optionsBuilder);
         }
 
-        public virtual DbSet<SmtpConfig> SmtpConfigs { get; set; }
+        //public virtual DbSet<SmtpConfig> SmtpConfigs { get; set; }
         public virtual DbSet<LoanSetup> LoanSetups { get; set; }
         public virtual DbSet<LoanRequest> LoanRequests { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<SmtpConfig>().Property(u => u.Id)
-               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+            /*modelBuilder.Entity<SmtpConfig>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);*/
         }
     }
 }

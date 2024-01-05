@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 namespace PallyWad.Services.Repository
 {
     [TransientRegistration]
-    public class CollateralRepository : RepositoryBase<Collateral, AppDbContext>, ICollateralRepository
+    public class CollateralRepository : RepositoryBase<Collateral, SetupDbContext>, ICollateralRepository
     {
-        public CollateralRepository(AppDbContext databaseFactory) : base(databaseFactory)
+        public CollateralRepository(SetupDbContext databaseFactory) : base(databaseFactory)
         {
         }
 

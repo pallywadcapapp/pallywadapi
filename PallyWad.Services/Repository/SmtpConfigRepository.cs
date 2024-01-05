@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 namespace PallyWad.Services.Repository
 {
     [TransientRegistration]
-    public class SmtpConfigRepository : RepositoryBase<SmtpConfig, AppDbContext>, ISmtpConfigRepository
+    public class SmtpConfigRepository : RepositoryBase<SmtpConfig, SetupDbContext>, ISmtpConfigRepository
     {
-        public SmtpConfigRepository(AppDbContext databaseFactory) : base(databaseFactory)
+        public SmtpConfigRepository(SetupDbContext databaseFactory) : base(databaseFactory)
         {
         }
     }

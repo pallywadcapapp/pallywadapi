@@ -4,4 +4,8 @@ builder.AddProject<Projects.PallyWad_Auth>("pallywad.auth");
 
 builder.AddProject<Projects.PallyWad_GateWay>("pallywad.gateway");
 
+builder.AddProject<Projects.PallyWad_Setup>("pallywad.setup");
+
+builder.AddProject<Projects.Pallwad_Accounting>("pallwad.accounting");
+
 builder.Build().Run();

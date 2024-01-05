@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 namespace PallyWad.Services.Repository
 {
     [TransientRegistration]
-    public class GlAccountTransRepository : RepositoryBase<GL, AppDbContext>, IGlAccountTransRepository
+    public class GlAccountTransRepository : RepositoryBase<GL, AccountDbContext>, IGlAccountTransRepository
     {
-        public GlAccountTransRepository(AppDbContext databaseFactory) : base(databaseFactory)
+        public GlAccountTransRepository(AccountDbContext databaseFactory) : base(databaseFactory)
         {
         }
 

@@ -10,7 +10,7 @@ namespace PallyWad.Domain
     {
         public string memberid { get; set; }
 
-        public string Memgroupacct { get; set; }
+        public string memgroupacct { get; set; }
 
         public string accountno { get; set; }
 

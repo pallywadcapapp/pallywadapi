@@ -13,7 +13,7 @@ namespace PallyWad.Domain
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         //[JsonIgnore]
         public int Id { get; set; }
-        public DateTime ceated_date { get; set; } = DateTime.Today;
+        public DateTime created_date { get; set; } = DateTime.Today;
         public DateTime updated_date { get; set; } = DateTime.Today;
     }
 }

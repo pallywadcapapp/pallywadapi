@@ -16,14 +16,12 @@ namespace PallyWad.Services
     public class SmtpConfigService : BaseService, ISmtpConfigService
     {
         private readonly IUnitOfWork _unitOfWork;
-        ISmtpConfigRepository _smtpConfigRepository;
-        private string tenantId;
+        private readonly ISmtpConfigRepository _smtpConfigRepository;
 
         public SmtpConfigService(ISmtpConfigRepository smtpConfigRepository, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
             _smtpConfigRepository = smtpConfigRepository;
-            //tenantId = httpContextAccessor.HttpContext.GetMultiTenantContext<AppTenantInfo>()?.TenantInfo.Id;
         }
 
         public void AddSetupSmtpConfig(SmtpConfig smtpConfig)

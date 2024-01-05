@@ -139,6 +139,10 @@ namespace PallyWad.Auth.Controllers
         {
             var mailkey = _configuration.GetValue<string>("AppSettings:DefaultMail");
             var mailConfig = _smtpConfigService.ListAllSetupSmtpConfig().Where(u => u.configname == mailkey).FirstOrDefault();
+            if (mailConfig == null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Check email configuration!" });
+            }
             var userExists = await _userManager.FindByNameAsync(model.Email);
             if (userExists != null)
                 return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
@@ -152,9 +156,12 @@ namespace PallyWad.Auth.Controllers
                 Email = model.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
                 UserName = model.Email, //model.Username,
-                //firstname = model.firstname,
+                firstname = model.firstname, lastname = model.lastname,
+                othernames = model.othernames,
                 type = model.type,
-                PhoneNumber = model.phoneNo
+                PhoneNumber = model.phoneNo,
+                UserProfile = {},
+                sex = ""
             };
 
             string fullname = user.firstname + " " + user.othernames + " " + user.lastname;
@@ -215,10 +222,14 @@ namespace PallyWad.Auth.Controllers
                 Email = model.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
                 UserName = model.Email, //model.Username,
-                //SSN = model.SSN,
-                //fullname = model.fullname,
+                                        //SSN = model.SSN,
+                firstname = model.firstname,
+                lastname = model.lastname,
+                othernames = model.othernames,
                 type = model.type,
-                PhoneNumber = model.phoneNo
+                PhoneNumber = model.phoneNo,
+                UserProfile = { },
+                sex = ""
             };
             var fullname = user.firstname + " " + user.othernames + " " + user.lastname;
             var result = await _userManager.CreateAsync(user, model.Password);

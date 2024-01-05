@@ -13,9 +13,9 @@ namespace PallyWad.Services.Repository
 
 
     [TransientRegistration]
-    public class GlAccountTier2Repository : RepositoryBase<GLAccountB, AppDbContext>, IGlAccountTier2Repository
+    public class GlAccountTier2Repository : RepositoryBase<GLAccountB, AccountDbContext>, IGlAccountTier2Repository
     {
-        public GlAccountTier2Repository(AppDbContext databaseFactory) : base(databaseFactory)
+        public GlAccountTier2Repository(AccountDbContext databaseFactory) : base(databaseFactory)
         {
         }
 

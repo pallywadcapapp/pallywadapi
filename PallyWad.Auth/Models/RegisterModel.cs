@@ -20,7 +20,10 @@ namespace PallyWad.Auth.Models
         [Required(ErrorMessage = "Mobile Number is required")]
         [Phone]
         public string? phoneNo { get; set; }
-        public string? fullname { get; set; }
+        public string firstname { get; set; }
+        public string lastname { get; set; }
+        public string othernames { get; set; }
+        //public string? fullname { get; set; }
         public string SSN { get; set; }
         public string type { get; set; }
     }
