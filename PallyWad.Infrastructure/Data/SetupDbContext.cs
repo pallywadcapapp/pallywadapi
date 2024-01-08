@@ -42,6 +42,7 @@ namespace PallyWad.Infrastructure.Data
         public virtual DbSet<AccType> AccTypes { get; set; }
         public virtual DbSet<Collateral> Collaterals { get; set; }
         public virtual DbSet<Document> Documents { get; set; }
+        public virtual DbSet<LoanSetup> LoanSetups { get; set; }
         public virtual DbSet<ProductTrack> ProductTracks { get; set; }
 
         public virtual DbSet<ProductNo> ProductNos { get; set; }

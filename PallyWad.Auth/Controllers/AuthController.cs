@@ -74,6 +74,20 @@ namespace PallyWad.Auth.Controllers
             return Ok(BaseAddress);
         }
 
+        [HttpGet("checkUser")]
+        public async Task<IActionResult> CheckUser(string username)
+        {
+            var user = await _userManager.FindByNameAsync(username);
+            if(user != null)
+            {
+                return Ok(true);
+            }
+            else
+            {
+                return Ok(false);
+            }
+        }
+
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
@@ -160,7 +174,7 @@ namespace PallyWad.Auth.Controllers
                 othernames = model.othernames,
                 type = model.type,
                 PhoneNumber = model.phoneNo,
-                UserProfile = {},
+                //UserProfile = {},
                 sex = ""
             };
 
@@ -228,7 +242,7 @@ namespace PallyWad.Auth.Controllers
                 othernames = model.othernames,
                 type = model.type,
                 PhoneNumber = model.phoneNo,
-                UserProfile = { },
+                //UserProfile = { },
                 sex = ""
             };
             var fullname = user.firstname + " " + user.othernames + " " + user.lastname;

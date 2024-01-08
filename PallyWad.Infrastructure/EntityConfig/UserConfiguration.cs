@@ -13,10 +13,10 @@ namespace PallyWad.Infrastructure.EntityConfig
     {
         public void Configure(EntityTypeBuilder<AppIdentityUser> builder)
         {
-            builder
+            /*builder
            .HasOne(a => a.UserProfile)
            .WithOne(a => a.AppIdentityUser)
-           .HasForeignKey<UserProfile>(c => c.memberid);
+           .HasForeignKey<UserProfile>(c => c.memberid);*/
 
             builder
             .HasMany(a => a.account)

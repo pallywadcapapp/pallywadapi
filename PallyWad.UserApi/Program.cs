@@ -1,19 +1,22 @@
-using Amazon.SimpleEmail;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.OpenApi.Models;
-using Pallwad.Accounting.Extensions;
-using PallyWad.Domain;
 using PallyWad.Domain.Entities;
 using PallyWad.Infrastructure.Data;
-using PallyWad.Services.Extensions;
 using PallyWad.Services.Generics;
+using PallyWad.Services.Extensions;
+using Amazon.SimpleEmail;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using static Org.BouncyCastle.Math.EC.ECCurve;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-ConfigurationManager configuration = builder.Configuration;
-
 builder.AddServiceDefaults();
+
+ConfigurationManager configuration = builder.Configuration;
+var jwtAppSettingOptions = configuration.GetSection(nameof(JwtIssuerOptions));
+
 builder.Services.AddDbContext<AppIdentityDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ConnStr")));
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ConnStr")));
 builder.Services.AddDbContext<DbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ConnStr")));
@@ -22,20 +25,20 @@ builder.Services.AddDbContext<AccountDbContext>(options => options.UseSqlServer(
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 //builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork<DbContext>>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork<AppIdentityDbContext>>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork<SetupDbContext>>();
+builder.Services.AddApiVersioning();
+
+builder.Services.AddAutoMapper(typeof(PallyWad.Application.AutoMapper));
+
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonSimpleEmailService>();
-
-
 builder.Services.RegisterServices(builder.Configuration);
 
 // Add services to the container.
-/*builder.Host.ConfigureAppConfiguration(app => {
-    app.AddAmazonSecretsManager("eu-west-1", "arn:aws:secretsmanager:eu-west-1:700639922994:secret:pallywaddb-ZcmND5");
-});
-builder.Services.Configure<AWSApiCredentials>(builder.Configuration);*/
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -44,7 +47,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "PallyWad Accounting API Server",
+        Title = "PallyWad User API Server",
         Version = "v1",
         Contact = new OpenApiContact
         {
@@ -55,7 +58,7 @@ builder.Services.AddSwaggerGen(c =>
     });
     c.SwaggerDoc("v2", new OpenApiInfo
     {
-        Title = "PallyWad Developers Accounting API Server",
+        Title = "PallyWad Developers User API Server",
         Version = "v2",
         Description = "An example of an ASP.NET Core Web API",
         Contact = new OpenApiContact
@@ -92,18 +95,47 @@ builder.Services.AddSwaggerGen(c =>
                 });
 });
 
+var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration.GetSection("JWT:Secret").Value));
+var tokenValidationParameters = new TokenValidationParameters
+{
+    ValidateIssuer = false,
+    ValidIssuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)],
 
+    ValidateAudience = false, // true,
+    ValidAudience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)],
+
+    ValidateIssuerSigningKey = true,
+    IssuerSigningKey = signingKey,
+
+    RequireExpirationTime = false,
+    ValidateLifetime = true,
+    ClockSkew = TimeSpan.Zero
+};
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+}).AddJwtBearer(o =>
+{
+    o.RequireHttpsMetadata = false;
+    o.Audience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)];
+    o.Authority = jwtAppSettingOptions[nameof(JwtIssuerOptions.Authority)];
+    o.TokenValidationParameters = tokenValidationParameters;
+});
+
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
+if (app.Environment.IsDevelopment())
+{
     app.UseSwagger();
     app.UseSwaggerUI();
-//}
+}
 
 app.UseHttpsRedirection();
 

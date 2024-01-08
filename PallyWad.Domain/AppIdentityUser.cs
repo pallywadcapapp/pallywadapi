@@ -16,7 +16,10 @@ namespace PallyWad.Domain
         public string? sex { get; set; }
         public string type { get; set; }
         public virtual ICollection<MemberAccount> account { get; set; }
-        [JsonIgnore]
-        public virtual UserProfile UserProfile { get; set; }
+        //[JsonIgnore]
+        //public virtual UserProfile UserProfile { get; set; }
+        public DateTime? dob { get; set; }
+        public string bvn { get; set; }
+        public string address { get; set; }
     }
 }

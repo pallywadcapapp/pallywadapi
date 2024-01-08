@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using PallyWad.Domain;
+using PallyWad.Services.Attributes;
 using PallyWad.Services.Generics;
 using PallyWad.Services.Repository;
 using System;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace PallyWad.Services
 {
+    [TransientRegistration]
     public class DocumentService : IDocumentService
     {
         private readonly IUnitOfWork _unitOfWork;

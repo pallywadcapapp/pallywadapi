@@ -1,6 +1,7 @@
 using Amazon.SimpleEmail;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.OpenApi.Models;
 using PallyWad.Domain.Entities;
 using PallyWad.Infrastructure.Data;
 using PallyWad.Services.Extensions;
@@ -43,16 +44,66 @@ builder.Services.AddAutoMapper(typeof(PallyWad.Application.AutoMapper));
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "PallyWad Setup API Server",
+        Version = "v1",
+        Contact = new OpenApiContact
+        {
+            Name = "RoadAlly Dev",
+            Email = "dev@roadally.com",
+            Url = new Uri("https://pallywad.com/contact"),
+        },
+    });
+    c.SwaggerDoc("v2", new OpenApiInfo
+    {
+        Title = "PallyWad Developers Setup API Server",
+        Version = "v2",
+        Description = "An example of an ASP.NET Core Web API",
+        Contact = new OpenApiContact
+        {
+            Name = "Oduwole Oluwasegun",
+            Email = "segun@impartlab.com",
+            Url = new Uri("https://impartlab.com/contact"),
+        },
+    });
+    c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "JWT Authorization header using the Bearer scheme."
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                          new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
+                                }
+                            },
+                            new string[] {}
+
+                    }
+                });
+});
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 app.UseHttpsRedirection();
 

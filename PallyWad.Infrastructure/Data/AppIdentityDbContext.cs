@@ -38,7 +38,7 @@ namespace PallyWad.Infrastructure.Data
             base.OnConfiguring(optionsBuilder);
         }
 
-        //public virtual DbSet<UserProfile> UserProfile { get; set; }
+        public virtual DbSet<UserProfile> UserProfile { get; set; }
         //public virtual DbSet<UserVehicle> UserVehicle { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -51,7 +51,7 @@ namespace PallyWad.Infrastructure.Data
             //.HasMany(a => a.account)
             //.WithOne(a => a.member);
 
-            //builder.ApplyConfiguration(new UserConfiguration());
+            builder.ApplyConfiguration(new UserConfiguration());
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
             base.OnModelCreating(builder);

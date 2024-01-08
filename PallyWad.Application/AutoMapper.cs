@@ -17,6 +17,8 @@ namespace PallyWad.Application
             CreateMap<Document, SetupDto>().ReverseMap();
             CreateMap<SmtpConfig, ConfigDto>().ReverseMap();
             CreateMap<SMSConfig, ConfigDto>().ReverseMap() ;
+            CreateMap<UserProfileDto,  UserProfile>().ReverseMap();
+            CreateMap<UserProfileDto, AppIdentityUser>().ReverseMap();
         }
     }
 }

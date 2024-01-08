@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using PallyWad.Auth.Extensions;
 using PallyWad.Domain;
 using PallyWad.Domain.Entities;
 using PallyWad.Infrastructure.Data;
@@ -33,6 +32,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork<DbContext>>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork<AppIdentityDbContext>>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork<SetupDbContext>>();
 builder.Services.AddApiVersioning();
+
+builder.Services.AddAutoMapper(typeof(PallyWad.Application.AutoMapper));
 
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 

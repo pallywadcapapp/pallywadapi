@@ -47,15 +47,26 @@ namespace Pallwad.Accounting.Controllers
 
         [HttpPost]
         [Route("ChartBase")]
-        public IActionResult PostChartAccBase(GLAccountBase gLAccountBase)
+        public IActionResult PostChartAccBase(string name, string acctype)
         {
             try
             {
-                if (gLAccountBase != null)
+                if (name != null)
                 {
+                    var id = 1;
+                    var top = _glAccountBaseService.GetAllGlAccounts().OrderByDescending(x=>x.Id).FirstOrDefault();
+                    if(top != null)
+                    {
+                        id = top.Id;
+                    }
+                    else
+                    {
+
+                    }
+                    var accbase = new GLAccountBase() { acctlevel = 1, glaccta = "0" + id, accountno = "0" + id, shortdesc = name, fulldesc = name, accttype = acctype };
                     //var collateral = _mapper.Map<Collateral>(events);
-                    _glAccountBaseService.AddGlAccount(gLAccountBase);
-                    return Ok(new { status = "success", message = $"GL account Base {gLAccountBase.shortdesc} Created Successfully" });
+                    _glAccountBaseService.AddGlAccount(accbase);
+                    return Ok(new { status = "success", message = $"GL account Base {accbase.shortdesc} Created Successfully" });
                 }
                 else
                 {

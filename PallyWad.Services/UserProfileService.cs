@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using PallyWad.Domain;
+using PallyWad.Services.Attributes;
 using PallyWad.Services.Generics;
 using PallyWad.Services.Repository;
 using System;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace PallyWad.Services
 {
+    [TransientRegistration]
     public class UserProfileService : BaseService, IUserProfileService
     {
         private readonly IUserProfileRepository _userProfileRepository;
@@ -28,7 +30,7 @@ namespace PallyWad.Services
 
         public UserProfile GetUserProfile(string id)
         {
-            return ListUserProfiles().Where(u => u.AppIdentityUser.UserName == id).FirstOrDefault();
+            return ListUserProfiles().Where(u => u.memberid == id).FirstOrDefault();
         }
 
         public UserProfile GetUserProfile(int id)
