@@ -4,7 +4,7 @@ using PallyWad.Domain;
 using PallyWad.Infrastructure.Data;
 using System.Globalization;
 
-namespace Pallwad.Accounting.Helpers
+namespace PallyWad.Accounting.Helpers
 {
     public class NumberSystem
     {

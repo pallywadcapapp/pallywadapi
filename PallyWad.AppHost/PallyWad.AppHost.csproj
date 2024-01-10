@@ -13,7 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Pallwad.Accounting\Pallwad.Accounting.csproj" />
+    <ProjectReference Include="..\Pallwad.Accounting\PallyWad.Accounting.csproj" />
+    <ProjectReference Include="..\PallyWad.Accounting\PallyWad.Accounting.csproj" />
     <ProjectReference Include="..\PallyWad.Auth\PallyWad.Auth.csproj" />
     <ProjectReference Include="..\PallyWad.GateWay\PallyWad.GateWay.csproj" />
     <ProjectReference Include="..\PallyWad.Setup\PallyWad.Setup.csproj" />

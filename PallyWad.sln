@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PallyWad.Application", "Pal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PallyWad.Setup", "PallyWad.Setup\PallyWad.Setup.csproj", "{1EC7A940-569A-455F-8970-E3AAABC3C68F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pallwad.Accounting", "Pallwad.Accounting\Pallwad.Accounting.csproj", "{EA84AA22-6BF5-47A6-A73C-9C63B1FBA203}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PallyWad.Accounting", "PallyWad.Accounting\PallyWad.Accounting.csproj", "{EA84AA22-6BF5-47A6-A73C-9C63B1FBA203}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PallyWad.UserApi", "PallyWad.UserApi\PallyWad.UserApi.csproj", "{0C37E584-7653-4F30-A098-5269C0C5CE7B}"
 EndProject

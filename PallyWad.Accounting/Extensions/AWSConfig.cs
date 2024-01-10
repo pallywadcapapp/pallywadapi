@@ -1,6 +1,6 @@
 ﻿using PallyWad.Application;
 
-namespace Pallwad.Accounting.Extensions
+namespace PallyWad.Accounting.Extensions
 {
     public static class AWSConfig
     {

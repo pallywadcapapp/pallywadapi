@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Pallwad.Accounting.Helpers;
+using PallyWad.Accounting.Helpers;
 using PallyWad.Domain;
 using PallyWad.Services;
 
-namespace Pallwad.Accounting.Controllers
+namespace PallyWad.Accounting.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

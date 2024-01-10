@@ -2,7 +2,7 @@ using Amazon.SimpleEmail;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi.Models;
-using Pallwad.Accounting.Extensions;
+using PallyWad.Accounting.Extensions;
 using PallyWad.Domain;
 using PallyWad.Domain.Entities;
 using PallyWad.Infrastructure.Data;

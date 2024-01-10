@@ -4,7 +4,7 @@ using PallyWad.Domain;
 using PallyWad.Services;
 using static Microsoft.IO.RecyclableMemoryStreamManager;
 
-namespace Pallwad.Accounting.Controllers
+namespace PallyWad.Accounting.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

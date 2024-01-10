@@ -1,7 +1,7 @@
 ﻿using PallyWad.Services;
 using PallyWad.Services.Generics;
 
-namespace Pallwad.Accounting.Helpers
+namespace PallyWad.Accounting.Helpers
 {
     public static class PolicySettings<T> where T : class
     {
