@@ -9,17 +9,22 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["Pallwad.Accounting/Pallwad.Accounting.csproj", "Pallwad.Accounting/"]
-RUN dotnet restore "./Pallwad.Accounting/Pallwad.Accounting.csproj"
+COPY ["PallyWad.Accounting/PallyWad.Accounting.csproj", "PallyWad.Accounting/"]
+COPY ["PallyWad.ServiceDefaults/PallyWad.ServiceDefaults.csproj", "PallyWad.ServiceDefaults/"]
+COPY ["PallyWad.Services/PallyWad.Services.csproj", "PallyWad.Services/"]
+COPY ["PallyWad.Application/PallyWad.Application.csproj", "PallyWad.Application/"]
+COPY ["PallyWad.Domain/PallyWad.Domain.csproj", "PallyWad.Domain/"]
+COPY ["PallyWad.Infrastructure/PallyWad.Infrastructure.csproj", "PallyWad.Infrastructure/"]
+RUN dotnet restore "./PallyWad.Accounting/PallyWad.Accounting.csproj"
 COPY . .
-WORKDIR "/src/Pallwad.Accounting"
-RUN dotnet build "./Pallwad.Accounting.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/PallyWad.Accounting"
+RUN dotnet build "./PallyWad.Accounting.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Pallwad.Accounting.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./PallyWad.Accounting.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Pallwad.Accounting.dll"]
+ENTRYPOINT ["dotnet", "PallyWad.Accounting.dll"]

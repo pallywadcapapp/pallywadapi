@@ -9,22 +9,22 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["PallyWad.UserApi/PallyWad.UserApi.csproj", "PallyWad.UserApi/"]
+COPY ["PallyWad.Setup/PallyWad.Setup.csproj", "PallyWad.Setup/"]
 COPY ["PallyWad.ServiceDefaults/PallyWad.ServiceDefaults.csproj", "PallyWad.ServiceDefaults/"]
 COPY ["PallyWad.Services/PallyWad.Services.csproj", "PallyWad.Services/"]
 COPY ["PallyWad.Application/PallyWad.Application.csproj", "PallyWad.Application/"]
 COPY ["PallyWad.Domain/PallyWad.Domain.csproj", "PallyWad.Domain/"]
 COPY ["PallyWad.Infrastructure/PallyWad.Infrastructure.csproj", "PallyWad.Infrastructure/"]
-RUN dotnet restore "./PallyWad.UserApi/PallyWad.UserApi.csproj"
+RUN dotnet restore "./PallyWad.Setup/PallyWad.Setup.csproj"
 COPY . .
-WORKDIR "/src/PallyWad.UserApi"
-RUN dotnet build "./PallyWad.UserApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/PallyWad.Setup"
+RUN dotnet build "./PallyWad.Setup.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./PallyWad.UserApi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./PallyWad.Setup.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "PallyWad.UserApi.dll"]
+ENTRYPOINT ["dotnet", "PallyWad.Setup.dll"]

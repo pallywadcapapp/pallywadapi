@@ -10,6 +10,11 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["PallyWad.Auth/PallyWad.Auth.csproj", "PallyWad.Auth/"]
+COPY ["PallyWad.ServiceDefaults/PallyWad.ServiceDefaults.csproj", "PallyWad.ServiceDefaults/"]
+COPY ["PallyWad.Services/PallyWad.Services.csproj", "PallyWad.Services/"]
+COPY ["PallyWad.Application/PallyWad.Application.csproj", "PallyWad.Application/"]
+COPY ["PallyWad.Domain/PallyWad.Domain.csproj", "PallyWad.Domain/"]
+COPY ["PallyWad.Infrastructure/PallyWad.Infrastructure.csproj", "PallyWad.Infrastructure/"]
 RUN dotnet restore "./PallyWad.Auth/./PallyWad.Auth.csproj"
 COPY . .
 WORKDIR "/src/PallyWad.Auth"
