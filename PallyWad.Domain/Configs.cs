@@ -21,10 +21,17 @@ namespace PallyWad.Domain
         public string smtp { get; set; }
         public int port { get; set; }
         public bool isSSL { get; set; }
+        public string mailfrom { get; set; }
     }
 
     public class SMSConfig: Configs {
         public string URL { get; set; } 
         public string key { get; set; }
+    }
+
+    public class Response
+    {
+        public string? Status { get; set; }
+        public dynamic Message { get; set; }
     }
 }

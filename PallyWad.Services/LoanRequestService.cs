@@ -57,21 +57,6 @@ namespace PallyWad.Services
         }
 
 
-        public double GetGuarantorsOverhead(string memberId)
-        {
-            var parameters = new DynamicParameters();
-            parameters.Add("@memberId", memberId);
-            try
-            {
-                var result = _loanRequestRepository.Query<double>("GetGuarantorOverheadAmount", parameters).FirstOrDefault();
-                return result;
-            }
-            catch
-            {
-                return 0;
-            }
-        }
-
 
         public List<LoanRequest> GetAllProcessedLoanRequests()
         {
@@ -119,6 +104,12 @@ namespace PallyWad.Services
             _loanRequestRepository.Update(loanRequest);
             Save();
         }
+
+        public List<LoanRequest> GetLoanRequests(string memberid)
+        {
+            var result = _loanRequestRepository.FindAll().Where(u=> u.memberId == memberid).ToList();
+            return result;
+        }
     }
 
     public interface ILoanRequestService
@@ -127,7 +118,7 @@ namespace PallyWad.Services
         List<LoanRequest> GetAllLoanRequests();
         LoanRequest GetLoanRequest(string id);
         LoanRequest GetLoanRequest(int id);
-        double GetGuarantorsOverhead(string memberId);
+        List<LoanRequest> GetLoanRequests(string memberid);
         List<LoanRequest> GetAllApprovedLoanRequests();
         List<LoanRequest> GetAllDeclinedLoanRequests();
         List<LoanRequest> GetAllPendingLoanRequests();

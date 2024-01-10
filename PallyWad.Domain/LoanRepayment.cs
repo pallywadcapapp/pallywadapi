@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PallyWad.Domain
 {
-    public partial class LoanRepayment
+    public partial class LoanRepayment: BaseModel
     {
         public string memberid { get; set; }
 

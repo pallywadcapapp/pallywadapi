@@ -1,7 +1,10 @@
 ﻿using MailKit.Net.Smtp;
 using MailKit.Security;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using PallyWad.Domain;
 using PallyWad.Domain.Entities;
 using PallyWad.Services.Attributes;
 using System;
@@ -16,10 +19,15 @@ namespace PallyWad.Services
     public class MailService : IMailService
     {
         private readonly MailSettings _mailSettings;
+        //private readonly SmtpConfig _smtpConfig;
         public MailService(IOptions<MailSettings> mailSettings)
+            //, IOptions<SmtpConfig> smtpConfig)
         {
             _mailSettings = mailSettings.Value;
+            //_smtpConfig = smtpConfig.Value;
         }
+
+        
         public async Task SendEmailAsync(MailRequest mailRequest)
         {
             var email = new MimeMessage();
@@ -41,12 +49,38 @@ namespace PallyWad.Services
             await smtp.SendAsync(email);
             smtp.Disconnect(true);
         }
+
+        public async Task SendEmailAsync(MailRequest mailRequest, SmtpConfig mailConfig, string displayname, MimeEntity body)
+        {
+           
+                var emailMessage = new MimeMessage();
+
+
+                emailMessage.From.Add(new MailboxAddress(displayname, mailConfig.mailfrom));
+                emailMessage.To.Add(MailboxAddress.Parse(mailRequest.ToEmail));
+                emailMessage.Subject = mailRequest.Subject;
+
+                var builder = new BodyBuilder
+                {
+                    HtmlBody = mailRequest.Body
+                };
+            
+            emailMessage.Body = body; //builder.ToMessageBody();
+
+                using var smtp = new SmtpClient();
+
+                smtp.Connect(mailConfig.smtp, mailConfig.port, SecureSocketOptions.StartTls);
+                smtp.Authenticate(mailConfig.username, mailConfig.password);
+                await smtp.SendAsync(emailMessage);
+                smtp.Disconnect(true);
+            }
     }
 
 
     public interface IMailService
     {
         Task SendEmailAsync(MailRequest mailRequest);
+        Task SendEmailAsync(MailRequest mailRequest, SmtpConfig mailConfig, string displayname, MimeEntity body);
     }
 
     

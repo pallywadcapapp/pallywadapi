@@ -23,14 +23,10 @@ namespace PallyWad.Domain
         public double? savBal { get; set; }
         public double? loanBal { get; set; }
         public double? netBal { get; set; }
-        public double othercoorp { get; set; }
         public double? monthtotalrepay { get; set; }
         public double? monthlyrepay { get; set; }
         public double? monthlyendsalary { get; set; }
         public double? monthlnetsalary { get; set; }
-        public string guarantorId1 { get; set; }
-        public string? guarantorId2 { get; set; }
-        public string? guarantorId3 { get; set; }
         public string status { get; set; }
         public string processState { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]

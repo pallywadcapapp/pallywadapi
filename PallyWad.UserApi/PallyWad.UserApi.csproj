@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <InvariantGlobalization>true</InvariantGlobalization>
+    <InvariantGlobalization>false</InvariantGlobalization>
     <UserSecretsId>2ba67713-fb7d-4e85-86ed-6d5748a4aae3</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
@@ -21,6 +21,10 @@
     <ProjectReference Include="..\PallyWad.Infrastructure\PallyWad.Infrastructure.csproj" />
     <ProjectReference Include="..\PallyWad.ServiceDefaults\PallyWad.ServiceDefaults.csproj" />
     <ProjectReference Include="..\PallyWad.Services\PallyWad.Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Templates\" />
   </ItemGroup>
 
 </Project>

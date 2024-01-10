@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 namespace PallyWad.Services.Repository
 {
     [TransientRegistration]
-    public class JournalRepository : RepositoryBase<Journal, AppDbContext>, IJournalRepository
+    public class JournalRepository : RepositoryBase<Journal, AccountDbContext>, IJournalRepository
     {
-        public JournalRepository(AppDbContext databaseFactory) : base(databaseFactory)
+        public JournalRepository(AccountDbContext databaseFactory) : base(databaseFactory)
         {
         }
     }

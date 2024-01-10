@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
 using PallyWad.Domain;
 using PallyWad.Infrastructure.EntityConfig;
@@ -39,6 +40,8 @@ namespace PallyWad.Infrastructure.Data
         }
 
         public virtual DbSet<UserProfile> UserProfile { get; set; }
+
+        public virtual DbSet<MemberAccount> MemberAccounts { get; set; }
         //public virtual DbSet<UserVehicle> UserVehicle { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -50,6 +53,10 @@ namespace PallyWad.Infrastructure.Data
             //builder.Entity<AppIdentityUser>()
             //.HasMany(a => a.account)
             //.WithOne(a => a.member);
+
+
+            builder.Entity<MemberAccount>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 
             builder.ApplyConfiguration(new UserConfiguration());
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());

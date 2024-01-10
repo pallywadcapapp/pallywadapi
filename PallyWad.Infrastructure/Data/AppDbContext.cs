@@ -42,10 +42,31 @@ namespace PallyWad.Infrastructure.Data
         public virtual DbSet<UserDocument> UserDocuments { get; set; }
         public virtual DbSet<UserCollateral> UserCollaterals { get; set; }
         public virtual DbSet<LoanRequest> LoanRequests { get; set; }
+        public virtual DbSet<BankDeposit> BankDeposits { get; set; }
+        public virtual DbSet<LoanRepayment> LoanRepayments { get; set; }
+        public virtual DbSet<LoanTrans> LoanTrans { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            /*modelBuilder.Entity<SmtpConfig>().Property(u => u.Id)
-               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);*/
+            modelBuilder.Entity<AppUploadedFiles>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
+            modelBuilder.Entity<UserDocument>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
+            modelBuilder.Entity<UserCollateral>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
+            modelBuilder.Entity<LoanRequest>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
+            modelBuilder.Entity<BankDeposit>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
+            modelBuilder.Entity<LoanRepayment>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
+            modelBuilder.Entity<LoanTrans>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
         }
     }
 }
