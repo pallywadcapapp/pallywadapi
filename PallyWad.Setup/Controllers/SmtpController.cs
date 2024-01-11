@@ -50,7 +50,7 @@ namespace PallyWad.Setup.Controllers
                 {
                     var smtpconfig = _mapper.Map<SmtpConfig>(config);
                     _smtpConfigService.AddSetupSmtpConfig(smtpconfig);
-                    return Ok(new Response({ Status = "success", Message = smtpconfig });
+                    return Ok(new Response { Status = "success", Message = smtpconfig });
                 }
                 else
                 {
