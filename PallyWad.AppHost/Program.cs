@@ -10,4 +10,6 @@ builder.AddProject<Projects.PallyWad_Accounting>("pallywad.accounting");
 
 builder.AddProject<Projects.PallyWad_UserApi>("pallywad.userapi");
 
+builder.AddProject<Projects.PallyWad_AdminApi>("pallywad.adminapi");
+
 builder.Build().Run();

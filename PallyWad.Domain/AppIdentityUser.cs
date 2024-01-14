@@ -19,7 +19,7 @@ namespace PallyWad.Domain
         //[JsonIgnore]
         //public virtual UserProfile UserProfile { get; set; }
         public DateTime? dob { get; set; }
-        public string bvn { get; set; }
-        public string address { get; set; }
+        public string? bvn { get; set; }
+        public string? address { get; set; }
     }
 }

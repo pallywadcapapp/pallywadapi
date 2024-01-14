@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PallyWad.Accounting", "Pall
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PallyWad.UserApi", "PallyWad.UserApi\PallyWad.UserApi.csproj", "{0C37E584-7653-4F30-A098-5269C0C5CE7B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PallyWad.AdminApi", "PallyWad.AdminApi\PallyWad.AdminApi.csproj", "{F53E812C-CA3B-4884-B3AE-1A8E58730D75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,10 @@ Global
 		{0C37E584-7653-4F30-A098-5269C0C5CE7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C37E584-7653-4F30-A098-5269C0C5CE7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C37E584-7653-4F30-A098-5269C0C5CE7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F53E812C-CA3B-4884-B3AE-1A8E58730D75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F53E812C-CA3B-4884-B3AE-1A8E58730D75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F53E812C-CA3B-4884-B3AE-1A8E58730D75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F53E812C-CA3B-4884-B3AE-1A8E58730D75}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

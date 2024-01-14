@@ -1,26 +1,22 @@
 using Amazon.SimpleEmail;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using PallyWad.Auth.Helper.Extensions;
-using PallyWad.Domain;
 using PallyWad.Domain.Entities;
 using PallyWad.Infrastructure.Data;
-using PallyWad.Services;
-using PallyWad.Services.Extensions;
 using PallyWad.Services.Generics;
 using System.Text;
+using PallyWad.Services.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+// Add services to the container.
 
 ConfigurationManager configuration = builder.Configuration;
+var jwtAppSettingOptions = configuration.GetSection(nameof(JwtIssuerOptions));
 
 builder.Services.AddDbContext<AppIdentityDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ConnStr")));
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ConnStr")));
@@ -43,67 +39,6 @@ builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonSimpleEmailService>();
 builder.Services.RegisterServices(builder.Configuration);
 
-builder.Services.AddTransient<LoggingDelegatingHandler>();
-builder.Services.AddHttpClient<SMSConfigService>(httpClient =>
-{
-    httpClient.BaseAddress = new Uri("https://api.github.com");
-})
-.AddHttpMessageHandler<LoggingDelegatingHandler>();
-
-// For Identity
-builder.Services.AddIdentity<AppIdentityUser, IdentityRole>()
-    .AddEntityFrameworkStores<AppIdentityDbContext>()
-.AddDefaultTokenProviders();
-
-var jwtAppSettingOptions = configuration.GetSection(nameof(JwtIssuerOptions));
-var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.GetSection("JWT:Secret").Value));
-
-builder.Services.Configure<JwtIssuerOptions>(options =>
-{
-    options.Issuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
-    options.Audience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)];
-    options.Authority = jwtAppSettingOptions[nameof(JwtIssuerOptions.Authority)];
-    options.SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
-});
-
-// Adding Authentication
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
-{
-    options.SaveToken = true;
-    options.RequireHttpsMetadata = false;
-    options.TokenValidationParameters = new TokenValidationParameters()
-    {
-        ValidateLifetime = true,
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidAudience = configuration["JWT:ValidAudience"],
-        ValidIssuer = configuration["JWT:ValidIssuer"],
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"])),
-    };
-});
-
-builder.Services.AddAuthorization(options =>
-{
-    options.DefaultPolicy = new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .AddAuthenticationSchemes("Bearer", JwtBearerDefaults.AuthenticationScheme)
-        //.AddAuthenticationSchemes("ADFS", JwtBearerDefaults.AuthenticationScheme)
-        .Build();
-
-    options.AddPolicy("Administrator", new AuthorizationPolicyBuilder()
-        .RequireRole("Admin")
-        .AddAuthenticationSchemes("Bearer", JwtBearerDefaults.AuthenticationScheme)
-        .RequireAuthenticatedUser()
-        .Build());
-});
-
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -113,7 +48,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "PallyWad Auth Server",
+        Title = "PallyWad Admin API Server",
         Version = "v1",
         Contact = new OpenApiContact
         {
@@ -124,7 +59,7 @@ builder.Services.AddSwaggerGen(c =>
     });
     c.SwaggerDoc("v2", new OpenApiInfo
     {
-        Title = "PallyWad Developers Auth Server",
+        Title = "PallyWad Developers User API Server",
         Version = "v2",
         Description = "An example of an ASP.NET Core Web API",
         Contact = new OpenApiContact
@@ -161,23 +96,51 @@ builder.Services.AddSwaggerGen(c =>
                 });
 });
 
+var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration.GetSection("JWT:Secret").Value));
+var tokenValidationParameters = new TokenValidationParameters
+{
+    ValidateIssuer = false,
+    ValidIssuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)],
+
+    ValidateAudience = false, // true,
+    ValidAudience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)],
+
+    ValidateIssuerSigningKey = true,
+    IssuerSigningKey = signingKey,
+
+    RequireExpirationTime = false,
+    ValidateLifetime = true,
+    ClockSkew = TimeSpan.Zero
+};
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+}).AddJwtBearer(o =>
+{
+    o.RequireHttpsMetadata = false;
+    o.Audience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)];
+    o.Authority = jwtAppSettingOptions[nameof(JwtIssuerOptions.Authority)];
+    o.TokenValidationParameters = tokenValidationParameters;
+});
+
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "RoadALly Authentication Server V1");
+        c.SwaggerEndpoint("/swagger/v2/swagger.json", "RoadALly Authentication Server V2");
+    });
 }
-
-app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "RoadALly Authentication Server V1");
-    c.SwaggerEndpoint("/swagger/v2/swagger.json", "RoadALly Authentication Server V2");
-});
 
 app.UseHttpsRedirection();
 

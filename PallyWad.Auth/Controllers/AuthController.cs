@@ -3,12 +3,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.Tokens;
 using MimeKit;
 using PallyWad.Auth.Models;
 using PallyWad.Domain;
 using PallyWad.Services;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Json;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
@@ -26,6 +29,7 @@ namespace PallyWad.Auth.Controllers
         private readonly IConfiguration _configuration;
         private readonly SignInManager<AppIdentityUser> _signInManager;
         private readonly ISmtpConfigService _smtpConfigService;
+        private readonly ISMSConfigService _smsConfigService;
         private string baseUrl;
         //private IMapper _mapper
 
@@ -33,7 +37,7 @@ namespace PallyWad.Auth.Controllers
             UserManager<AppIdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
-            SignInManager<AppIdentityUser> signInManager, ISmtpConfigService smtpConfigService)
+            SignInManager<AppIdentityUser> signInManager, ISmtpConfigService smtpConfigService, ISMSConfigService smsConfigService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -41,14 +45,15 @@ namespace PallyWad.Auth.Controllers
             _signInManager = signInManager;
             _smtpConfigService = smtpConfigService;
             baseUrl = baseUrl ?? string.Empty;
+            _smsConfigService = smsConfigService;
         }
 
-        [HttpPost, Route("mailconfig"), MapToApiVersion(2.0)]
+        /*[HttpPost, Route("mailconfig"), MapToApiVersion(2.0)]
         public IActionResult AddMailConfig(SmtpConfig config)
         {
             _smtpConfigService.AddSetupSmtpConfig(config);
             return Ok(config);
-        }
+        }*/
 
         [HttpGet]
         [Route("UserInfo")]
@@ -99,7 +104,6 @@ namespace PallyWad.Auth.Controllers
 
                 var claims = await _userManager.GetClaimsAsync(user);
 
-                //if (!await _signInManager.CanSignInAsync(user))
                 if (!user.EmailConfirmed)
                 {
                     var result = new
@@ -131,6 +135,9 @@ namespace PallyWad.Auth.Controllers
                     new Claim("lastname", user.lastname),
                     new Claim("firstname", user.firstname),
                     new Claim("othernames", user.othernames),
+                    new Claim("address", FillClaimsNull(user.address)),
+                    new Claim("sex", FillClaimsNull(user.sex)),
+                    new Claim("dob", FillClaimsNull(user.dob.ToString())),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 };
 
@@ -154,7 +161,8 @@ namespace PallyWad.Auth.Controllers
         [Route("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            var mailkey = _configuration.GetValue<string>("AppSettings:DefaultMail");
+            //var mailkey = _configuration.GetValue<string>("AppSettings:DefaultMail");
+            var mailkey = _configuration.GetValue<string>("AppSettings:AWSMail");
             var mailConfig = _smtpConfigService.ListAllSetupSmtpConfig().Where(u => u.configname == mailkey).FirstOrDefault();
             if (mailConfig == null)
             {
@@ -215,7 +223,7 @@ namespace PallyWad.Auth.Controllers
                 }
             }
 
-            await SendRegEmail(user, model, mailConfig);
+            await SendRegEmail(user, model, mailConfig, "register");
             return Ok(new Response { Status = "Success", Message = "User created successfully!" });
         }
 
@@ -272,7 +280,7 @@ namespace PallyWad.Auth.Controllers
                 await _userManager.AddClaimAsync(user, new Claim(JwtRegisteredClaimNames.GivenName, fullname));
                 await _userManager.AddClaimAsync(user, new Claim("Provider", UserClaims.Admin));
             }
-            await SendRegEmail(user, model, mailConfig);
+            await SendRegEmail(user, model, mailConfig, "register-admin");
             return Ok(new Response { Status = "Success", Message = "User created successfully!" });
         }
 
@@ -287,7 +295,7 @@ namespace PallyWad.Auth.Controllers
         public async Task<IActionResult> ForgotPassword(ForgotPasswordModel model)
         {
             var company = _configuration.GetValue<string>("AppSettings:companyName");
-            var mailkey = _configuration.GetValue<string>("AppSettings:DefaultMail");
+            var mailkey = _configuration.GetValue<string>("AppSettings:AWSMail");
             var mailConfig = _smtpConfigService.ListAllSetupSmtpConfig().Where(u => u.configname == mailkey).FirstOrDefault();
             if (ModelState.IsValid)
             {
@@ -304,21 +312,21 @@ namespace PallyWad.Auth.Controllers
                 {
                     return BadRequest("Email Yet to be confirmed");
                 }
-                //var baseUrl = Request..RequestUri.GetLeftPart(UriPartial.Authority);
                 baseUrl = $"{this.Request.Scheme}://{this.Request.Host.Value.ToString()}{this.Request.PathBase.Value.ToString()}/";
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var callbackUrl = GetUserConfirmationRedirectUrl(code, user.Id, baseUrl);
-                //var callbackUrl = GetUserConfirmationRedirectUrl(code, user.Id, tenantInfo.ClientUrl);
 
-                //    await _userManager.SendEmailAsync(user.Email, "Reset Password",
-                //"Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>");
+                var base64EncodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+                baseUrl = $"{this.Request.Scheme}://{this.Request.Host.Value.ToString()}{this.Request.PathBase.Value.ToString()}";
+                var callbackUrl = $"{baseUrl}{HttpContext.Request.Path.Value.Replace("ForgotPassword", "")}resetpassword?id={user.Id}&token={base64EncodedToken}";
+
                 string body = "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>";
 
                 try
                 {
                     using (MimeMessage emailMessage = new MimeMessage())
                     {
-                        MailboxAddress emailFrom = new MailboxAddress(mailConfig.username, mailConfig.username);
+                        MailboxAddress emailFrom = new MailboxAddress(company, mailConfig.mailfrom);
                         emailMessage.From.Add(emailFrom);
 
                         var fullname = user.firstname + " " + user.othernames + " " + user.lastname;
@@ -385,9 +393,15 @@ namespace PallyWad.Auth.Controllers
         public async Task<IActionResult> VerifyAccount(string id, string token)
         {
             var user = await _userManager.FindByIdAsync(id);
-            var result = await _userManager.ConfirmEmailAsync(user, token);
+            string code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
+
+
+            var result = await _userManager.ConfirmEmailAsync(user, code);
             if (result.Succeeded)
             {
+                var mailkey = _configuration.GetValue<string>("AppSettings:AWSMail");
+                var mailConfig = _smtpConfigService.ListAllSetupSmtpConfig().Where(u => u.configname == mailkey).FirstOrDefault();
+                SendWelcomeEmail(user, mailConfig);
                 return Ok("success");
             }
             else
@@ -404,7 +418,7 @@ namespace PallyWad.Auth.Controllers
             try
             {
                 var company = _configuration.GetValue<string>("AppSettings:companyName");
-                var mailkey = _configuration.GetValue<string>("AppSettings:DefaultMail");
+                var mailkey = _configuration.GetValue<string>("AppSettings:AWSMail");
                 var mailConfig = _smtpConfigService.ListAllSetupSmtpConfig().Where(u => u.configname == mailkey).FirstOrDefault();
                 var user = await _userManager.FindByEmailAsync(email);
                 if (user == null)
@@ -413,23 +427,25 @@ namespace PallyWad.Auth.Controllers
                 }
                 var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
+                var base64EncodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailConfirmationToken));
+
 
 
                 using (MimeMessage emailMessage = new MimeMessage())
                 {
-                    MailboxAddress emailFrom = new MailboxAddress(mailConfig.username, mailConfig.username);
+                    MailboxAddress emailFrom = new MailboxAddress(company, mailConfig.mailfrom);
                     emailMessage.From.Add(emailFrom);
 
                     var fullname = user.firstname + " " + user.othernames + " " + user.lastname;
 
                     MailboxAddress emailTo = new MailboxAddress(fullname, user.Email);
                     emailMessage.To.Add(emailTo);
-                    emailMessage.Subject = $"{company}. Account Registration";
-                    //var tenantInfo = HttpContext.GetMultiTenantContext<AppTenantInfo>()?.TenantInfo; // .GetMultiTenantContext()?.TenantInfo;
-                    baseUrl = $"{this.Request.Scheme}://{this.Request.Host.Value.ToString()}{this.Request.PathBase.Value.ToString()}/";
-                    var tkvUrl = baseUrl + "/verify?id=" + user.Id + "&token=" + emailConfirmationToken;
+                    emailMessage.Subject = $"Confirm Your PallyWad Capital Account";
+                    baseUrl = $"{this.Request.Scheme}://{this.Request.Host.Value.ToString()}{this.Request.PathBase.Value.ToString()}";
+                    var tkvUrl = $"{baseUrl}{HttpContext.Request.Path.Value.Replace("EmailActivationCode", "")}verify?id={user.Id}&token={base64EncodedToken}";
+                    
 
-                    var subject = "Verify your email";
+                    //var subject = "Verify your email";
                     string filePath = Directory.GetCurrentDirectory() + "\\Templates\\verifyemail.html";
                     string emailTemplateText = System.IO.File.ReadAllText(filePath);
                     emailTemplateText = string.Format(emailTemplateText, fullname, tkvUrl, DateTime.Today.Date.ToShortDateString());
@@ -464,8 +480,9 @@ namespace PallyWad.Auth.Controllers
         public async Task<IActionResult> SendChangePasswordToken(string username)
         {
             var company = _configuration.GetValue<string>("AppSettings:companyName");
-            var mailkey = _configuration.GetValue<string>("AppSettings:DefaultMail");
+            var mailkey = _configuration.GetValue<string>("AppSettings:AWSMail");
             var mailConfig = _smtpConfigService.ListAllSetupSmtpConfig().Where(u => u.configname == mailkey).FirstOrDefault();
+            var smsConfig = _smsConfigService.ListAllSetupSMSConfig().Where(u => u.configname == mailkey).FirstOrDefault();
 
             var _userManager = HttpContext.RequestServices
                                         .GetRequiredService<UserManager<AppIdentityUser>>();
@@ -475,7 +492,9 @@ namespace PallyWad.Auth.Controllers
 
             var token = await _userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, "ResetPasswordPurpose");
             string body = "Your reset code is: <b>" + token + "</b>";
-            using (var client = new SmtpClient()
+            await SendForgotToken(user, mailConfig, token);
+            await SendSMSToken(user.PhoneNumber, smsConfig, token);
+            /*using (var client = new SmtpClient()
             {
                 Port = mailConfig.port, //587,//
                 Credentials = new System.Net.NetworkCredential(mailConfig.username, mailConfig.password),
@@ -495,7 +514,7 @@ namespace PallyWad.Auth.Controllers
                 mail.From = new MailAddress("Coop <" + mailConfig.username + ">"); // "segxy2708@hotmail.com"
                 await client.SendMailAsync(mail);
 
-            }
+            }*/
             return Ok(token);
             //return NoContent();
         }
@@ -517,28 +536,60 @@ namespace PallyWad.Auth.Controllers
 
             return Ok(new { status = "Ok", message = "Valid Token" });
         }
-        #region helpers
-        async Task SendRegEmail(AppIdentityUser user, RegisterModel model, SmtpConfig mailConfig)
+
+        [HttpPost("resetPassword")]
+        public async Task<IActionResult> ValidateEmailResetPasswordToken(string id, string code)
         {
+            
+            var user = await _userManager.FindByNameAsync(id);
+
+            string token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+
+            if (user is null)
+                return UnprocessableEntity("invalid user token");//actually user not found
+
+            var tokenVerified = await _userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, "ResetPasswordPurpose", code);
+            
+            if (!tokenVerified)
+                return UnprocessableEntity("invalid user token");
+
+            return NoContent();
+        }
+
+        [HttpGet("SendSMS")]
+        public async Task<IActionResult> SendSMS(string username)
+        {
+            var user = await _userManager.FindByEmailAsync(username);
+
+            var mailkey = _configuration.GetValue<string>("AppSettings:AWSMail");
+            var smsConfig = _smsConfigService.ListAllSetupSMSConfig().Where(u => u.configname == mailkey).FirstOrDefault();
+            await SendSMSToken(user.PhoneNumber, smsConfig, "677890");
+            return Ok();
+        }
+
+        #region helpers
+        async Task SendRegEmail(AppIdentityUser user, RegisterModel model, SmtpConfig mailConfig, string route)
+        {            
             try
             {
                 using (MimeMessage emailMessage = new MimeMessage())
                 {
-                    var company = _configuration.GetValue<string>("AppSettings:companyName");
-                    MailboxAddress emailFrom = new MailboxAddress(mailConfig.username, mailConfig.username);
-                    emailMessage.From.Add(emailFrom);
 
                     var fullname = user.firstname + " " + user.othernames + " " + user.lastname;
+                    var company = _configuration.GetValue<string>("AppSettings:companyName");
+                    MailboxAddress emailFrom = new MailboxAddress(company, mailConfig.mailfrom);
+                    emailMessage.From.Add(emailFrom);
 
                     MailboxAddress emailTo = new MailboxAddress(fullname, user.Email);
                     emailMessage.To.Add(emailTo);
-                    emailMessage.Subject = $"{company}. Account Registration";
+                    emailMessage.Subject = $"{company}. Confirm Your PallyWad Capital Account";
                     var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    //var tenantInfo = HttpContext.GetMultiTenantContext<AppTenantInfo>()?.TenantInfo; // .GetMultiTenantContext()?.TenantInfo;
-                    baseUrl = $"{this.Request.Scheme}://{this.Request.Host.Value.ToString()}{this.Request.PathBase.Value.ToString()}/";
-                    var tkvUrl = baseUrl + "/verify?id=" + user.Id + "&token=" + emailConfirmationToken;
+                    var base64EncodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailConfirmationToken));
 
-                    var subject = "Verify your email";
+                    baseUrl = $"{this.Request.Scheme}://{this.Request.Host.Value.ToString()}{this.Request.PathBase.Value.ToString()}";
+                    var tkvUrl = $"{baseUrl}{HttpContext.Request.Path.Value.Replace(route,"")}verify?id={user.Id}&token={base64EncodedToken}";
+
+                    //var subject = "Verify your email";
                     string filePath = Directory.GetCurrentDirectory() + "\\Templates\\verifyemail.html";
                     string emailTemplateText = System.IO.File.ReadAllText(filePath);
                     emailTemplateText = string.Format(emailTemplateText, fullname, tkvUrl, DateTime.Today.Date.ToShortDateString());
@@ -556,30 +607,6 @@ namespace PallyWad.Auth.Controllers
                         mailClient.Send(emailMessage);
                         mailClient.Disconnect(true);
                     }
-                    // var body = $"Click <a href=\"{tokenVerificationUrl}\">here</a>  to verify your account";
-
-                    /*using (var client = new SmtpClient()
-                    {
-                        Port = mailConfig.port,
-                        Credentials = new System.Net.NetworkCredential(mailConfig.username, mailConfig.password),
-                        DeliveryMethod = SmtpDeliveryMethod.Network,
-                        EnableSsl = mailConfig.isSSL,
-                        Host = mailConfig.smtp
-                        //Host = "smtp.zoho.com",//mailConfig.smtp //= 
-
-                    })
-                    using (var mail = new System.Net.Mail.MailMessage())
-                    {
-                        mail.To.Add(model.Email);
-                        mail.Subject = subject;
-                        mail.Body = body;
-                        mail.IsBodyHtml = true;
-                        mail.From = new MailAddress($"{company} <" + mailConfig.username + ">");
-                        //try
-                        //{
-                        await client.SendMailAsync(mail);
-
-                    }*/
                 }
             }
             catch
@@ -588,6 +615,119 @@ namespace PallyWad.Auth.Controllers
             }
         }
 
+        async Task SendWelcomeEmail(AppIdentityUser user, SmtpConfig mailConfig)
+        {
+            try
+            {
+                using (MimeMessage emailMessage = new MimeMessage())
+                {
+
+                    var fullname = user.firstname + " " + user.othernames + " " + user.lastname;
+                    var company = _configuration.GetValue<string>("AppSettings:companyName");
+                    MailboxAddress emailFrom = new MailboxAddress(company, mailConfig.mailfrom);
+                    emailMessage.From.Add(emailFrom);
+
+                    MailboxAddress emailTo = new MailboxAddress(fullname, user.Email);
+                    emailMessage.To.Add(emailTo);
+                    emailMessage.Subject = $" Welcome to PallyWad Capital!"; //{company}.
+                    //var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+                    var loginUrl = _configuration.GetValue<string>("AppSettings:loginUrl");
+
+                    //var subject = "Verify your email";
+                    string filePath = Directory.GetCurrentDirectory() + "\\Templates\\welcome.html";
+                    string emailTemplateText = System.IO.File.ReadAllText(filePath);
+                    emailTemplateText = string.Format(emailTemplateText, fullname, loginUrl, DateTime.Today.Date.ToShortDateString());
+
+                    BodyBuilder emailBodyBuilder = new BodyBuilder();
+                    emailBodyBuilder.HtmlBody = emailTemplateText;
+                    emailBodyBuilder.TextBody = "Plain Text goes here to avoid marked as spam for some email servers.";
+
+                    emailMessage.Body = emailBodyBuilder.ToMessageBody();
+
+                    using (MailKit.Net.Smtp.SmtpClient mailClient = new MailKit.Net.Smtp.SmtpClient())
+                    {
+                        mailClient.Connect(mailConfig.smtp, mailConfig.port, MailKit.Security.SecureSocketOptions.StartTls);
+                        mailClient.Authenticate(mailConfig.username, mailConfig.password);
+                        mailClient.Send(emailMessage);
+                        mailClient.Disconnect(true);
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        async Task SendForgotToken(AppIdentityUser user, SmtpConfig mailConfig, string token)
+        {
+            try
+            {
+                using (MimeMessage emailMessage = new MimeMessage())
+                {
+
+                    var fullname = user.firstname + " " + user.othernames + " " + user.lastname;
+                    var company = _configuration.GetValue<string>("AppSettings:companyName");
+                    MailboxAddress emailFrom = new MailboxAddress(company, mailConfig.mailfrom);
+                    emailMessage.From.Add(emailFrom);
+
+                    MailboxAddress emailTo = new MailboxAddress(fullname, user.Email);
+                    emailMessage.To.Add(emailTo);
+                    emailMessage.Subject = $"{company}. Password Token";
+
+                    string filePath = Directory.GetCurrentDirectory() + "\\Templates\\forgotpassword.html";
+                    string emailTemplateText = System.IO.File.ReadAllText(filePath);
+                    emailTemplateText = string.Format(emailTemplateText, fullname, token, DateTime.Today.Date.ToShortDateString());
+
+                    BodyBuilder emailBodyBuilder = new BodyBuilder();
+                    emailBodyBuilder.HtmlBody = emailTemplateText;
+                    emailBodyBuilder.TextBody = "Plain Text goes here to avoid marked as spam for some email servers.";
+
+                    emailMessage.Body = emailBodyBuilder.ToMessageBody();
+
+                    using (MailKit.Net.Smtp.SmtpClient mailClient = new MailKit.Net.Smtp.SmtpClient())
+                    {
+                        mailClient.Connect(mailConfig.smtp, mailConfig.port, MailKit.Security.SecureSocketOptions.StartTls);
+                        mailClient.Authenticate(mailConfig.username, mailConfig.password);
+                        mailClient.Send(emailMessage);
+                        mailClient.Disconnect(true);
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        async Task SendSMSToken(string phoneNo,SMSConfig mailConfig, string token)
+        {
+            try
+            {
+                    var company = _configuration.GetValue<string>("AppSettings:companyName");
+                var message = $"Your token is {token}";
+                var querystring = $"{mailConfig.URL}?recipient={phoneNo}&message={message}&subject={mailConfig.username}&channel=1&cid={mailConfig.password}";
+                var httpClient = new HttpClient()
+                {
+                    BaseAddress = new Uri(querystring),
+
+                };
+               
+                using HttpResponseMessage response = await httpClient.PostAsync(
+        "",
+        null);
+
+                response.EnsureSuccessStatusCode();
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                    
+            }
+            catch
+            {
+                throw;
+            }
+        }
 
         private string GetUserConfirmationRedirectUrl(string code, string userId, string BaseURL)
         {
@@ -609,6 +749,18 @@ namespace PallyWad.Auth.Controllers
                 );
 
             return token;
+        }
+
+        private string FillClaimsNull(string value)
+        {
+            if(value == null || value == "")
+            {
+                return "-";
+            }
+            else
+            {
+                return value;
+            }
         }
 
         #endregion

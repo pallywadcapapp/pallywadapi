@@ -27,10 +27,11 @@ namespace PallyWad.UserApi.Controllers
         private readonly IConfiguration _configuration;
         private readonly ISmtpConfigService _smtpConfigService;
         private readonly IMailService _mailService;
+        private readonly IUserService _userService;
 
         public LoanRequestController(ILogger<LoanRequestController> logger, IHttpContextAccessor contextAccessor,
             ILoanRequestService loanRequestService, IMapper mapper, ILoanSetupService loanSetupService, IConfiguration configuration,
-            ISmtpConfigService smtpConfigService,IMailService mailService)
+            ISmtpConfigService smtpConfigService,IMailService mailService, IUserService userService)
         {
 
             _logger = logger;
@@ -41,6 +42,7 @@ namespace PallyWad.UserApi.Controllers
             _configuration = configuration;
             _smtpConfigService = smtpConfigService;
             _mailService = mailService;
+            _userService = userService;
         }
 
         #region Get
@@ -62,6 +64,24 @@ namespace PallyWad.UserApi.Controllers
             var _result = _loanRequestService.GetAllLoanRequests();
             var result = _result.Where(u => u.loanId == loadId).FirstOrDefault();
             return Ok(result);
+        }
+
+        [Authorize]
+        [HttpGet("iseligible")]
+        public IActionResult GetLoanRequestEligibility()
+        {
+            var princ = HttpContext.User;
+            var memberId = princ.Identity.Name;
+            var user = _userService.GetUser(memberId);
+            if(user == null)
+            {
+                return Ok(false);
+            }
+            else
+            {
+                if (user.PhoneNumberConfirmed == false) { }
+            }
+            return Ok(user);
         }
 
         #endregion
