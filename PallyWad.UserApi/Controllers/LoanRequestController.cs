@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using MimeKit;
+using Org.BouncyCastle.Asn1.X509;
 using PallyWad.Application;
 using PallyWad.Domain;
 using PallyWad.Domain.Dto;
@@ -95,18 +96,27 @@ namespace PallyWad.UserApi.Controllers
             var memberId = princ.Identity?.Name;
             string fullname = "";
 
-            var identity = princ.Identity as ClaimsIdentity;
-            if (identity != null)
+            var user = _userService.GetUser(memberId);
+
+            //var identity = princ.Identity as ClaimsIdentity;
+            //if (identity != null)
+            //{
+            //    IEnumerable<Claim> claims = identity.Claims;
+            //    // or
+            //    var lastname = identity.FindFirst("lastname").Value;
+            //    var firstname = identity.FindFirst("firstname").Value;
+            //    var othernames = identity.FindFirst("othernames").Value;
+
+            //    fullname = $"{lastname}, {firstname} {othernames}";
+
+            //}
+
+            if(user == null )
             {
-                IEnumerable<Claim> claims = identity.Claims;
-                // or
-                var lastname = identity.FindFirst("lastname").Value;
-                var firstname = identity.FindFirst("firstname").Value;
-                var othernames = identity.FindFirst("othernames").Value;
-
-                fullname = $"{lastname}, {firstname} {othernames}";
-
+                return BadRequest(new Response { Status = "error", Message = "Invalid Token" });
             }
+
+            fullname = $"{user.lastname}, {user.firstname} {user.othernames}";
 
 
             var loanRequest = _mapper.Map<LoanRequest>(_loanRequest);
@@ -119,6 +129,7 @@ namespace PallyWad.UserApi.Controllers
             loanRequest.requestDate = DateTime.Now;
             loanRequest.category = ltype.category;
             loanRequest.postedBy = memberId;
+                loanRequest.collateralId = _loanRequest.collateralRefId;
 
             _loanRequestService.AddLoanRequest(loanRequest);
             var mailReq = new MailRequest()

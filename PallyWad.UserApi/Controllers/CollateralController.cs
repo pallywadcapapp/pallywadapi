@@ -1,26 +1,24 @@
-﻿using Amazon.Runtime.Documents;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PallyWad.Domain;
-using PallyWad.Domain.Dto;
 using PallyWad.Services;
 
 namespace PallyWad.UserApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DocumentsController : ControllerBase
+    public class CollateralController : ControllerBase
     {
         private readonly IConfiguration _config;
-        private readonly ILogger<DocumentsController> _logger;
-        private readonly IUserDocumentService _userDocumentService;
+        private readonly ILogger<CollateralController> _logger;
+        private readonly IUserCollateralService _userCollateralService;
         private readonly IAppUploadedFilesService _appUploadedFilesService;
-        public DocumentsController(ILogger<DocumentsController> logger, IConfiguration configuration,
-            IUserDocumentService userDocumentService, IAppUploadedFilesService appUploadedFilesService)
+        public CollateralController(ILogger<CollateralController> logger, IConfiguration configuration,
+            IUserCollateralService userCollateralService, IAppUploadedFilesService appUploadedFilesService)
         {
             _logger = logger;
-            _userDocumentService = userDocumentService;
+            _userCollateralService = userCollateralService;
             _config = configuration;
             _appUploadedFilesService = appUploadedFilesService;
         }
@@ -28,9 +26,9 @@ namespace PallyWad.UserApi.Controllers
         #region Get
         [HttpGet("all")]
         [Authorize]
-        public IActionResult GetAllDocuments()
+        public IActionResult GetAllCollaterals()
         {
-            var result = _userDocumentService.ListAllUserDocument();
+            var result = _userCollateralService.ListAllUserCollateral();
             return Ok(result);
         }
 
@@ -40,25 +38,25 @@ namespace PallyWad.UserApi.Controllers
         {
             var princ = HttpContext.User;
             var memberId = princ.Identity?.Name;
-            var result = _userDocumentService.ListAllUserDocument(memberId);
+            var result = _userCollateralService.ListAllUserCollateral(memberId);
             return Ok(result);
         }
 
-        [HttpGet("doctype")]
+        [HttpGet("collateraltype")]
         [Authorize]
-        public IActionResult Get(string documentRefId)
+        public IActionResult Get(string collateralRefId)
         {
             var princ = HttpContext.User;
             var memberId = princ.Identity?.Name;
-            var result = _userDocumentService.ListAllUserDocument(memberId, documentRefId);
+            var result = _userCollateralService.ListAllUserCollateral(memberId, collateralRefId);
             return Ok(result);
         }
         #endregion
 
         [HttpPost, Route("UploadFile")]
-        public async Task<IActionResult> OnPostUploadAsync( UserDocumentFileDto userDocument)
+        public async Task<IActionResult> OnPostUploadAsync(UserCollateralFileDto userCollateral)
         {
-            List<IFormFile> files = userDocument.file;
+            List<IFormFile> files = userCollateral.file;
             long size = files.Sum(f => f.Length);
             List<string> filenames = new List<string>();
             List<string> status = new List<string>();
@@ -90,7 +88,7 @@ namespace PallyWad.UserApi.Controllers
                         {
                             await formFile.CopyToAsync(stream);
                             saveUpload(filename, filePath, memberId, Path.GetExtension(formFile.FileName));
-                            saveUserDocumentUploads(userDocument.documentNo, filename, userDocument.documentRefId, userDocument.expiryDate, filePath, memberId);
+                            saveUserCollateralUploads(userCollateral.collateralNo, filename, userCollateral.estimatedValue, filePath, memberId, userCollateral.otherdetails);
                         }
                     }
                 }
@@ -125,34 +123,39 @@ namespace PallyWad.UserApi.Controllers
             _appUploadedFilesService.AddAppUploadedFiles(newAppUpload);
         }
 
-        void saveUserDocumentUploads(string docNo, string filename,string doctype, DateTime expiryDate, string path, string memberId)
+        void saveUserCollateralUploads(string collateralNo, string filename, double value, string path, string memberId, string otherdetails)
         {
-            var userDocument = new UserDocument()
+            var userCollateral = new UserCollateral()
             {
                 created_date = DateTime.Now,
-                documentNo = docNo,
-                documentRefId = doctype,
-                expiryDate = expiryDate,
+                colleteralId = collateralNo,
+                estimatedValue = value,
+                approvedValue = 0,
+                loanRefId = "",
+                otherdetails = otherdetails,
                 name = filename,
                 status = true,
                 url = path,
-                userId = memberId
+                userId = memberId,
+                verificationStatus = false,
+                updated_date = DateTime.Now,
             };
-            _userDocumentService.AddUserDocument(userDocument);
+            _userCollateralService.AddUserCollateral(userCollateral);
+        }
+
+
+        public class UserCollateralFileDto
+        {
+            public string collateralRefId { get; set; }
+            public string userId { get; set; }
+            public string name { get; set; }
+            public string url { get; set; }
+            public string collateralNo { get; set; }
+            public double estimatedValue { get; set; }
+            public bool status { get; set; }
+            public List<IFormFile> file { get; set; }
+            public string otherdetails { get; set; }
         }
         #endregion
     }
-
-    public class UserDocumentFileDto
-    {
-        public string documentRefId { get; set; }
-        public string userId { get; set; }
-        public string name { get; set; }
-        public string url { get; set; }
-        public string documentNo { get; set; }
-        public DateTime expiryDate { get; set; }
-        public bool status { get; set; }
-        public List<IFormFile> file { get; set; }
-    }
-
 }

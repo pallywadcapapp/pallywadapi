@@ -43,6 +43,7 @@ namespace PallyWad.Infrastructure.Data
         public virtual DbSet<Collateral> Collaterals { get; set; }
         public virtual DbSet<Document> Documents { get; set; }
         public virtual DbSet<LoanSetup> LoanSetups { get; set; }
+        public virtual DbSet<Charges> Charges { get; set; }
         public virtual DbSet<ProductTrack> ProductTracks { get; set; }
 
         public virtual DbSet<ProductNo> ProductNos { get; set; }
@@ -58,6 +59,9 @@ namespace PallyWad.Infrastructure.Data
             modelBuilder.Entity<Collateral>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
             modelBuilder.Entity<Document>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
+            modelBuilder.Entity<Charges>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 
             modelBuilder.Entity<NumbComp>()

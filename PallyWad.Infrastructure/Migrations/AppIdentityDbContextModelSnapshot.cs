@@ -286,7 +286,7 @@ namespace PallyWad.Infrastructure.Migrations
 
                     b.HasIndex("memberid");
 
-                    b.ToTable("MemberAccounts");
+                    b.ToTable("MemberAccounts", (string)null);
                 });
 
             modelBuilder.Entity("PallyWad.Domain.UserProfile", b =>
@@ -320,7 +320,7 @@ namespace PallyWad.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserProfile");
+                    b.ToTable("UserProfile", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

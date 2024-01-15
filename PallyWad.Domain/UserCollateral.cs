@@ -14,6 +14,7 @@ namespace PallyWad.Domain
         public bool status { get; set; }
         public double estimatedValue { get; set; }
         public double approvedValue { get; set; }
+        public string otherdetails { get; set; }
         public string loanRefId { get; set; }
         public bool verificationStatus { get; set; }
         public string url { get; set; }

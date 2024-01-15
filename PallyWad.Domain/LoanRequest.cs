@@ -38,5 +38,6 @@ namespace PallyWad.Domain
         public double? loaninterest { get; set; }
         public string category { get; set; }
         public double processingFee { get; set; }
+        public string collateralId { get; set; }
     }
 }

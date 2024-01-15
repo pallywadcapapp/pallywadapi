@@ -12,6 +12,7 @@ namespace PallyWad.Domain.Dto
     {
         //public string loanId { get; set; }
         public string loancode { get; set; }
+        public string collateralRefId { get; set; }
         //public string memberId { get; set; }
         [Required]
         public double amount { get; set; }

@@ -108,7 +108,7 @@ namespace PallyWad.Infrastructure.Migrations.AccountDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("GL");
+                    b.ToTable("GL", (string)null);
                 });
 
             modelBuilder.Entity("PallyWad.Domain.GLAccount", b =>
@@ -177,7 +177,7 @@ namespace PallyWad.Infrastructure.Migrations.AccountDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("GLAccounts");
+                    b.ToTable("GLAccounts", (string)null);
                 });
 
             modelBuilder.Entity("PallyWad.Domain.GLAccountB", b =>
@@ -223,7 +223,7 @@ namespace PallyWad.Infrastructure.Migrations.AccountDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("GLAccountBs");
+                    b.ToTable("GLAccountBs", (string)null);
                 });
 
             modelBuilder.Entity("PallyWad.Domain.GLAccountBase", b =>
@@ -265,7 +265,7 @@ namespace PallyWad.Infrastructure.Migrations.AccountDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("GLAccountBases");
+                    b.ToTable("GLAccountBases", (string)null);
                 });
 
             modelBuilder.Entity("PallyWad.Domain.GLAccountC", b =>
@@ -318,7 +318,7 @@ namespace PallyWad.Infrastructure.Migrations.AccountDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("GetGLAccountCs");
+                    b.ToTable("GetGLAccountCs", (string)null);
                 });
 
             modelBuilder.Entity("PallyWad.Domain.Journal", b =>
@@ -424,7 +424,7 @@ namespace PallyWad.Infrastructure.Migrations.AccountDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("Journals");
+                    b.ToTable("Journals", (string)null);
                 });
 
             modelBuilder.Entity("PallyWad.Domain.Payment", b =>
@@ -545,7 +545,7 @@ namespace PallyWad.Infrastructure.Migrations.AccountDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 #pragma warning restore 612, 618
         }
