@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PallyWad.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using PallyWad.Infrastructure.Data;
 namespace PallyWad.Infrastructure.Migrations.SetupDb
 {
     [DbContext(typeof(SetupDbContext))]
-    partial class SetupDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240116050805_product")]
+    partial class product
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

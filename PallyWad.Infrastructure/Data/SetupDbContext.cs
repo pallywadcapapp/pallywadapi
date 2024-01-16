@@ -45,7 +45,7 @@ namespace PallyWad.Infrastructure.Data
         public virtual DbSet<LoanSetup> LoanSetups { get; set; }
         public virtual DbSet<Charges> Charges { get; set; }
         public virtual DbSet<ProductTrack> ProductTracks { get; set; }
-
+        public virtual DbSet<Product> Products { get; set; }
         public virtual DbSet<ProductNo> ProductNos { get; set; }
         public virtual DbSet<NumbComp> NumbComps { get; set; }
         public virtual DbSet<NumbCompOrder> NumbCompOrders { get; set; }
@@ -61,7 +61,13 @@ namespace PallyWad.Infrastructure.Data
             modelBuilder.Entity<Document>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 
+            modelBuilder.Entity<Product>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
             modelBuilder.Entity<Charges>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
+            modelBuilder.Entity<AccType>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 
             modelBuilder.Entity<NumbComp>()

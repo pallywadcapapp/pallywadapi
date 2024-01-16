@@ -39,7 +39,7 @@ namespace PallyWad.Setup.Controllers
         }
 
         [HttpPost(nameof(AccType))]
-        public IActionResult Post(SetupDto events)
+        public IActionResult Post(AcctypeDto events)
         {
 
             try

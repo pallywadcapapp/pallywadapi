@@ -22,6 +22,7 @@ namespace PallyWad.Application
             CreateMap<UserDocumentDto, UserDocument>().ReverseMap();
             CreateMap<UserCollateralDto, UserCollateral>().ReverseMap();
             CreateMap<LoanRequestDto, LoanRequest>().ReverseMap();
+            CreateMap<AcctypeDto, AccType>().ReverseMap(); 
 
         }
     }

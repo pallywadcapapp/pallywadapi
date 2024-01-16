@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using AutoMapper.Execution;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PallyWad.Domain;
+using PallyWad.Domain.Entities;
 using PallyWad.Services;
 using PallyWad.Services.Repository;
 
@@ -25,11 +27,13 @@ namespace PallyWad.AdminApi.Controllers
         private readonly GLPostingRepository gLPostingRepository;
         private readonly IMapper _mapper;
         private readonly ILoanCollateralService _loanCollateralService;
+        private readonly IGlAccountTier3Service _glAccountTier3Service;
 
         public LoanRequestController(IHttpContextAccessor contextAccessor, ILogger<LoanRequestController> logger,
             ILoanSetupService loanSetupService, ILoanRequestService loanRequestService, IMembersAccountService membersAccountService,
             IGlAccountService glAccountService, IUserService userService, IGlAccountTransService glAccountTransService,
-            ILoanTransService loanTransService, IChargesService chargesService, IMapper mapper, ILoanCollateralService loanCollateralService)
+            ILoanTransService loanTransService, IChargesService chargesService, IMapper mapper, ILoanCollateralService loanCollateralService,
+            IGlAccountTier3Service glAccountTier3Service)
         {
             _contextAccessor = contextAccessor;
             _logger = logger;
@@ -44,6 +48,7 @@ namespace PallyWad.AdminApi.Controllers
             gLPostingRepository = new GLPostingRepository(_glAccountTransService);
             _mapper = mapper;
             _loanCollateralService = loanCollateralService;
+            _glAccountTier3Service = glAccountTier3Service;
         }
 
         #region Get
@@ -145,6 +150,27 @@ namespace PallyWad.AdminApi.Controllers
             updateProcessed(loanRequest.Id, id);
             return Ok(loanTrans);
         }
+
+        [Authorize]
+        [HttpPost, Route("createAccount")]
+        public IActionResult createAccount([FromBody] AccSchema accSchema)
+        {
+            var loanType = _loanSetupService.GetLoanSetup(accSchema.name);
+            var accountno = GenerateNewAccountNo(loanType.category);
+            //var member = _memberService.Getmember(accSchema.memberId);
+            //var suf = GetAccStr(member.Accountno, 6).ToList();
+            var memberacc = new MemberAccount()
+            {
+                memberid = accSchema.memberId,
+                deductcode = accSchema.name,
+                memgroupacct = loanType.memgroupacct,
+                transtype = loanType.category,
+                accountno = accountno //loanType.memgroupacct + suf[1]
+            };
+
+            _membersAccountService.AddMembersAccount(memberacc);
+            return Ok(memberacc);
+        }
         #endregion
 
         #region Put
@@ -170,6 +196,24 @@ namespace PallyWad.AdminApi.Controllers
         void PostLoanCollaterals(LoanRequest loanRequest, string collateralId)
         {
             //ILoanCollateralService loanCollateralService
+        }
+
+        private IEnumerable<string> GetAccStr(string str, int maxLength)
+        {
+            for (int index = 0; index < str.Length; index += maxLength)
+            {
+                yield return str.Substring(index, Math.Min(maxLength, str.Length - index));
+            }
+        }
+
+        private string GenerateNewAccountNo(string type)
+        {
+            var chtacc = _glAccountService.GetAllGlAccountByDesc();
+            var tempSav = _glAccountTier3Service.GetGlAccountByDesc(type);// "MEMBERS SAVINGS"
+            int ch = int.Parse(chtacc);
+            var sch = ch + 1;
+
+            return $"{tempSav.accountno}{sch}";
         }
         #endregion
     }
