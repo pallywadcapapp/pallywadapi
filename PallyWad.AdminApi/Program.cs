@@ -132,15 +132,15 @@ var app = builder.Build();
 app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "RoadALly Authentication Server V1");
         c.SwaggerEndpoint("/swagger/v2/swagger.json", "RoadALly Authentication Server V2");
     });
-}
+//}
 
 app.UseHttpsRedirection();
 
