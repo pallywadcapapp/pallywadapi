@@ -105,7 +105,7 @@ builder.Services.AddAuthorization(options =>
         .Build());
 });
 
-builder.Services.Configure<IPWhitelistOptions>(builder.Configuration.GetSection("IPWhitelistOptions"));
+//builder.Services.Configure<IPWhitelistOptions>(builder.Configuration.GetSection("IPWhitelistOptions"));
 
 builder.Services.Configure<DataProtectionTokenProviderOptions>(o =>
     o.TokenLifespan = TimeSpan.FromHours(3));
@@ -205,7 +205,7 @@ app.UseCors(builder =>
     .AllowAnyHeader();
 });
 
-app.UseIPWhitelist();
+//app.UseIPWhitelist();
 
 app.UseHttpsRedirection();
 
