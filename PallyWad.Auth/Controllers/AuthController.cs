@@ -106,10 +106,10 @@ namespace PallyWad.Auth.Controllers
 
                 if (!user.EmailConfirmed)
                 {
-                    var result = new
+                    var result = new Response
                     {
-                        Status = Status.Error,
-                        Data = "Email confirmation required"
+                        Status = Status.Error.ToString(),
+                        Message = "Email confirmation required"
                     };
 
                     return BadRequest(result);
@@ -154,7 +154,11 @@ namespace PallyWad.Auth.Controllers
                     expiration = token.ValidTo
                 });
             }
-            return Unauthorized();
+            else
+            {
+                return BadRequest(new Response { Status = "error", Message = "username or password incorrect" });
+            }
+            //return Unauthorized();
         }
 
         [HttpPost]
@@ -192,7 +196,8 @@ namespace PallyWad.Auth.Controllers
             string fullname = user.firstname + " " + user.othernames + " " + user.lastname;
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
+                // return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = result.Errors });
 
             if (!await _roleManager.RoleExistsAsync(UserRoles.Admin))
                 await _roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));

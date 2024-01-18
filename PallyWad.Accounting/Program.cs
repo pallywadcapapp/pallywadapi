@@ -1,4 +1,5 @@
 using Amazon.SimpleEmail;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi.Models;
@@ -36,6 +37,22 @@ builder.Services.RegisterServices(builder.Configuration);
     app.AddAmazonSecretsManager("eu-west-1", "arn:aws:secretsmanager:eu-west-1:700639922994:secret:pallywaddb-ZcmND5");
 });
 builder.Services.Configure<AWSApiCredentials>(builder.Configuration);*/
+
+builder.Services.Configure<DataProtectionTokenProviderOptions>(o =>
+    o.TokenLifespan = TimeSpan.FromHours(3));
+builder.Services.AddCors(setup =>
+{
+    setup.AddDefaultPolicy(policy =>
+    {
+        //policy.AllowCredentials();
+        policy.WithOrigins("http://localhost:5135", "https://app.pallywad.com",
+        "https://admin.pallywad.com", "http://localhost:8100", "https://app");
+        policy.AllowAnyHeader();
+        policy.AllowAnyMethod();
+        policy.AllowAnyOrigin();
+    });
+});
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -102,8 +119,20 @@ app.MapDefaultEndpoints();
 //if (app.Environment.IsDevelopment())
 //{
     app.UseSwagger();
-    app.UseSwaggerUI();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "PallyWad Accounting Server V1");
+    c.SwaggerEndpoint("/swagger/v2/swagger.json", "PallyWad Accounting Server V2");
+});
 //}
+
+app.UseCors(builder =>
+{
+    builder.AllowAnyOrigin()
+    .AllowAnyMethod()
+    .SetIsOriginAllowed(origin => true)
+    .AllowAnyHeader();
+});
 
 app.UseHttpsRedirection();
 

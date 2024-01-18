@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using PallyWad.Application;
 using PallyWad.Auth.Helper.Extensions;
 using PallyWad.Domain;
 using PallyWad.Domain.Entities;
@@ -104,6 +105,23 @@ builder.Services.AddAuthorization(options =>
         .Build());
 });
 
+builder.Services.Configure<IPWhitelistOptions>(builder.Configuration.GetSection("IPWhitelistOptions"));
+
+builder.Services.Configure<DataProtectionTokenProviderOptions>(o =>
+    o.TokenLifespan = TimeSpan.FromHours(3));
+builder.Services.AddCors(setup =>
+{
+    setup.AddDefaultPolicy(policy =>
+    {
+        //policy.AllowCredentials();
+        policy.WithOrigins("http://localhost:5135", "https://app.pallywad.com",
+        "https://admin.pallywad.com", "http://localhost:8100", "https://app");
+        policy.AllowAnyHeader();
+        policy.AllowAnyMethod();
+        policy.AllowAnyOrigin();
+    });
+});
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -175,9 +193,19 @@ if (app.Environment.IsDevelopment())
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "RoadALly Authentication Server V1");
-    c.SwaggerEndpoint("/swagger/v2/swagger.json", "RoadALly Authentication Server V2");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "PallyWad Authentication Server V1");
+    c.SwaggerEndpoint("/swagger/v2/swagger.json", "PallyWad Authentication Server V2");
 });
+
+app.UseCors(builder =>
+{
+    builder.AllowAnyOrigin()
+    .AllowAnyMethod()
+    .SetIsOriginAllowed(origin => true)
+    .AllowAnyHeader();
+});
+
+app.UseIPWhitelist();
 
 app.UseHttpsRedirection();
 
