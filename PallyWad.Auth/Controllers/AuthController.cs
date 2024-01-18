@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.Tokens;
 using MimeKit;
@@ -341,7 +342,8 @@ namespace PallyWad.Auth.Controllers
                         emailMessage.Subject = $"{company}. Reset Password";
 
                         //var subject = "Verify your email";
-                        string filePath = Directory.GetCurrentDirectory() + "\\Templates\\forgotpassword.html";
+                        string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "forgotpassword.html");
+                        //string filePath = Directory.GetCurrentDirectory() + "\\Templates\\forgotpassword.html";
                         string emailTemplateText = System.IO.File.ReadAllText(filePath);
                         emailTemplateText = string.Format(emailTemplateText, fullname, callbackUrl, DateTime.Today.Date.ToShortDateString());
 
@@ -448,10 +450,11 @@ namespace PallyWad.Auth.Controllers
                     emailMessage.Subject = $"Confirm Your PallyWad Capital Account";
                     baseUrl = $"{this.Request.Scheme}://{this.Request.Host.Value.ToString()}{this.Request.PathBase.Value.ToString()}";
                     var tkvUrl = $"{baseUrl}{HttpContext.Request.Path.Value.Replace("EmailActivationCode", "")}verify?id={user.Id}&token={base64EncodedToken}";
-                    
+
 
                     //var subject = "Verify your email";
-                    string filePath = Directory.GetCurrentDirectory() + "\\Templates\\verifyemail.html";
+                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "verifyemail.html");
+                    //string filePath = Directory.GetCurrentDirectory() + "\\Templates\\verifyemail.html";
                     string emailTemplateText = System.IO.File.ReadAllText(filePath);
                     emailTemplateText = string.Format(emailTemplateText, fullname, tkvUrl, DateTime.Today.Date.ToShortDateString());
 
@@ -595,7 +598,8 @@ namespace PallyWad.Auth.Controllers
                     var tkvUrl = $"{baseUrl}{HttpContext.Request.Path.Value.Replace(route,"")}verify?id={user.Id}&token={base64EncodedToken}";
 
                     //var subject = "Verify your email";
-                    string filePath = Directory.GetCurrentDirectory() + "\\Templates\\verifyemail.html";
+                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "verifyemail.html");
+                    //string filePath = Directory.GetCurrentDirectory() + "\\Templates\\verifyemail.html";
                     string emailTemplateText = System.IO.File.ReadAllText(filePath);
                     emailTemplateText = string.Format(emailTemplateText, fullname, tkvUrl, DateTime.Today.Date.ToShortDateString());
 
@@ -640,7 +644,8 @@ namespace PallyWad.Auth.Controllers
                     var loginUrl = _configuration.GetValue<string>("AppSettings:loginUrl");
 
                     //var subject = "Verify your email";
-                    string filePath = Directory.GetCurrentDirectory() + "\\Templates\\welcome.html";
+                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "welcome.html");
+                    //string filePath = Directory.GetCurrentDirectory() + "\\Templates\\welcome.html";
                     string emailTemplateText = System.IO.File.ReadAllText(filePath);
                     emailTemplateText = string.Format(emailTemplateText, fullname, loginUrl, DateTime.Today.Date.ToShortDateString());
 
@@ -681,7 +686,8 @@ namespace PallyWad.Auth.Controllers
                     emailMessage.To.Add(emailTo);
                     emailMessage.Subject = $"{company}. Password Token";
 
-                    string filePath = Directory.GetCurrentDirectory() + "\\Templates\\forgotpassword.html";
+                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "forgotpassword.html");
+                    //string filePath = Directory.GetCurrentDirectory() + "\\Templates\\forgotpassword.html";
                     string emailTemplateText = System.IO.File.ReadAllText(filePath);
                     emailTemplateText = string.Format(emailTemplateText, fullname, token, DateTime.Today.Date.ToShortDateString());
 
