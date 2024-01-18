@@ -9,6 +9,7 @@ using PallyWad.Services.Generics;
 using System.Text;
 using PallyWad.Services.Extensions;
 using Microsoft.AspNetCore.Identity;
+using PallyWad.Domain;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,6 +58,9 @@ builder.Services.AddCors(setup =>
     });
 });
 
+builder.Services.AddIdentity<AppIdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<AppIdentityDbContext>()
+.AddDefaultTokenProviders();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

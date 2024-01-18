@@ -7,7 +7,7 @@ using PallyWad.Services;
 namespace PallyWad.Setup.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class CollateralController : ControllerBase
 {
 

@@ -38,11 +38,20 @@ namespace PallyWad.Services
         {
             throw new NotImplementedException();
         }
+        public AppIdentityUser GetUserByEmail(string email)
+        {
+            return _userRepository.Get().Where(u => u.Email == email).SingleOrDefault();
+        }
 
         public List<AppIdentityUser> ListUsers()
         {
             var result = _userRepository.FindAll().ToList();
             return result;
+        }
+
+        public IEnumerable<AppIdentityUser> GetAllUsers()
+        {
+            return _userRepository.GetAll();
         }
 
         public void Save()
@@ -66,5 +75,7 @@ namespace PallyWad.Services
         void AddUser(AppIdentityUser user);
         void Save();
         void UpdateUser(AppIdentityUser user);
+        IEnumerable<AppIdentityUser> GetAllUsers();
+        AppIdentityUser GetUserByEmail(string email);
     }
 }

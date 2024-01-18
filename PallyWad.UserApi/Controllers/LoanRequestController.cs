@@ -164,9 +164,10 @@ namespace PallyWad.UserApi.Controllers
             {
                 //return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Check email configuration!" });
             }
-            else { 
+            else {
 
-            string filePath = Directory.GetCurrentDirectory() + "\\Templates\\loanrequest.html";
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "loanrequest.html");
+                //string filePath = Directory.GetCurrentDirectory() + "\\Templates\\loanrequest.html";
             string emailTemplateText = System.IO.File.ReadAllText(filePath);
             emailTemplateText = string.Format(emailTemplateText, fullname,
                 AppCurrFormatter.GetFormattedCurrency(lr.amount, 2, "HA-LATN-NG"),

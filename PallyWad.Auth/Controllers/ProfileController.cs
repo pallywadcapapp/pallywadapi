@@ -33,7 +33,8 @@ namespace PallyWad.Auth.Controllers
         {
             //var user = _profileService.GetUserProfile(username);
             var user = await _userManager.FindByNameAsync(username);
-            return Ok(user);
+            var usermap = _mapper.Map<UserProfileDto>(user);
+            return Ok(usermap);
         }
 
         #endregion

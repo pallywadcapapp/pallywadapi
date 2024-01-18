@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using PallyWad.Domain;
+using PallyWad.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -12,9 +13,10 @@ namespace PallyWad.AdminApi.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        public UserController()
+        private readonly IUserService _userService;
+        public UserController(IUserService userService)
         {
-            
+            _userService = userService;
         }
         [Authorize]
         [AcceptVerbs("Get")]
@@ -45,6 +47,57 @@ namespace PallyWad.AdminApi.Controllers
             //var roles = _userManager.GetRolesAsync(u).Result;
 
             return Ok(roles);
+        }
+
+        [HttpGet]
+        [Route("AllActiveUsers")]
+        public IActionResult GetActiveUser()
+        {
+            var result = _userService.GetAllUsers().Where(u => u.EmailConfirmed == true);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("AllInactiveUsers")]
+        public IActionResult GetInactiveUser()
+        {
+            var result = _userService.GetAllUsers().Where(u => u.EmailConfirmed == false);
+            return Ok(result);
+        }
+        [AcceptVerbs("Get")]
+        [Route("AllUsers")]
+        public IActionResult GetAllUsers()
+        {
+            //var result = _repo.GetAllUsers();
+            var result = _userService.GetAllUsers();//.Where(u=>u.TenantId == TenantId);
+            return Ok(result);
+        }
+
+        [AcceptVerbs("Get")]
+        [Route("UserById")]
+        public IActionResult GetUserById(string email)
+        {
+            //var result = _repo.GetAllUsers();
+            var result = _userService.GetUserByEmail(email);//.Where(u=>u.TenantId == TenantId);
+            return Ok(result);
+        }
+
+        [AcceptVerbs("Get")]
+        [Route("ActiveUsers")]
+        public IActionResult GetActiveUsers()
+        {
+            //var result = _repo.GetAllUsers();
+            var result = _userService.GetAllUsers().Where(u => u.EmailConfirmed == true);
+            return Ok(result);
+        }
+
+        [AcceptVerbs("Get")]
+        [Route("InactiveUsers")]
+        public IActionResult GetInactiveUsers()
+        {
+            //var result = _repo.GetAllUsers();
+            var result = _userService.GetAllUsers().Where(u => u.EmailConfirmed == false);
+            return Ok(result);
         }
 
     }
