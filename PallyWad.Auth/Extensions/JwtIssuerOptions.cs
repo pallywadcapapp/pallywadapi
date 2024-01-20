@@ -2,7 +2,7 @@
 
 namespace PallyWad.Auth.Extensions
 {
-    public class JwtIssuerOptions
+    public class _JwtIssuerOptions
     {
         /// <summary>
         /// 4.1.3.  "auth" (Authority) Claim - The "auth" (authority) claim identifies the recipients that the JWT is intended for.

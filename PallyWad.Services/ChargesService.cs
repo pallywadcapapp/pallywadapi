@@ -28,9 +28,21 @@ namespace PallyWad.Services
             Save();
         }
 
+        public List<string> GetAllCharges()
+        {
+            var result = _chargesRepository.FindAll().Select(u=>u.shortname).ToList();
+            return result;
+        }
+
         public Charges GetCharges(string id)
         {
             return _chargesRepository.Get(x => x.chargecode == id);
+        }
+
+        public List<Charges> ListAllCharges()
+        {
+            var result = _chargesRepository.FindAll().ToList();
+            return result;
         }
 
         public IEnumerable<Charges> ListCharges()
@@ -60,5 +72,7 @@ namespace PallyWad.Services
         void AddCharge(Charges charge);
         void Save();
         void UpdateCharge(Charges charge);
+        List<string> GetAllCharges();
+        List<Charges> ListAllCharges();
     }
 }

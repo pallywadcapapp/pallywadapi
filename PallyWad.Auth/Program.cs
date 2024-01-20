@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PallyWad.Application;
+using PallyWad.Auth.Extensions.Provider;
 using PallyWad.Auth.Helper.Extensions;
 using PallyWad.Domain;
 using PallyWad.Domain.Entities;
@@ -54,7 +55,8 @@ builder.Services.AddHttpClient<SMSConfigService>(httpClient =>
 // For Identity
 builder.Services.AddIdentity<AppIdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<AppIdentityDbContext>()
-.AddDefaultTokenProviders();
+.AddDefaultTokenProviders()
+.AddPasswordlessLoginTotpTokenProvider();
 
 var jwtAppSettingOptions = configuration.GetSection(nameof(JwtIssuerOptions));
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.GetSection("JWT:Secret").Value));

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using PallyWad.Domain;
 using PallyWad.Services.Attributes;
 using PallyWad.Services.Generics;
@@ -31,7 +32,12 @@ namespace PallyWad.Services
 
         public AppIdentityUser GetUser(string id)
         {
-            return ListUsers().Where(u => u.UserName == id).FirstOrDefault();
+            var result = _userRepository.FindAll().Where(u => u.UserName == id)
+                .Include(u => u.account).FirstOrDefault();
+
+            return result;
+
+            //ListUsers().Where(u => u.UserName == id).FirstOrDefault();
         }
 
         public AppIdentityUser GetUser(int id)

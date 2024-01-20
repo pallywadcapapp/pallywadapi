@@ -31,6 +31,7 @@ namespace PallyWad.Auth.Controllers
         private readonly SignInManager<AppIdentityUser> _signInManager;
         private readonly ISmtpConfigService _smtpConfigService;
         private readonly ISMSConfigService _smsConfigService;
+        private readonly IRedisCacheService _redisCacheService;
         private string baseUrl;
         //private IMapper _mapper
 
@@ -38,7 +39,8 @@ namespace PallyWad.Auth.Controllers
             UserManager<AppIdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
-            SignInManager<AppIdentityUser> signInManager, ISmtpConfigService smtpConfigService, ISMSConfigService smsConfigService)
+            SignInManager<AppIdentityUser> signInManager, ISmtpConfigService smtpConfigService,
+            ISMSConfigService smsConfigService, IRedisCacheService redisCacheService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -47,6 +49,7 @@ namespace PallyWad.Auth.Controllers
             _smtpConfigService = smtpConfigService;
             baseUrl = baseUrl ?? string.Empty;
             _smsConfigService = smsConfigService;
+            _redisCacheService = redisCacheService;
         }
 
         /*[HttpPost, Route("mailconfig"), MapToApiVersion(2.0)]
@@ -483,6 +486,59 @@ namespace PallyWad.Auth.Controllers
             // return BadRequest("err");
         }
 
+        [HttpGet("newUser")]
+        public async Task<IActionResult> Onboard(string username)
+        {
+
+            var mailkey = _configuration.GetValue<string>("AppSettings:AWSMail");
+            var mailConfig = _smtpConfigService.ListAllSetupSmtpConfig().Where(u => u.configname == mailkey).FirstOrDefault();
+            var expirationTime = DateTimeOffset.Now.AddMinutes(5.0);
+            var _userManager = HttpContext.RequestServices
+                                        .GetRequiredService<UserManager<AppIdentityUser>>();
+            var user = await _userManager.FindByNameAsync(username);
+            if(user == null)
+            {
+                user = new AppIdentityUser()
+                {
+                    Email = username,
+                    UserName = username,
+                    NormalizedEmail = username.ToUpper(),
+                    NormalizedUserName = username.ToUpper(),
+                };
+                var token = await _userManager.GenerateUserTokenAsync(
+                user, "PasswordlessLoginTotpProvider", "passwordless-auth");
+                _redisCacheService.SetData<AppIdentityUser>(username, user, expirationTime);
+                SendEmailToken(user, mailConfig, token);
+                return Ok(new Response() { Status = "success", Message = token });
+            }
+            else
+            {
+                return Ok(new Response() { Status = "Ok", Message = "Email not available"});
+            }
+
+        }
+
+        [HttpGet("ValidateNewUser")]
+        public async Task<IActionResult> ValidateOnboard(string username, string token)
+        {
+            var _userManager = HttpContext.RequestServices
+                                        .GetRequiredService<UserManager<AppIdentityUser>>();
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                var cacheData = _redisCacheService.GetData<AppIdentityUser>(username);
+                user = cacheData;
+                var isValid = await _userManager.VerifyUserTokenAsync(
+                  user, "PasswordlessLoginTotpProvider", "passwordless-auth", token);
+                return Ok(new Response() { Status = "Ok", Message = isValid });
+            }
+            else
+            {
+                return Ok(new Response() { Status = "Ok", Message = "Email not available" });
+            }
+
+        }
+
         [HttpGet("ResetPasswordToken")]
         //[ServiceFilter(typeof(ModelValidationFilter))]
         public async Task<IActionResult> SendChangePasswordToken(string username)
@@ -624,6 +680,48 @@ namespace PallyWad.Auth.Controllers
             }
         }
 
+        async Task SendEmailToken(AppIdentityUser user, SmtpConfig mailConfig, string token)
+        {
+            try
+            {
+                using (MimeMessage emailMessage = new MimeMessage())
+                {
+
+                    var fullname = user.firstname + " " + user.othernames + " " + user.lastname;
+                    var company = _configuration.GetValue<string>("AppSettings:companyName");
+                    MailboxAddress emailFrom = new MailboxAddress(company, mailConfig.mailfrom);
+                    emailMessage.From.Add(emailFrom);
+
+                    MailboxAddress emailTo = new MailboxAddress(fullname, user.Email);
+                    emailMessage.To.Add(emailTo);
+                    emailMessage.Subject = $"{company}. Confirm Your PallyWad Capital Account";
+                    
+                    //var subject = "Verify your email";
+                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "verifyemailtoken.html");
+                    //string filePath = Directory.GetCurrentDirectory() + "\\Templates\\verifyemail.html";
+                    string emailTemplateText = System.IO.File.ReadAllText(filePath);
+                    emailTemplateText = string.Format(emailTemplateText, fullname, token, DateTime.Today.Date.ToShortDateString());
+
+                    BodyBuilder emailBodyBuilder = new BodyBuilder();
+                    emailBodyBuilder.HtmlBody = emailTemplateText;
+                    emailBodyBuilder.TextBody = "Plain Text goes here to avoid marked as spam for some email servers.";
+
+                    emailMessage.Body = emailBodyBuilder.ToMessageBody();
+
+                    using (MailKit.Net.Smtp.SmtpClient mailClient = new MailKit.Net.Smtp.SmtpClient())
+                    {
+                        mailClient.Connect(mailConfig.smtp, mailConfig.port, MailKit.Security.SecureSocketOptions.StartTls);
+                        mailClient.Authenticate(mailConfig.username, mailConfig.password);
+                        mailClient.Send(emailMessage);
+                        mailClient.Disconnect(true);
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
         async Task SendWelcomeEmail(AppIdentityUser user, SmtpConfig mailConfig)
         {
             try

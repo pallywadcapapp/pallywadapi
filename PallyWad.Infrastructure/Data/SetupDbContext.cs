@@ -44,6 +44,7 @@ namespace PallyWad.Infrastructure.Data
         public virtual DbSet<Document> Documents { get; set; }
         public virtual DbSet<LoanSetup> LoanSetups { get; set; }
         public virtual DbSet<Charges> Charges { get; set; }
+        public virtual DbSet<Interest> Interests { get; set; }
         public virtual DbSet<ProductTrack> ProductTracks { get; set; }
         public virtual DbSet<Product> Products { get; set; }
         public virtual DbSet<ProductNo> ProductNos { get; set; }
@@ -54,10 +55,19 @@ namespace PallyWad.Infrastructure.Data
         {
             modelBuilder.Entity<SmtpConfig>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
             modelBuilder.Entity<SMSConfig>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
+            modelBuilder.Entity<AccType>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
             modelBuilder.Entity<Collateral>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
+            modelBuilder.Entity<LoanSetup>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
             modelBuilder.Entity<Document>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 
@@ -65,6 +75,9 @@ namespace PallyWad.Infrastructure.Data
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 
             modelBuilder.Entity<Charges>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
+            modelBuilder.Entity<Interest>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 
             modelBuilder.Entity<AccType>().Property(u => u.Id)

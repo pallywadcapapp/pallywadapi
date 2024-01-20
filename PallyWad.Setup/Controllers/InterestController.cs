@@ -1,33 +1,32 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using PallyWad.Domain.Dto;
 using PallyWad.Domain;
+using PallyWad.Domain.Dto;
 using PallyWad.Services;
-using AutoMapper;
 
 namespace PallyWad.Setup.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DocumentsController : ControllerBase
+    public class InterestController : ControllerBase
     {
-
-        private readonly ILogger<DocumentsController> _logger;
-        private readonly IDocumentService _documentService;
+        private readonly IInterestService _interestService;
+        private readonly ILogger<InterestController> _logger;
         private readonly IMapper _mapper;
-
-        public DocumentsController(ILogger<DocumentsController> logger, IDocumentService documentService, IMapper mapper)
+        public InterestController(IInterestService interestService, ILogger<InterestController> logger, IMapper mapper)
         {
             _logger = logger;
-            _documentService = documentService;
             _mapper = mapper;
+            _interestService = interestService;
         }
+
 
         #region Get
         [HttpGet]
         public IActionResult Get()
         {
-            var result = _documentService.GetAllDocument();
+            var result = _interestService.GetAllInterests();
             return Ok(result);
         }
 
@@ -35,7 +34,7 @@ namespace PallyWad.Setup.Controllers
         [Route("all")]
         public IActionResult GetAll()
         {
-            var result = _documentService.ListAllDocument();
+            var result = _interestService.ListAllInterests();
             //var result = _mapper.Map<SetupDto>(Documents);
             return Ok(result);
         }
@@ -43,17 +42,17 @@ namespace PallyWad.Setup.Controllers
         #endregion
 
         #region Post
-        [HttpPost(nameof(Document))]
-        public IActionResult Post(SetupDto events)
+        [HttpPost(nameof(Interest))]
+        public IActionResult Post(InterestDto events)
         {
 
             try
             {
                 if (events != null)
                 {
-                    var document = _mapper.Map<Document>(events);
-                    _documentService.AddDocument(document);
-                    return Ok(new { status = "success", message = $"Document {document.name} Created Successfully" });
+                    var interest = _mapper.Map<Interest>(events);
+                    _interestService.Addinterest(interest);
+                    return Ok(new { status = "success", message = $"Interest {interest.shortname} Created Successfully" });
                 }
                 else
                 {
@@ -71,15 +70,15 @@ namespace PallyWad.Setup.Controllers
 
         #region Put
         [HttpPut(nameof(Document))]
-        public IActionResult Put(SetupDto events)
+        public IActionResult Put(InterestDto events)
         {
             try
             {
                 if (events != null)
                 {
-                    var document = _mapper.Map<Document>(events);
-                    _documentService.UpdateDocument(document);
-                    return Ok(new { status = "success", message = $"Document {document.name} Updated Successfully" });
+                    var interest = _mapper.Map<Interest>(events);
+                    _interestService.Updateinterest(interest);
+                    return Ok(new { status = "success", message = $"Interest {interest.shortname} Updated Successfully" });
                 }
                 else
                 {
@@ -95,5 +94,4 @@ namespace PallyWad.Setup.Controllers
 
         #endregion
     }
-
 }

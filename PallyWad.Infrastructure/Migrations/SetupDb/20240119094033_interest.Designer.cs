@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PallyWad.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using PallyWad.Infrastructure.Data;
 namespace PallyWad.Infrastructure.Migrations.SetupDb
 {
     [DbContext(typeof(SetupDbContext))]
-    partial class SetupDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240119094033_interest")]
+    partial class interest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,7 +49,7 @@ namespace PallyWad.Infrastructure.Migrations.SetupDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("AccTypes", (string)null);
+                    b.ToTable("AccTypes");
                 });
 
             modelBuilder.Entity("PallyWad.Domain.Charges", b =>
@@ -81,7 +84,7 @@ namespace PallyWad.Infrastructure.Migrations.SetupDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("Charges", (string)null);
+                    b.ToTable("Charges");
                 });
 
             modelBuilder.Entity("PallyWad.Domain.Collateral", b =>
@@ -111,7 +114,7 @@ namespace PallyWad.Infrastructure.Migrations.SetupDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("Collaterals", (string)null);
+                    b.ToTable("Collaterals");
                 });
 
             modelBuilder.Entity("PallyWad.Domain.Document", b =>
@@ -141,7 +144,7 @@ namespace PallyWad.Infrastructure.Migrations.SetupDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("Documents", (string)null);
+                    b.ToTable("Documents");
                 });
 
             modelBuilder.Entity("PallyWad.Domain.Interest", b =>
@@ -180,7 +183,7 @@ namespace PallyWad.Infrastructure.Migrations.SetupDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("Interests", (string)null);
+                    b.ToTable("Interests");
                 });
 
             modelBuilder.Entity("PallyWad.Domain.LoanSetup", b =>
@@ -269,7 +272,7 @@ namespace PallyWad.Infrastructure.Migrations.SetupDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("LoanSetups", (string)null);
+                    b.ToTable("LoanSetups");
                 });
 
             modelBuilder.Entity("PallyWad.Domain.NumbComp", b =>
@@ -296,7 +299,7 @@ namespace PallyWad.Infrastructure.Migrations.SetupDb
 
                     b.HasKey("code", "component");
 
-                    b.ToTable("NumbComps", (string)null);
+                    b.ToTable("NumbComps");
                 });
 
             modelBuilder.Entity("PallyWad.Domain.NumbCompOrder", b =>
@@ -327,7 +330,7 @@ namespace PallyWad.Infrastructure.Migrations.SetupDb
 
                     b.HasKey("productname", "position");
 
-                    b.ToTable("NumbCompOrders", (string)null);
+                    b.ToTable("NumbCompOrders");
                 });
 
             modelBuilder.Entity("PallyWad.Domain.Product", b =>
@@ -357,7 +360,7 @@ namespace PallyWad.Infrastructure.Migrations.SetupDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("PallyWad.Domain.ProductNo", b =>
@@ -383,7 +386,7 @@ namespace PallyWad.Infrastructure.Migrations.SetupDb
 
                     b.HasKey("component");
 
-                    b.ToTable("ProductNos", (string)null);
+                    b.ToTable("ProductNos");
                 });
 
             modelBuilder.Entity("PallyWad.Domain.ProductTrack", b =>
@@ -409,7 +412,7 @@ namespace PallyWad.Infrastructure.Migrations.SetupDb
 
                     b.HasKey("productname");
 
-                    b.ToTable("ProductTracks", (string)null);
+                    b.ToTable("ProductTracks");
                 });
 
             modelBuilder.Entity("PallyWad.Domain.SMSConfig", b =>
@@ -447,7 +450,7 @@ namespace PallyWad.Infrastructure.Migrations.SetupDb
 
                     b.HasKey("configname");
 
-                    b.ToTable("SMSConfigs", (string)null);
+                    b.ToTable("SMSConfigs");
                 });
 
             modelBuilder.Entity("PallyWad.Domain.SmtpConfig", b =>
@@ -491,7 +494,7 @@ namespace PallyWad.Infrastructure.Migrations.SetupDb
 
                     b.HasKey("configname");
 
-                    b.ToTable("SmtpConfigs", (string)null);
+                    b.ToTable("SmtpConfigs");
                 });
 #pragma warning restore 612, 618
         }

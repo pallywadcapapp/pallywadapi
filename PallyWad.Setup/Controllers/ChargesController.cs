@@ -9,25 +9,24 @@ namespace PallyWad.Setup.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DocumentsController : ControllerBase
+    public class ChargesController : ControllerBase
     {
-
-        private readonly ILogger<DocumentsController> _logger;
-        private readonly IDocumentService _documentService;
+        private readonly IChargesService _chargesService;
+        private readonly ILogger<ChargesController> _logger;
         private readonly IMapper _mapper;
-
-        public DocumentsController(ILogger<DocumentsController> logger, IDocumentService documentService, IMapper mapper)
+        public ChargesController(IChargesService chargesService, ILogger<ChargesController> logger, IMapper mapper)
         {
             _logger = logger;
-            _documentService = documentService;
             _mapper = mapper;
+            _chargesService = chargesService;
         }
+
 
         #region Get
         [HttpGet]
         public IActionResult Get()
         {
-            var result = _documentService.GetAllDocument();
+            var result = _chargesService.GetAllCharges();
             return Ok(result);
         }
 
@@ -35,7 +34,7 @@ namespace PallyWad.Setup.Controllers
         [Route("all")]
         public IActionResult GetAll()
         {
-            var result = _documentService.ListAllDocument();
+            var result = _chargesService.ListAllCharges();
             //var result = _mapper.Map<SetupDto>(Documents);
             return Ok(result);
         }
@@ -43,17 +42,17 @@ namespace PallyWad.Setup.Controllers
         #endregion
 
         #region Post
-        [HttpPost(nameof(Document))]
-        public IActionResult Post(SetupDto events)
+        [HttpPost(nameof(Charges))]
+        public IActionResult Post(InterestDto events)
         {
 
             try
             {
                 if (events != null)
                 {
-                    var document = _mapper.Map<Document>(events);
-                    _documentService.AddDocument(document);
-                    return Ok(new { status = "success", message = $"Document {document.name} Created Successfully" });
+                    var charges = _mapper.Map<Charges>(events);
+                    _chargesService.AddCharge(charges);
+                    return Ok(new { status = "success", message = $"Charges {charges.shortname} Created Successfully" });
                 }
                 else
                 {
@@ -71,15 +70,15 @@ namespace PallyWad.Setup.Controllers
 
         #region Put
         [HttpPut(nameof(Document))]
-        public IActionResult Put(SetupDto events)
+        public IActionResult Put(InterestDto events)
         {
             try
             {
                 if (events != null)
                 {
-                    var document = _mapper.Map<Document>(events);
-                    _documentService.UpdateDocument(document);
-                    return Ok(new { status = "success", message = $"Document {document.name} Updated Successfully" });
+                    var charges = _mapper.Map<Charges>(events);
+                    _chargesService.UpdateCharge(charges);
+                    return Ok(new { status = "success", message = $"Charges {charges.shortname} Updated Successfully" });
                 }
                 else
                 {
@@ -95,5 +94,4 @@ namespace PallyWad.Setup.Controllers
 
         #endregion
     }
-
 }

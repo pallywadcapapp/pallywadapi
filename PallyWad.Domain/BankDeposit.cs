@@ -26,5 +26,6 @@ namespace PallyWad.Domain
         public DateTime? approvalDate { get; set; }
         public string approvedBy { get; set; }
         public string postedBy { get; set; }
+        public string channel { get; set; }
     }
 }
