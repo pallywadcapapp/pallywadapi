@@ -29,8 +29,8 @@ namespace PallyWad.Domain
         public double? monthlnetsalary { get; set; }
         public string status { get; set; }
         public string processState { get; set; }
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public DateTime requestDate { get; set; }
+        //[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public DateTime requestDate { get; set; } = DateTime.Now;
         public DateTime? approvalDate { get; set; }
         public string approvedBy { get; set; }
         public string postedBy { get; set; }

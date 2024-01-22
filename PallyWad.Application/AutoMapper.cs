@@ -24,7 +24,7 @@ namespace PallyWad.Application
             CreateMap<LoanRequestDto, LoanRequest>().ReverseMap();
             CreateMap<AcctypeDto, AccType>().ReverseMap();
             CreateMap<InterestDto, Interest>().ReverseMap();
-            CreateMap<InterestDto, Charges>().ReverseMap();
+            CreateMap<ChargesDto, Charges>().ReverseMap();
 
         }
     }

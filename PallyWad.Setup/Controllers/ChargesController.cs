@@ -43,7 +43,7 @@ namespace PallyWad.Setup.Controllers
 
         #region Post
         [HttpPost(nameof(Charges))]
-        public IActionResult Post(InterestDto events)
+        public IActionResult Post(ChargesDto events)
         {
 
             try

@@ -66,6 +66,51 @@ namespace PallyWad.AdminApi.Controllers
             return Ok(new Response { Status = "success", Message = result });
         }
 
+        [HttpGet]
+        [Route("PendingLoanRequests")]
+        public IActionResult GetPendingLoanRequests()
+        {
+            var member = _loanRequestService.GetAllPendingLoanRequests().OrderByDescending(u => u.requestDate).OrderByDescending(u => u.status);
+            return Ok(member);
+
+        }
+
+        [HttpGet]
+        [Route("DeclinedLoanRequests")]
+        public IActionResult GetDeclinedLoanRequests()
+        {
+            var member = _loanRequestService.GetAllDeclinedLoanRequests().OrderByDescending(u => u.requestDate).OrderByDescending(u => u.status);
+            return Ok(member);
+
+        }
+
+        [HttpGet]
+        [Route("ApprovedLoanRequests")]
+        public IActionResult GetApprovedLoanRequests()
+        {
+            var member = _loanRequestService.GetAllApprovedLoanRequests().OrderByDescending(u => u.requestDate).OrderByDescending(u => u.status);
+            return Ok(member);
+
+        }
+
+        [HttpGet]
+        [Route("ProcessedLoanRequests")]
+        public IActionResult GetProcessedLoanRequests()
+        {
+            var member = _loanRequestService.GetAllProcessedLoanRequests().OrderByDescending(u => u.requestDate).OrderByDescending(u => u.status);
+            return Ok(member);
+
+        }
+
+        [HttpGet]
+        [Route("UnProcessedLoanRequests")]
+        public IActionResult GetUnProcessedLoanRequests()
+        {
+            var member = _loanRequestService.GetAllUnProcessedLoanRequests().OrderBy(u => u.requestDate).OrderByDescending(u => u.status);
+            return Ok(member);
+
+        }
+
         #endregion
 
         #region Post

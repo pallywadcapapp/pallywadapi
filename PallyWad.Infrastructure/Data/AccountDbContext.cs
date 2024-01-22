@@ -41,9 +41,10 @@ namespace PallyWad.Infrastructure.Data
         public virtual DbSet<GLAccount> GLAccounts { get; set; }
         public virtual DbSet<GLAccountBase> GLAccountBases { get; set; }
         public virtual DbSet<GLAccountB> GLAccountBs { get; set; }
-        public virtual DbSet<GLAccountC> GetGLAccountCs { get; set; }
+        public virtual DbSet<GLAccountC> GLAccountCs { get; set; }
         public virtual DbSet<Journal> Journals { get; set; }
         public virtual DbSet<Payment> Payments { get; set; }
+        public virtual DbSet<AccountBase> AccountBases { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -63,6 +64,9 @@ namespace PallyWad.Infrastructure.Data
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 
             modelBuilder.Entity<Journal>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
+            modelBuilder.Entity<AccountBase>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 
             modelBuilder.Entity<Payment>().Property(u => u.Id)

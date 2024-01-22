@@ -508,7 +508,7 @@ namespace PallyWad.Auth.Controllers
                 var token = await _userManager.GenerateUserTokenAsync(
                 user, "PasswordlessLoginTotpProvider", "passwordless-auth");
                 _redisCacheService.SetData<AppIdentityUser>(username, user, expirationTime);
-                SendEmailToken(user, mailConfig, token);
+                await SendEmailToken(user, mailConfig, token);
                 return Ok(new Response() { Status = "success", Message = token });
             }
             else

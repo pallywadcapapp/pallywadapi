@@ -29,23 +29,10 @@ namespace PallyWad.Services
             Save();
         }
 
-        public void AddGlAccount(GLAccountBase glAccount, string _tenantId)
-        {
-            _glAccountRepository.Add(glAccount);
-            Save();
-        }
-
         public List<GLAccountBase> GetAllGlAccounts()
         {
             var parameters = new DynamicParameters();
             //parameters.Add("@tenantId", tenantId);
-
-            var result = _glAccountRepository.FindAll().ToList();
-            return result;
-        }
-
-        public List<GLAccountBase> GetAllGlAccounts(string _tenantId)
-        {
 
             var result = _glAccountRepository.FindAll().ToList();
             return result;
@@ -59,6 +46,11 @@ namespace PallyWad.Services
         public GLAccountBase GetGlAccountByName(string name)
         {
             return _glAccountRepository.Get(x => x.shortdesc == name);
+        }
+
+        public GLAccountBase GetGlAccountByAcc(string gl)
+        {
+            return _glAccountRepository.Get(x => x.accountno == gl);
         }
 
         public void Save()
@@ -78,6 +70,7 @@ namespace PallyWad.Services
         void AddGlAccount(GLAccountBase GlAccount);
         List<GLAccountBase> GetAllGlAccounts();
         GLAccountBase GetGlAccountByName(string name);
+        GLAccountBase GetGlAccountByAcc(string gl);
         GLAccountBase GetGlAccount(string id);
         void Save();
         void UpdateGlAccount(GLAccountBase GlAccount);

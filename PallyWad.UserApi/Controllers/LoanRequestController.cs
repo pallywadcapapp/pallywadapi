@@ -89,7 +89,7 @@ namespace PallyWad.UserApi.Controllers
 
         #region Post
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         public async Task<IActionResult> Post(LoanRequestDto _loanRequest)
         {
             var princ = HttpContext.User;
@@ -129,6 +129,11 @@ namespace PallyWad.UserApi.Controllers
             loanRequest.requestDate = DateTime.Now;
             loanRequest.category = ltype.category;
             loanRequest.postedBy = memberId;
+                loanRequest.approvedBy = "";
+                loanRequest.bankaccountno = "";
+                loanRequest.bankname = "";
+                loanRequest.bvn = "";
+                loanRequest.processingFee = 0;
                 loanRequest.collateralId = _loanRequest.collateralRefId;
 
             _loanRequestService.AddLoanRequest(loanRequest);

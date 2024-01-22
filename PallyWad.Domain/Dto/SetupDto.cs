@@ -31,4 +31,13 @@ namespace PallyWad.Domain.Dto
 
         public string shortname { get; set; }
     }
+    public class ChargesDto{
+        public string chargecode { get; set; }
+
+        public string chargedesc { get; set; }
+
+        public string accountno { get; set; }
+
+        public string shortname { get; set; }
+    }
 }
