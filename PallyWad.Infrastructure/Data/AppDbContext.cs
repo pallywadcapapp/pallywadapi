@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
+using PallyWad.Infrastructure.EntityConfig;
 
 namespace PallyWad.Infrastructure.Data
 {
@@ -42,6 +44,8 @@ namespace PallyWad.Infrastructure.Data
         public virtual DbSet<UserDocument> UserDocuments { get; set; }
         public virtual DbSet<UserCollateral> UserCollaterals { get; set; }
         public virtual DbSet<LoanRequest> LoanRequests { get; set; }
+        public virtual DbSet<LoanUserCollateral> LoanUserCollaterals { get; set; }
+        public virtual DbSet<LoanUserDocument> LoanUserDocuments { get; set; }
         public virtual DbSet<BankDeposit> BankDeposits { get; set; }
         public virtual DbSet<LoanRepayment> LoanRepayments { get; set; }
         public virtual DbSet<LoanTrans> LoanTrans { get; set; }
@@ -67,6 +71,9 @@ namespace PallyWad.Infrastructure.Data
 
             modelBuilder.Entity<LoanTrans>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
+            modelBuilder.ApplyConfiguration(new LoanRequestConfiguration());
+            //modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
     }
 }

@@ -40,28 +40,23 @@ namespace PallyWad.Services
             //return _LoanCollateralRepository.Query<LoanCollateralS>("ListAllLoanCollateral", parameters);
         }
 
-        public List<LoanCollateral> ListCollateralHistory(string memberId)
+        public LoanCollateral GetLoanCollateral(int id)
         {
-            return _loanCollateralRepository.FindAll().Where(x => x.memberid == memberId)
-            //.Where(u=>u.Repay == 1)
-            //.OrderByDescending(x=>x.Transdate)
-            .ToList();
-        }
-        public LoanCollateral GetLoanCollateral(string id)
-        {
-            return _loanCollateralRepository.Get(x => x.loancode == id);
+            var result = _loanCollateralRepository.FindAll().Where(u => u.Id == id).FirstOrDefault();
+            return result;
         }
 
-        public LoanCollateral GetLoanCollateralByRef(string id)
+        public List<LoanCollateral> ListCollateral(string collateraId)
         {
-          
-            return _loanCollateralRepository.Get(x => x.loanrefnumber == id);
+            var result = _loanCollateralRepository.FindAll().Where(u => u.collateralId == collateraId).ToList();
+            return result;
         }
 
-        public LoanCollateral GetLoanCollateralByMemberId(string id)
-        {
-            return _loanCollateralRepository.FindAll().Where(x => x.memberid == id).OrderByDescending(x => x.transdate).FirstOrDefault();
-        }
+        //public List<LoanCollateral> ListLoan(string loanId)
+        //{
+        //    var result = _loanCollateralRepository.FindAll().Where(u => u.loanId == loanId).ToList();
+        //    return result;
+        //}
 
         public void Save()
         {
@@ -79,11 +74,9 @@ namespace PallyWad.Services
     public interface ILoanCollateralService
     {
         void AddLoanCollateral(LoanCollateral LoanCollateral);
-        List<LoanCollateral> GetAllLoanCollateral();
-        LoanCollateral GetLoanCollateralByMemberId(string id);
-        List<LoanCollateral> ListCollateralHistory(string memberId);
-        LoanCollateral GetLoanCollateral(string id);
-        LoanCollateral GetLoanCollateralByRef(string id);
+        //List<LoanCollateral> ListLoan(string loanId);
+        List<LoanCollateral> ListCollateral(string collateralId);
+        LoanCollateral GetLoanCollateral(int id);
         void Save();
         void UpdateLoanCollateral(LoanCollateral LoanCollateral);
     }

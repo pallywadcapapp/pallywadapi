@@ -26,13 +26,14 @@ namespace PallyWad.AdminApi.Controllers
         private readonly IChargesService _chargesService;
         private readonly GLPostingRepository gLPostingRepository;
         private readonly IMapper _mapper;
-        private readonly ILoanCollateralService _loanCollateralService;
+        //private readonly ILoanCollateralService _loanCollateralService;
         private readonly IGlAccountTier3Service _glAccountTier3Service;
 
         public LoanRequestController(IHttpContextAccessor contextAccessor, ILogger<LoanRequestController> logger,
             ILoanSetupService loanSetupService, ILoanRequestService loanRequestService, IMembersAccountService membersAccountService,
             IGlAccountService glAccountService, IUserService userService, IGlAccountTransService glAccountTransService,
-            ILoanTransService loanTransService, IChargesService chargesService, IMapper mapper, ILoanCollateralService loanCollateralService,
+            ILoanTransService loanTransService, IChargesService chargesService, IMapper mapper, 
+            //ILoanCollateralService loanCollateralService,
             IGlAccountTier3Service glAccountTier3Service)
         {
             _contextAccessor = contextAccessor;
@@ -47,7 +48,7 @@ namespace PallyWad.AdminApi.Controllers
             _chargesService = chargesService;
             gLPostingRepository = new GLPostingRepository(_glAccountTransService);
             _mapper = mapper;
-            _loanCollateralService = loanCollateralService;
+            //_loanCollateralService = loanCollateralService;
             _glAccountTier3Service = glAccountTier3Service;
         }
 
@@ -109,6 +110,16 @@ namespace PallyWad.AdminApi.Controllers
             var member = _loanRequestService.GetAllUnProcessedLoanRequests().OrderBy(u => u.requestDate).OrderByDescending(u => u.status);
             return Ok(member);
 
+        }
+
+        //[Authorize]
+        [HttpGet]
+        [Route("loandetail")]
+        public IActionResult GetLoanDetail(string loadId)
+        {
+            var _result = _loanRequestService.GetAllLoanRequests();
+            var result = _result.Where(u => u.loanId == loadId).FirstOrDefault();
+            return Ok(result);
         }
 
         #endregion

@@ -30,6 +30,7 @@ namespace PallyWad.UserApi.Controllers
         private readonly IMailService _mailService;
         private readonly IUserService _userService;
 
+
         public LoanRequestController(ILogger<LoanRequestController> logger, IHttpContextAccessor contextAccessor,
             ILoanRequestService loanRequestService, IMapper mapper, ILoanSetupService loanSetupService, IConfiguration configuration,
             ISmtpConfigService smtpConfigService,IMailService mailService, IUserService userService)
@@ -54,6 +55,13 @@ namespace PallyWad.UserApi.Controllers
             var princ = HttpContext.User;
             var memberId = princ.Identity.Name;
             var result = _loanRequestService.GetLoanRequests(memberId).OrderByDescending(u => u.requestDate);
+            return Ok(result);
+        }
+
+        [HttpGet("loantypes")]
+        public IActionResult GetLoanType(int id)
+        {
+            var result = _loanSetupService.GetAllLoanSetups();
             return Ok(result);
         }
 

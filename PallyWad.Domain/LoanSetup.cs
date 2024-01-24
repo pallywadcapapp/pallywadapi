@@ -45,5 +45,7 @@ namespace PallyWad.Domain
         public string category { get; set; }
         //public bool enforceGuarantor { get; set; }
         public int repayOrder { get; set; }
+        public virtual ICollection<LoanDocument> LoanDocuments { get; set; }
+        public virtual ICollection<LoanCollateral> LoanCollaterals { get; set; }
     }
 }

@@ -8,7 +8,11 @@ namespace PallyWad.Domain
 {
     public class LoanCollateral: BaseModel
     {
-        public string refnumber { get; set; }
+        public int LoanSetupId { get; set; }
+        public string collateralId { get; set; }
+        public virtual LoanSetup loanSetup { get; set; }
+
+        /*public string refnumber { get; set; }
 
         public DateTime? transdate { get; set; }
 
@@ -26,6 +30,6 @@ namespace PallyWad.Domain
 
         public string loanrefnumber { get; set; }
 
-        public byte? Repay { get; set; }
+        public byte? Repay { get; set; }*/
     }
 }

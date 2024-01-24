@@ -59,7 +59,7 @@ namespace PallyWad.Infrastructure.Data
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 
             builder.ApplyConfiguration(new UserConfiguration());
-            builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            //builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
             base.OnModelCreating(builder);
         }

@@ -39,5 +39,7 @@ namespace PallyWad.Domain
         public string category { get; set; }
         public double processingFee { get; set; }
         public string collateralId { get; set; }
+        public virtual ICollection<LoanUserCollateral> loanUserCollaterals { get; set; }
+        public virtual ICollection<LoanUserDocument> loanUserDocuments { get; set; }
     }
 }

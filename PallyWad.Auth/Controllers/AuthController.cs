@@ -193,6 +193,7 @@ namespace PallyWad.Auth.Controllers
                 othernames = model.othernames,
                 type = model.type,
                 PhoneNumber = model.phoneNo,
+                EmailConfirmed = true,
                 //UserProfile = {},
                 sex = ""
             };
@@ -232,7 +233,7 @@ namespace PallyWad.Auth.Controllers
                 }
             }
 
-            await SendRegEmail(user, model, mailConfig, "register");
+            //await SendRegEmail(user, model, mailConfig, "register");
             return Ok(new Response { Status = "Success", Message = "User created successfully!" });
         }
 

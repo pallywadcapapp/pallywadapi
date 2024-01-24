@@ -3,9 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
 using PallyWad.Domain;
+using PallyWad.Infrastructure.EntityConfig;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -43,6 +45,8 @@ namespace PallyWad.Infrastructure.Data
         public virtual DbSet<Collateral> Collaterals { get; set; }
         public virtual DbSet<Document> Documents { get; set; }
         public virtual DbSet<LoanSetup> LoanSetups { get; set; }
+        public virtual DbSet<LoanCollateral> LoanCollaterals { get; set; }
+        public virtual DbSet<LoanDocument> LoanDocuments { get; set; }
         public virtual DbSet<Charges> Charges { get; set; }
         public virtual DbSet<Interest> Interests { get; set; }
         public virtual DbSet<ProductTrack> ProductTracks { get; set; }
@@ -88,6 +92,9 @@ namespace PallyWad.Infrastructure.Data
 
             modelBuilder.Entity<NumbCompOrder>()
          .HasKey(m => new { m.productname, m.position });
+
+            modelBuilder.ApplyConfiguration(new LoanSetupConfiguration());
+            //modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
     }
 }

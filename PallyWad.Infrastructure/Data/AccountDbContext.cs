@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
+using PallyWad.Infrastructure.EntityConfig;
 
 namespace PallyWad.Infrastructure.Data
 {
@@ -71,6 +73,8 @@ namespace PallyWad.Infrastructure.Data
 
             modelBuilder.Entity<Payment>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
+            //modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
     }
 }

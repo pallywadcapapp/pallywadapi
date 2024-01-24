@@ -14,6 +14,7 @@ namespace PallyWad.Domain
         public string lastname { get; set; }
         public string othernames { get; set; }
         public string? sex { get; set; }
+        public string? employmentStatus { get; set; }
         public string type { get; set; }
         public virtual ICollection<MemberAccount> account { get; set; }
         //[JsonIgnore]

@@ -87,5 +87,6 @@ namespace PallyWad.Services
         void DeleteUserDocument(UserDocument userDocument);
         void UpdateUserDocument(UserDocument userDocument);
         UserDocument GetUserDocumentById(int id);
+        //List<UserDocument> ListUserDocuments(string username);
     }
 }

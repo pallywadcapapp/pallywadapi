@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.Extensions.DependencyInjection;
 using PallyWad.Domain;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,7 @@ namespace PallyWad.Infrastructure.EntityConfig
            .WithOne(a => a.AppIdentityUser)
            .HasForeignKey<UserProfile>(c => c.memberid);*/
 
+            builder.ToTable("AspNetUsers");
             builder
             .HasMany(a => a.account)
             .WithOne(a => a.member);
