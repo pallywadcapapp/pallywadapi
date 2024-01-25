@@ -32,6 +32,15 @@ namespace PallyWad.Setup.Controllers
         }
 
         [HttpGet]
+        [Route("type")]
+        public IActionResult GetDocType()
+        {
+            string[] result = ["Address","Identity"];
+            //var result = _mapper.Map<SetupDto>(Documents);
+            return Ok(result);
+        }
+
+        [HttpGet]
         [Route("all")]
         public IActionResult GetAll()
         {

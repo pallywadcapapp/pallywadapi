@@ -64,7 +64,7 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
 
                     b.HasKey("filename");
 
-                    b.ToTable("AppUploadedFiles");
+                    b.ToTable("AppUploadedFiles", (string)null);
                 });
 
             modelBuilder.Entity("PallyWad.Domain.BankDeposit", b =>
@@ -136,7 +136,7 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("BankDeposits");
+                    b.ToTable("BankDeposits", (string)null);
                 });
 
             modelBuilder.Entity("PallyWad.Domain.LoanRepayment", b =>
@@ -196,7 +196,7 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("LoanRepayments");
+                    b.ToTable("LoanRepayments", (string)null);
                 });
 
             modelBuilder.Entity("PallyWad.Domain.LoanRequest", b =>
@@ -302,7 +302,7 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("LoanRequests");
+                    b.ToTable("LoanRequests", (string)null);
                 });
 
             modelBuilder.Entity("PallyWad.Domain.LoanTrans", b =>
@@ -402,7 +402,7 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("LoanTrans");
+                    b.ToTable("LoanTrans", (string)null);
                 });
 
             modelBuilder.Entity("PallyWad.Domain.LoanUserCollateral", b =>
@@ -430,7 +430,7 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
 
                     b.HasIndex("loanRequestId");
 
-                    b.ToTable("LoanUserCollaterals");
+                    b.ToTable("LoanUserCollaterals", (string)null);
                 });
 
             modelBuilder.Entity("PallyWad.Domain.LoanUserDocument", b =>
@@ -458,7 +458,7 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
 
                     b.HasIndex("loanRequestId");
 
-                    b.ToTable("LoanUserDocuments");
+                    b.ToTable("LoanUserDocuments", (string)null);
                 });
 
             modelBuilder.Entity("PallyWad.Domain.UserCollateral", b =>
@@ -513,7 +513,7 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserCollaterals");
+                    b.ToTable("UserCollaterals", (string)null);
                 });
 
             modelBuilder.Entity("PallyWad.Domain.UserDocument", b =>
@@ -558,7 +558,7 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserDocuments");
+                    b.ToTable("UserDocuments", (string)null);
                 });
 
             modelBuilder.Entity("PallyWad.Domain.LoanUserCollateral", b =>

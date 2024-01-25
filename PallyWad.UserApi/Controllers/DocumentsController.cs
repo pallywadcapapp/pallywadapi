@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using PallyWad.Domain;
 using PallyWad.Domain.Dto;
 using PallyWad.Services;
+using System.Collections.Generic;
 
 namespace PallyWad.UserApi.Controllers
 {
@@ -16,13 +17,15 @@ namespace PallyWad.UserApi.Controllers
         private readonly ILogger<DocumentsController> _logger;
         private readonly IUserDocumentService _userDocumentService;
         private readonly IAppUploadedFilesService _appUploadedFilesService;
+        private readonly IDocumentService _documentService;
         public DocumentsController(ILogger<DocumentsController> logger, IConfiguration configuration,
-            IUserDocumentService userDocumentService, IAppUploadedFilesService appUploadedFilesService)
+            IUserDocumentService userDocumentService, IAppUploadedFilesService appUploadedFilesService, IDocumentService documentService)
         {
             _logger = logger;
             _userDocumentService = userDocumentService;
             _config = configuration;
             _appUploadedFilesService = appUploadedFilesService;
+            _documentService = documentService;
         }
 
         #region Get
@@ -65,6 +68,12 @@ namespace PallyWad.UserApi.Controllers
             var princ = HttpContext.User;
             var memberId = princ.Identity.Name;
 
+            var document = _documentService.GetDocumentByName(userDocument.documentRefId);
+            if (document == null)
+                return BadRequest(new Response { Status = "error", Message = "document type not found" });
+            if (memberId == null)
+                return Unauthorized(new Response { Status = "error", Message = "Token Expired" });
+
             foreach (var formFile in files)
             {
                 if (formFile.Length > 0)
@@ -74,7 +83,7 @@ namespace PallyWad.UserApi.Controllers
                     string extension = Path.GetExtension(dataFileName);
 
 
-                    string[] allowedExtsnions = new string[] { ".png", ".jpg", "jpeg" };
+                    string[] allowedExtsnions = new string[] { ".png", ".jpg", ".jpeg" };
                     if (!allowedExtsnions.Contains(extension))
                     {
                         status.Add("Invalid File " + dataFileName + " for upload");
@@ -83,14 +92,25 @@ namespace PallyWad.UserApi.Controllers
                     {
 
                         var filename = Path.GetRandomFileName() + Path.GetExtension(formFile.FileName);
+                        string dirPath = Path.Combine(_config["StoredFilesPath"]);
                         var filePath = Path.Combine(_config["StoredFilesPath"], filename);
+                        if (!Directory.Exists(dirPath))
+                        {
+                            Directory.CreateDirectory(dirPath);
+                        }
                         filenames.Add(filename);
                         status.Add("File " + dataFileName + " valid for upload");
-                        using (var stream = System.IO.File.Create(filePath))
+                        /*using (FileStream stream = new FileStream(filePath, FileMode.Create))
                         {
                             await formFile.CopyToAsync(stream);
                             saveUpload(filename, filePath, memberId, Path.GetExtension(formFile.FileName));
                             saveUserDocumentUploads(userDocument.documentNo, filename, userDocument.documentRefId, userDocument.expiryDate, filePath, memberId);
+                        }*/
+                        using (var stream = System.IO.File.Create(filePath))
+                        {
+                            await formFile.CopyToAsync(stream);
+                            saveUpload(filename, filePath, memberId, Path.GetExtension(formFile.FileName));
+                            saveUserDocumentUploads(userDocument.documentNo, document.type, userDocument.documentRefId, userDocument.expiryDate, filePath, memberId);
                         }
                     }
                 }
@@ -146,12 +166,12 @@ namespace PallyWad.UserApi.Controllers
     public class UserDocumentFileDto
     {
         public string documentRefId { get; set; }
-        public string userId { get; set; }
-        public string name { get; set; }
-        public string url { get; set; }
+        //public string userId { get; set; }
+        //public string name { get; set; }
+        //public string url { get; set; }
         public string documentNo { get; set; }
         public DateTime expiryDate { get; set; }
-        public bool status { get; set; }
+        //public bool status { get; set; }
         public List<IFormFile> file { get; set; }
     }
 

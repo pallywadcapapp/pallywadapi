@@ -44,6 +44,11 @@ namespace PallyWad.Services
             return ListAllDocument().Where(u => u.name == name).FirstOrDefault();
         }
 
+        public Document GetDocumentById(int id)
+        {
+            return ListAllDocument().Where(u => u.Id == id).FirstOrDefault();
+        }
+
         public List<Document> ListAllDocument()
         {
             var result = _documentRepository.FindAll().ToList();
@@ -71,5 +76,6 @@ namespace PallyWad.Services
         void DeleteDocument(Document document);
         void UpdateDocument(Document document);
         Document GetDocumentByName(string name);
+        Document GetDocumentById(int id);
     }
 }

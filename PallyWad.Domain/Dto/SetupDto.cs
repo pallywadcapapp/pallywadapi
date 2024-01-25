@@ -10,6 +10,7 @@ namespace PallyWad.Domain.Dto
     {
         public string name { get; set; }
         public bool status { get; set; }
+        public string type { get; set; }
         public string description { get; set; }
     }
 

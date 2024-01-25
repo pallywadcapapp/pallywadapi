@@ -14,13 +14,15 @@ namespace PallyWad.UserApi.Controllers
         private readonly ILogger<CollateralController> _logger;
         private readonly IUserCollateralService _userCollateralService;
         private readonly IAppUploadedFilesService _appUploadedFilesService;
+        private readonly ICollateralService _collateralService;
         public CollateralController(ILogger<CollateralController> logger, IConfiguration configuration,
-            IUserCollateralService userCollateralService, IAppUploadedFilesService appUploadedFilesService)
+            IUserCollateralService userCollateralService, IAppUploadedFilesService appUploadedFilesService, ICollateralService collateralService)
         {
             _logger = logger;
             _userCollateralService = userCollateralService;
             _config = configuration;
             _appUploadedFilesService = appUploadedFilesService;
+            _collateralService = collateralService;
         }
 
         #region Get
@@ -60,8 +62,15 @@ namespace PallyWad.UserApi.Controllers
             long size = files.Sum(f => f.Length);
             List<string> filenames = new List<string>();
             List<string> status = new List<string>();
+
             var princ = HttpContext.User;
-            var memberId = princ.Identity.Name;
+            var memberId = princ.Identity.Name; 
+
+            var collateral = _collateralService.GetCollateralByName(userCollateral.collateralRefId);
+            if (collateral == null)
+                return BadRequest(new Response { Status = "error", Message = "collateral type not found" });
+            if (memberId == null)
+                return Unauthorized(new Response { Status = "error", Message = "Token Expired" });
 
             foreach (var formFile in files)
             {
@@ -81,7 +90,13 @@ namespace PallyWad.UserApi.Controllers
                     {
 
                         var filename = Path.GetRandomFileName() + Path.GetExtension(formFile.FileName);
+                        string dirPath = Path.Combine(_config["StoredFilesPath"]);
                         var filePath = Path.Combine(_config["StoredFilesPath"], filename);
+                        if (!Directory.Exists(dirPath))
+                        {
+                            Directory.CreateDirectory(dirPath);
+                        }
+
                         filenames.Add(filename);
                         status.Add("File " + dataFileName + " valid for upload");
                         using (var stream = System.IO.File.Create(filePath))
@@ -147,9 +162,9 @@ namespace PallyWad.UserApi.Controllers
         public class UserCollateralFileDto
         {
             public string collateralRefId { get; set; }
-            public string userId { get; set; }
-            public string name { get; set; }
-            public string url { get; set; }
+            //public string userId { get; set; }
+            //public string name { get; set; }
+            //public string url { get; set; }
             public string collateralNo { get; set; }
             public double estimatedValue { get; set; }
             public bool status { get; set; }

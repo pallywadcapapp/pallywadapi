@@ -20,9 +20,9 @@ namespace PallyWad.Domain
 
         public bool loanrequire { get; set; }
 
-        public string sharecode { get; set; }
+        //public string sharecode { get; set; }
 
-        public string savingscode { get; set; }
+        //public string savingscode { get; set; }
 
         public string interestcode { get; set; }
 
@@ -43,7 +43,8 @@ namespace PallyWad.Domain
         //public string collateral { get; set; }
         public bool request_while_running { get; set; }
         public string category { get; set; }
-        //public bool enforceGuarantor { get; set; }
+        public int? age { get; set; }
+        public double collateralPercentage { get; set; }
         public int repayOrder { get; set; }
         public virtual ICollection<LoanDocument> LoanDocuments { get; set; }
         public virtual ICollection<LoanCollateral> LoanCollaterals { get; set; }

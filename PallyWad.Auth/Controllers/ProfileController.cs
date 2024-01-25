@@ -56,8 +56,8 @@ namespace PallyWad.Auth.Controllers
             {
                 return Ok(new Response { Status = "success", Message = "update phone number profile" });
             }
-            var isValidID = hasDocument(username, "Valid ID");
-            var isValidAddress = hasDocument(username, "Valid Address");
+            var isValidID = hasDocument(username, "Identity");
+            var isValidAddress = hasDocument(username, "Address");
             if(isValidID == false || isValidAddress == false)
             {
                 return Ok(new Response { Status = "success", Message = "upload all required documents profile" });
