@@ -12,6 +12,7 @@ using PallyWad.Domain;
 using PallyWad.Domain.Dto;
 using PallyWad.Domain.Entities;
 using PallyWad.Services;
+using System.Linq;
 using System.Security.Claims;
 
 namespace PallyWad.UserApi.Controllers
@@ -29,11 +30,14 @@ namespace PallyWad.UserApi.Controllers
         private readonly ISmtpConfigService _smtpConfigService;
         private readonly IMailService _mailService;
         private readonly IUserService _userService;
+        private readonly IUserDocumentService _userDocumentService;
+        private readonly ILoanUserDocumentService _loanUserDocumentService;
 
 
         public LoanRequestController(ILogger<LoanRequestController> logger, IHttpContextAccessor contextAccessor,
             ILoanRequestService loanRequestService, IMapper mapper, ILoanSetupService loanSetupService, IConfiguration configuration,
-            ISmtpConfigService smtpConfigService,IMailService mailService, IUserService userService)
+            ISmtpConfigService smtpConfigService,IMailService mailService, IUserService userService, IUserDocumentService userDocumentService,
+            ILoanUserDocumentService loanUserDocumentService)
         {
 
             _logger = logger;
@@ -45,6 +49,8 @@ namespace PallyWad.UserApi.Controllers
             _smtpConfigService = smtpConfigService;
             _mailService = mailService;
             _userService = userService;
+            _userDocumentService = userDocumentService;
+            _loanUserDocumentService = loanUserDocumentService;
         }
 
         #region Get
@@ -124,10 +130,14 @@ namespace PallyWad.UserApi.Controllers
                 return BadRequest(new Response { Status = "error", Message = "Invalid Token" });
             }
 
+            
             fullname = $"{user.lastname}, {user.firstname} {user.othernames}";
 
 
             var loanRequest = _mapper.Map<LoanRequest>(_loanRequest);
+
+            var luserdoc = _mapper.Map<List<LoanUserDocument>>(_loanRequest.documentIdRefs);
+
             var ltype = _loanSetupService.GetLoanSetup(loanRequest.loancode);
             if(ltype != null) { 
             loanRequest.loanId = DateTime.Now.ToString("yyyyMMddHHmmssffff");
@@ -142,9 +152,11 @@ namespace PallyWad.UserApi.Controllers
                 loanRequest.bankname = "";
                 loanRequest.bvn = "";
                 loanRequest.processingFee = 0;
-                loanRequest.collateralId = _loanRequest.collateralRefId;
+                loanRequest.collateralId = _loanRequest.collateralRefId[0];
+                loanRequest.loanUserDocuments = luserdoc;
 
             _loanRequestService.AddLoanRequest(loanRequest);
+               // SaveLoanuser(loanRequest.Id.ToString(), luserdoc);
             var mailReq = new MailRequest()
             {
                 Body = "",
@@ -163,6 +175,8 @@ namespace PallyWad.UserApi.Controllers
                 });
             }
         }
+
+        
         #endregion
 
         #region Helper
@@ -194,6 +208,16 @@ namespace PallyWad.UserApi.Controllers
             await _mailService.SendEmailAsync(request, mailConfig, company, body);
             }
 
+        }
+
+        void SaveLoanuser(string loanId, List<LoanUserDocument> loanUserDocuments)
+        {
+            foreach(var u in loanUserDocuments)
+            {
+                u.Id = 0;
+                u.loanRequestId = int.Parse(loanId);
+                _loanUserDocumentService.AddUserDocument(u);
+            }
         }
         #endregion
     }

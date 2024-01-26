@@ -135,6 +135,8 @@ namespace PallyWad.Auth.Controllers
 
                 var authClaims = new List<Claim>
                 {
+                    
+                    new Claim("username", user.UserName),
                     new Claim(ClaimTypes.Name, user.UserName),
                     new Claim("lastname", user.lastname),
                     new Claim("firstname", user.firstname),

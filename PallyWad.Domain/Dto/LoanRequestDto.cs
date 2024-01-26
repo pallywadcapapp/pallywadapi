@@ -12,7 +12,7 @@ namespace PallyWad.Domain.Dto
     {
         //public string loanId { get; set; }
         public string loancode { get; set; }
-        public string collateralRefId { get; set; }
+        public List<string> collateralRefId { get; set; }
         //public string memberId { get; set; }
         [Required]
         public double amount { get; set; }
@@ -26,6 +26,7 @@ namespace PallyWad.Domain.Dto
         //public int? duration { get; set; }
         //public double? loaninterest { get; set; }
         public string category { get; set; }
+        public List<string> documentIdRefs { get; set; }
         //public double processingFee { get; set; }
     }
 }

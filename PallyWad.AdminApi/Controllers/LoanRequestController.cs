@@ -95,6 +95,15 @@ namespace PallyWad.AdminApi.Controllers
         }
 
         [HttpGet]
+        [Route("CollaterizedLoanRequests")]
+        public IActionResult GetCollaterizedLoanRequests()
+        {
+            var member = _loanRequestService.GetAllCollaterizedLoanRequests().OrderByDescending(u => u.requestDate).OrderByDescending(u => u.status);
+            return Ok(member);
+
+        }
+
+        [HttpGet]
         [Route("ProcessedLoanRequests")]
         public IActionResult GetProcessedLoanRequests()
         {

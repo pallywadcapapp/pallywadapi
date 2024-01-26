@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using PallyWad.Domain;
 using PallyWad.Domain.Dto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,6 +27,8 @@ namespace PallyWad.Application
             CreateMap<AcctypeDto, AccType>().ReverseMap();
             CreateMap<InterestDto, Interest>().ReverseMap();
             CreateMap<ChargesDto, Charges>().ReverseMap();
+            CreateMap<string, LoanUserDocument>().ConstructUsing(str => new LoanUserDocument { userDocumentlId = str });
+            //CreateMap<DomainUser, EntityUser>();
 
         }
     }

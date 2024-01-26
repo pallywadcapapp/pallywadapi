@@ -19,6 +19,13 @@ namespace PallyWad.AdminApi.Controllers
 
         #region Get
 
+        [HttpGet()]
+        public IActionResult Get()
+        {
+            var result = _userDocumentService.ListAllUserDocument();
+            return Ok(result);
+        }
+
         [HttpGet("Unapproved")]
         public IActionResult GetUnapproved() {
             var result = _userDocumentService.ListAllUserDocument().Where(u=>u.status == false);

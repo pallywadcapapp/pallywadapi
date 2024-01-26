@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.EntityFrameworkCore;
 using PallyWad.Domain;
 using PallyWad.Services.Attributes;
 using PallyWad.Services.Generics;
@@ -43,7 +44,18 @@ namespace PallyWad.Services
         public List<LoanRequest> GetAllPendingLoanRequests()
         {
 
-            var result = _loanRequestRepository.FindAll().Where(x =>  x.status == "Pending").ToList();
+            var result = _loanRequestRepository.FindAll()
+                .Where(x =>  x.status == "Pending")
+                .Include(u=>u.loanUserDocuments)
+                .ToList();
+            return result;
+            //return _LoanRequestRepository.Query<LoanRequest>("ListAllLoanRequest", parameters);
+        }
+
+        public List<LoanRequest> GetAllCollaterizedLoanRequests()
+        {
+
+            var result = _loanRequestRepository.FindAll().Where(x => x.status == "Collaterized").ToList();
             return result;
             //return _LoanRequestRepository.Query<LoanRequest>("ListAllLoanRequest", parameters);
         }
@@ -120,6 +132,7 @@ namespace PallyWad.Services
         LoanRequest GetLoanRequest(int id);
         List<LoanRequest> GetLoanRequests(string memberid);
         List<LoanRequest> GetAllApprovedLoanRequests();
+        List<LoanRequest> GetAllCollaterizedLoanRequests();
         List<LoanRequest> GetAllDeclinedLoanRequests();
         List<LoanRequest> GetAllPendingLoanRequests();
         List<LoanRequest> GetAllProcessedLoanRequests();
