@@ -97,6 +97,21 @@ namespace PallyWad.Auth.Controllers
             }
         }
 
+        [Authorize]
+        [HttpPost("unlock")]
+        public async Task<IActionResult> Unlock([FromBody] LoginModel model)
+        {
+            var user = await _userManager.FindByNameAsync(model.Username);
+            if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
+            {
+                return Ok(true);
+            }
+            else
+            {
+                return BadRequest(false);
+            }
+        }
+
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)

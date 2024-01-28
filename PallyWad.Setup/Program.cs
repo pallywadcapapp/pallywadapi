@@ -25,6 +25,9 @@ builder.Services.AddDbContext<AccountDbContext>(options => options.UseSqlServer(
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 //builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork<SetupDbContext>>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork<AppIdentityDbContext>>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork<AccountDbContext>>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork<AppDbContext>>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());

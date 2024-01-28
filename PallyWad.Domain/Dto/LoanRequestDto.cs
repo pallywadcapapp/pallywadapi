@@ -25,7 +25,7 @@ namespace PallyWad.Domain.Dto
         //public string postedBy { get; set; }
         //public int? duration { get; set; }
         //public double? loaninterest { get; set; }
-        public string category { get; set; }
+        public string? category { get; set; }
         public List<string> documentIdRefs { get; set; }
         //public double processingFee { get; set; }
     }

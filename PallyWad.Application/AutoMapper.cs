@@ -28,7 +28,9 @@ namespace PallyWad.Application
             CreateMap<InterestDto, Interest>().ReverseMap();
             CreateMap<ChargesDto, Charges>().ReverseMap();
             CreateMap<string, LoanUserDocument>().ConstructUsing(str => new LoanUserDocument { userDocumentlId = str });
-            //CreateMap<DomainUser, EntityUser>();
+            CreateMap<LoanSetupDto, LoanSetup>().ReverseMap();
+            CreateMap<string, LoanDocument>().ConstructUsing(str => new LoanDocument { documentId = str });
+            CreateMap<string, LoanCollateral>().ConstructUsing(str => new LoanCollateral { collateralId = str });
 
         }
     }

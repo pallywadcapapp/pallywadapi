@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using PallyWad.Domain;
+using PallyWad.Domain.Dto;
 using PallyWad.Services;
 using static Microsoft.IO.RecyclableMemoryStreamManager;
 
@@ -26,7 +27,8 @@ namespace PallyWad.Setup.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var result = _loanSetupService.GetAllLoanSetups();
+            var result = _loanSetupService.GetAllLoanSetups()
+                .OrderByDescending(u=>u.Id);
             return Ok(result);
         }
 
@@ -48,12 +50,18 @@ namespace PallyWad.Setup.Controllers
         #region post
 
         [HttpPost]
-        public IActionResult Post(LoanSetup loanSetup)
+        public IActionResult Post(LoanSetupDto _loanSetup)
         {
             try
             {
-                if (loanSetup != null)
+                if (_loanSetup != null)
                 {
+                    var loanSetup = _mapper.Map<LoanSetup>(_loanSetup);
+                    var ldoc = _mapper.Map<List<LoanDocument>>(_loanSetup.LoanDocumentRefId);
+                    var lcoll = _mapper.Map<List<LoanCollateral>>(_loanSetup.LoanCollateralRefId);
+
+                    loanSetup.LoanDocuments = ldoc;
+                    loanSetup.LoanCollaterals = lcoll;
                     //var collateral = _mapper.Map<Collateral>(events);
                     _loanSetupService.AddLoanSetup(loanSetup);
                     return Ok(new { status = "success", message = $"Collateral {loanSetup.loancode} Created Successfully" });

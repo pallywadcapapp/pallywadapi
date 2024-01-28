@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using PallyWad.Domain;
 using PallyWad.Services.Attributes;
 using PallyWad.Services.Generics;
@@ -34,7 +35,10 @@ namespace PallyWad.Services
             var parameters = new DynamicParameters();
             //parameters.Add("@tenantId", tenantId);
 
-            var result = _loanSetupRepository.FindAll().ToList();
+            var result = _loanSetupRepository.FindAll()
+                .Include(u=>u.LoanDocuments)
+                .Include(u=>u.LoanCollaterals)
+                .ToList();
             return result;
             //return _loanSetupRepository.Query<LoanSetup>("ListAllLoanSetup", parameters);
         }

@@ -31,6 +31,7 @@ builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork<DbContext>>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork<AppIdentityDbContext>>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork<SetupDbContext>>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork<AppDbContext>>();
 builder.Services.AddApiVersioning();
 
 builder.Services.AddAutoMapper(typeof(PallyWad.Application.AutoMapper));

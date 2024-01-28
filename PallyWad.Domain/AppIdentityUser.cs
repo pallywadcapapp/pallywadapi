@@ -22,5 +22,6 @@ namespace PallyWad.Domain
         public DateTime? dob { get; set; }
         public string? bvn { get; set; }
         public string? address { get; set; }
+        public string? imgUrl { get; set; }
     }
 }

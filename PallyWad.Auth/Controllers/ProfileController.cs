@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -17,15 +18,20 @@ namespace PallyWad.Auth.Controllers
         private readonly IUserProfileService _profileService;
         private readonly UserManager<AppIdentityUser> _userManager;
         private readonly IUserDocumentService _documentService;
+        private readonly IAppUploadedFilesService _appUploadedFilesService;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _config;
         public ProfileController(ILogger<ProfileController> logger, IUserProfileService userProfileService, 
-            UserManager<AppIdentityUser> userManager, IMapper mapper, IUserDocumentService documentService )
+            UserManager<AppIdentityUser> userManager, IMapper mapper, IUserDocumentService documentService,
+            IAppUploadedFilesService appUploadedFilesService, IConfiguration config)
         {
             _logger = logger;
             _profileService = userProfileService;
             _userManager = userManager;
             _mapper = mapper;
             _documentService = documentService;
+            _appUploadedFilesService = appUploadedFilesService;
+            _config = config;
         }
 
         #region Get
@@ -77,6 +83,44 @@ namespace PallyWad.Auth.Controllers
             var user = await _userManager.FindByNameAsync(username);
             var usermap = _mapper.Map<UserProfileDto>(user);
             return Ok(usermap);
+        }
+
+        [HttpGet, Route("Uploads")]
+        public async Task<IActionResult> Download(string filename)
+        {
+            if (filename == null)
+                return BadRequest("filename not present");
+
+            var path = Path.Combine(
+                           Directory.GetCurrentDirectory(),
+                           "FileUploads", filename);
+
+            var memory = new MemoryStream();
+            using (var stream = new FileStream(path, FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+            return File(memory, GetContentType(path), Path.GetFileName(path));
+        }
+
+        [HttpGet, Route("FileUploads")]
+        public async Task<IActionResult> FileDownload(string filepath)
+        {
+            if (filepath == null)
+                return BadRequest("filename not present");
+
+            var path = Path.Combine(
+                           Directory.GetCurrentDirectory(),
+                           filepath);
+
+            var memory = new MemoryStream();
+            using (var stream = new FileStream(path, FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+            return File(memory, GetContentType(path), Path.GetFileName(path));
         }
 
 
@@ -139,6 +183,57 @@ namespace PallyWad.Auth.Controllers
                 return BadRequest(new Response { Status = "ërror", Message = ex.Message });
             }
         }
+
+
+        [Authorize]
+        [HttpPut, Route("saveProfilePicture")]
+        public async Task<IActionResult> OnPostImageUploadAsync(IFormFile file)
+        {
+            long size = file.Length;
+            List<string> filenames = new List<string>();
+            List<string> status = new List<string>();
+            var princ = HttpContext.User;
+            var memberId = princ.Identity.Name;
+            if (file.Length > 0)
+            {
+                //var filePath = Path.GetTempFileName();
+                string dataFileName = Path.GetFileName(file.FileName);
+                string extension = Path.GetExtension(dataFileName);
+
+
+                string[] allowedExtsnions = new string[] { ".jpg", ".jpeg", ".png", ".tiff", ".gif" };
+                if (!allowedExtsnions.Contains(extension))
+                {
+                    status.Add("Invalid File " + dataFileName + " for upload");
+                }
+                else
+                {
+                    var dirPath = Path.Combine(_config["StoredFilesPath"], _config["ProfileImage"]);
+                    if (!Directory.Exists(dirPath))
+                    {
+                        Directory.CreateDirectory(dirPath);
+                    }
+                    var filename = Path.GetRandomFileName() + Path.GetExtension(file.FileName);
+                    var filePath = Path.Combine(_config["StoredFilesPath"], _config["ProfileImage"], filename);
+                    filenames.Add(filename);
+                    status.Add("File " + dataFileName + " valid for upload");
+                    using (var stream = System.IO.File.Create(filePath))
+                    {
+                        saveUpload(filename, filePath, memberId, Path.GetExtension(file.FileName));
+                        await UpdateMemberProfileUrl(filePath, memberId);
+                        await file.CopyToAsync(stream);
+                    }
+                }
+            }
+
+            // Process uploaded files
+            // Don't rely on or trust the FileName property without validation.
+
+            return Ok(new { count = 1, size, filenames, status });
+        }
+
+
+        
         #endregion
 
         #region helper
@@ -199,6 +294,53 @@ namespace PallyWad.Auth.Controllers
             int Seconds = Now.Subtract(PastYearDate).Seconds;
             return String.Format("Age: {0} Year(s) {1} Month(s) {2} Day(s) {3} Hour(s) {4} Second(s)",
             Years, Months, Days, Hours, Seconds);
+        }
+
+        async Task UpdateMemberProfileUrl(string filePath, string memberId)
+        {
+            var member = await _userManager.FindByNameAsync(memberId);
+            member.imgUrl = filePath;
+            await _userManager.UpdateAsync(member);
+        }
+
+        void saveUpload(string filename, string path, string Id, string filetype)
+        {
+            var newAppUpload = new AppUploadedFiles()
+            {
+                comment = "",
+                filename = filename,
+                fileurl = path,
+                uploaderId = Id,
+                type = filetype,
+                year = DateTime.Now.Year,
+                created_date = DateTime.Now,
+                extractedStatus = true
+            };
+            _appUploadedFilesService.AddAppUploadedFiles(newAppUpload);
+        }
+
+        private string GetContentType(string path)
+        {
+            var types = GetMimeTypes();
+            var ext = Path.GetExtension(path).ToLowerInvariant();
+            return types[ext];
+        }
+        private Dictionary<string, string> GetMimeTypes()
+        {
+            return new Dictionary<string, string>
+            {
+                {".txt", "text/plain"},
+                {".pdf", "application/pdf"},
+                {".doc", "application/vnd.ms-word"},
+                {".docx", "application/vnd.ms-word"},
+                {".xls", "application/vnd.ms-excel"},
+                {".xlsx", "application/vnd.openxmlformats officedocument.spreadsheetml.sheet"},
+                {".png", "image/png"},
+                {".jpg", "image/jpeg"},
+                {".jpeg", "image/jpeg"},
+                {".gif", "image/gif"},
+                {".csv", "text/csv"}
+            };
         }
         #endregion
     }

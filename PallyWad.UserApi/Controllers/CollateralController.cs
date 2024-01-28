@@ -109,6 +109,10 @@ namespace PallyWad.UserApi.Controllers
                 return BadRequest(new Response { Status = "error", Message = "collateral type not found" });
             if (memberId == null)
                 return Unauthorized(new Response { Status = "error", Message = "Token Expired" });
+            if (files == null)
+                return BadRequest();
+
+            int collateralId = saveUserCollateralUploads(collateral.Id.ToString(), collateral.name, userCollateral.estimatedValue, memberId, userCollateral.otherdetails);
 
             foreach (var formFile in files)
             {
@@ -140,8 +144,7 @@ namespace PallyWad.UserApi.Controllers
                         using (var stream = System.IO.File.Create(filePath))
                         {
                             await formFile.CopyToAsync(stream);
-                            saveUpload(filename, filePath, memberId, Path.GetExtension(formFile.FileName));
-                            saveUserCollateralUploads(userCollateral.collateralNo, filename, userCollateral.estimatedValue, filePath, memberId, userCollateral.otherdetails);
+                            saveUpload(filename, filePath, memberId, Path.GetExtension(formFile.FileName), collateralId.ToString());
                         }
                     }
                 }
@@ -161,12 +164,12 @@ namespace PallyWad.UserApi.Controllers
         #endregion
 
         #region helper
-        void saveUpload(string filename, string path, string Id, string filetype)
+        void saveUpload(string filename, string path, string Id, string filetype, string collateralId)
         {
             var newAppUpload = new AppUploadedFiles()
             {
                 created_date = DateTime.Now,
-                comment = "",
+                comment = collateralId,
                 filename = filename,
                 fileurl = path,
                 uploaderId = Id,
@@ -176,7 +179,7 @@ namespace PallyWad.UserApi.Controllers
             _appUploadedFilesService.AddAppUploadedFiles(newAppUpload);
         }
 
-        void saveUserCollateralUploads(string collateralNo, string filename, double value, string path, string memberId, string otherdetails)
+        int saveUserCollateralUploads(string collateralNo, string collateralName, double value, string memberId, string otherdetails)
         {
             var userCollateral = new UserCollateral()
             {
@@ -186,14 +189,15 @@ namespace PallyWad.UserApi.Controllers
                 approvedValue = 0,
                 loanRefId = "",
                 otherdetails = otherdetails,
-                name = filename,
+                name = collateralName,
                 status = true,
-                url = path,
+                url = "-",
                 userId = memberId,
                 verificationStatus = false,
                 updated_date = DateTime.Now,
             };
             _userCollateralService.AddUserCollateral(userCollateral);
+            return userCollateral.Id;
         }
         private string GetContentType(string path)
         {
@@ -226,9 +230,9 @@ namespace PallyWad.UserApi.Controllers
             //public string userId { get; set; }
             //public string name { get; set; }
             //public string url { get; set; }
-            public string collateralNo { get; set; }
+            //public string collateralNo { get; set; }
             public double estimatedValue { get; set; }
-            public bool status { get; set; }
+            //public bool status { get; set; }
             public List<IFormFile> file { get; set; }
             public string otherdetails { get; set; }
         }

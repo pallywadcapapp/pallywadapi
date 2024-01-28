@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace PallyWad.Domain
@@ -10,6 +11,7 @@ namespace PallyWad.Domain
     {
         public int LoanSetupId { get; set; }
         public string collateralId { get; set; }
+        [JsonIgnore]
         public virtual LoanSetup loanSetup { get; set; }
 
         /*public string refnumber { get; set; }
