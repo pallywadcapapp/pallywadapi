@@ -40,9 +40,9 @@ namespace PallyWad.Setup.Controllers
         }
 
         [HttpGet("bycode")]
-        public IActionResult GetLoanById(string loanode)
+        public IActionResult GetLoanById(string loancode)
         {
-            var result = _loanSetupService.GetLoanSetup(loanode);
+            var result = _loanSetupService.GetLoanSetup(loancode);
             return Ok(result);
         }
         #endregion

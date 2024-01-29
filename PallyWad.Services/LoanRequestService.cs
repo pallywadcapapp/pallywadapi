@@ -36,7 +36,10 @@ namespace PallyWad.Services
             var parameters = new DynamicParameters();
             //parameters.Add("@tenantId", tenantId);
 
-            var result = _loanRequestRepository.FindAll().ToList();
+            var result = _loanRequestRepository.FindAll()
+                .Include(u=>u.loanUserCollaterals)
+                .Include(u=>u.loanUserDocuments)
+                .ToList();
             return result;
             //return _LoanRequestRepository.Query<LoanRequest>("ListAllLoanRequest", parameters);
         }

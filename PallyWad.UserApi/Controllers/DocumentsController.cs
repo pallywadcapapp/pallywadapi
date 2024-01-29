@@ -106,7 +106,8 @@ namespace PallyWad.UserApi.Controllers
             var princ = HttpContext.User;
             var memberId = princ.Identity.Name;
 
-            var document = _documentService.GetDocumentByName(userDocument.documentRefId);
+            //var document = _documentService.GetDocumentByName(userDocument.documentRefId);
+            var document = _documentService.GetDocumentById(int.Parse(userDocument.documentRefId));
             if (document == null)
                 return BadRequest(new Response { Status = "error", Message = "document type not found" });
             if (memberId == null)
@@ -148,7 +149,7 @@ namespace PallyWad.UserApi.Controllers
                         {
                             await formFile.CopyToAsync(stream);
                             saveUpload(filename, filePath, memberId, Path.GetExtension(formFile.FileName));
-                            saveUserDocumentUploads(userDocument.documentNo, document.type, userDocument.documentRefId, userDocument.expiryDate, filePath, memberId);
+                            saveUserDocumentUploads(userDocument.documentNo, document.type, document.name, userDocument.documentRefId, userDocument.expiryDate, filePath, memberId);
                         }
                     }
                 }
@@ -183,15 +184,16 @@ namespace PallyWad.UserApi.Controllers
             _appUploadedFilesService.AddAppUploadedFiles(newAppUpload);
         }
 
-        void saveUserDocumentUploads(string docNo, string filename,string doctype, DateTime expiryDate, string path, string memberId)
+        void saveUserDocumentUploads(string docNo, string type, string name,string refId, DateTime expiryDate, string path, string memberId)
         {
             var userDocument = new UserDocument()
             {
                 created_date = DateTime.Now,
                 documentNo = docNo,
-                documentRefId = doctype,
+                documentRefId = refId,
                 expiryDate = expiryDate,
-                name = filename,
+                name = name,
+                doctype = type,
                 status = false,
                 url = path,
                 userId = memberId

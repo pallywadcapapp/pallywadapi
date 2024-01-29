@@ -45,7 +45,11 @@ namespace PallyWad.Services
 
         public LoanSetup GetLoanSetup(string id)
         {
-            return _loanSetupRepository.Get(x => x.loancode == id);
+            var result = _loanSetupRepository.FindAll().Where(x => x.loancode == id)
+                .Include(u => u.LoanDocuments)
+                .Include(u => u.LoanCollaterals)
+                .FirstOrDefault();
+            return result;
         }
 
         public LoanSetup GetLoanSetup(int id)

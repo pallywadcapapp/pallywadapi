@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using PallyWad.Domain;
 using PallyWad.Domain.Dto;
+using PallyWad.Infrastructure.Migrations;
 using PallyWad.Services;
 using static Microsoft.IO.RecyclableMemoryStreamManager;
 
@@ -123,6 +124,15 @@ namespace PallyWad.Auth.Controllers
             return File(memory, GetContentType(path), Path.GetFileName(path));
         }
 
+        [Authorize(Roles ="Admin")]
+        [HttpGet("Members")]
+        public IActionResult GetAllUsers()
+        {
+            var members =_userManager.Users.ToList();
+            var usermap = _mapper.Map<List<UserProfileDto>>(members);
+            return Ok(usermap);
+        }
+
 
         #endregion
 
@@ -239,7 +249,7 @@ namespace PallyWad.Auth.Controllers
         #region helper
         private bool hasDocument(string username, string doctype)
         {
-            var result = _documentService.ListAllUserDocument(username).Where(u=>u.name == doctype).FirstOrDefault();
+            var result = _documentService.ListAllUserDocument(username).Where(u=>u.doctype == doctype).FirstOrDefault();
             if(result == null)
             {
                 return false;

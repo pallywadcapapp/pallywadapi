@@ -124,10 +124,10 @@ namespace PallyWad.AdminApi.Controllers
         //[Authorize]
         [HttpGet]
         [Route("loandetail")]
-        public IActionResult GetLoanDetail(string loadId)
+        public IActionResult GetLoanDetail(string loanId)
         {
             var _result = _loanRequestService.GetAllLoanRequests();
-            var result = _result.Where(u => u.loanId == loadId).FirstOrDefault();
+            var result = _result.Where(u => u.loanId == loanId).FirstOrDefault();
             return Ok(result);
         }
 
@@ -239,6 +239,38 @@ namespace PallyWad.AdminApi.Controllers
         #endregion
 
         #region Put
+        [HttpPut]
+        [Route("loanrequestapproved")]
+        public async Task<IActionResult> LoanRequestApproved(int id, int duration, double interest, double processingFee)
+        {
+            var loan = _loanRequestService.GetLoanRequest(id);
+            loan.status = "Approved";
+            loan.duration = duration;
+            loan.loaninterest = interest;
+            loan.processingFee = processingFee;
+            _loanRequestService.UpdateLoanRequest(loan);
+            /*var member = _memberService.Getmember(loan.memberId);
+            string message = "Dear " + member.Fullname + ", <br/>" +
+                " We wish to notify you that your loan with ref no " + loan.loanId +
+                " has been approved. <br /> Loan Amount: " +
+                GetFormattedCurrency(Convert.ToDecimal(loan.amount), 2, "HA-LATN-NG")
+                //string.Format("{0:C}", Convert.ToDecimal(gr.amount ) )
+                + ".";
+
+            
+            string org = header.Coyname;
+            try
+            {
+                await SendEmailNotification(member.Memberid, message, "Loan Request (Approval)", org);
+            }
+            catch
+            {
+
+            }*/
+
+            return Ok(loan);
+
+        }
         #endregion
 
         #region Helper

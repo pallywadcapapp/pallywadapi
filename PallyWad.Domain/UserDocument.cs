@@ -15,5 +15,6 @@ namespace PallyWad.Domain
         public string documentNo { get; set; }
         public DateTime? expiryDate { get; set; }
         public bool status { get; set; } // approved/active or not approved
+        public string doctype { get; set; }
     }
 }
