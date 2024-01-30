@@ -151,7 +151,9 @@ namespace PallyWad.UserApi.Controllers
                 loanRequest.bankaccountno = "";
                 loanRequest.bankname = "";
                 loanRequest.bvn = "";
-                loanRequest.processingFee = 0;
+                loanRequest.processingFee = ltype.processamt;
+                loanRequest.duration = ltype.duration;
+                loanRequest.loaninterest = ltype.loaninterest;
                 loanRequest.collateralId = _loanRequest.collateralRefId[0];
                 loanRequest.loanUserDocuments = luserdoc;
 

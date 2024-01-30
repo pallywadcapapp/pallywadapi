@@ -31,6 +31,13 @@ namespace PallyWad.AdminApi.Controllers
             var result = _userDocumentService.ListAllUserDocument().Where(u=>u.status == false);
             return Ok(result);
         }
+
+        [HttpGet("userDocById")]
+        public IActionResult GetUserDocById(int Id)
+        {
+            var result = _userDocumentService.ListAllUserDocument().Where(u => u.Id == Id).FirstOrDefault();
+            return Ok(result);
+        }
         #endregion
 
         #region Post

@@ -123,7 +123,7 @@ namespace PallyWad.UserApi.Controllers
                     string extension = Path.GetExtension(dataFileName);
 
 
-                    string[] allowedExtsnions = new string[] { ".xls", ".xlsx" };
+                    string[] allowedExtsnions = new string[] { ".png", ".jpg", ".jpeg" };
                     if (!allowedExtsnions.Contains(extension))
                     {
                         status.Add("Invalid File " + dataFileName + " for upload");

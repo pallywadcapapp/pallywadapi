@@ -32,6 +32,13 @@ namespace PallyWad.AdminApi.Controllers
             var result = _userCollateralService.ListAllUserCollateral().Where(u => u.status == false);
             return Ok(result);
         }
+
+        [HttpGet("userCollById")]
+        public IActionResult GetUserCollById(int Id)
+        {
+            var result = _userCollateralService.ListAllUserCollateral().Where(u => u.Id == Id).FirstOrDefault();
+            return Ok(result);
+        }
         #endregion
 
         #region Post

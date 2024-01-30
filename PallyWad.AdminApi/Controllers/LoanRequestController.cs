@@ -248,6 +248,8 @@ namespace PallyWad.AdminApi.Controllers
             loan.duration = duration;
             loan.loaninterest = interest;
             loan.processingFee = processingFee;
+            loan.approvalDate = DateTime.Now;
+            loan.updated_date = DateTime.Now;
             _loanRequestService.UpdateLoanRequest(loan);
             /*var member = _memberService.Getmember(loan.memberId);
             string message = "Dear " + member.Fullname + ", <br/>" +
@@ -271,6 +273,78 @@ namespace PallyWad.AdminApi.Controllers
             return Ok(loan);
 
         }
+
+        [HttpPut]
+        [Route("loanrequestdecline")]
+        public async Task<IActionResult> LoanRequestDecline(int id, string reason)
+        {
+            var loan = _loanRequestService.GetLoanRequest(id);
+            loan.status = "Declined";
+            loan.reason = reason;
+            loan.approvalDate = DateTime.Now;
+            loan.updated_date = DateTime.Now;
+            _loanRequestService.UpdateLoanRequest(loan);
+            /*var member = _memberService.Getmember(loan.memberId);
+            string message = "Dear " + member.Fullname + ", <br/>" +
+                " We wish to notify you that your loan with ref no " + loan.loanId +
+                " has been declined. <br /> Loan Amount: " +
+                GetFormattedCurrency(Convert.ToDecimal(loan.amount), 2, "HA-LATN-NG")
+                //string.Format("{0:C}", Convert.ToDecimal(gr.amount ) )
+                + ".";
+
+            var header = _tblHeaderService.Getheaders();
+            string org = header.Coyname;
+            try
+            {
+                await SendEmailNotification(member.Memberid, message, "Loan Request (Declined)", org);
+            }
+            catch
+            {
+
+            }*/
+
+            return Ok(loan);
+
+        }
+
+        [HttpPut]
+        [Route("ApproveLoanRequestCollateral")]
+        public async Task<IActionResult> ApproveLoanRequestCollateral(int Id)
+        {
+            var princ = HttpContext.User;
+            var username = princ.Identity.Name;
+            var loan = _loanRequestService.GetLoanRequest(Id);
+            loan.status = "Collaterized";
+            loan.processState = "Collaterized";
+            loan.approvalDate = DateTime.Now;
+            loan.updated_date = DateTime.Now;
+            loan.approvedBy = username;
+            _loanRequestService.UpdateLoanRequest(loan);
+            /*var member = _memberService.Getmember(loan.memberId);
+            string message = "Dear " + member.Fullname + ", <br/>" +
+                " We wish to notify you that your loan with ref no " + loan.loanId +
+                " has been declined. <br /> Loan Amount: " +
+                GetFormattedCurrency(Convert.ToDecimal(loan.amount), 2, "HA-LATN-NG")
+                //string.Format("{0:C}", Convert.ToDecimal(gr.amount ) )
+                + ".";
+
+            var header = _tblHeaderService.Getheaders();
+            string org = header.Coyname;
+            try
+            {
+                await SendEmailNotification(member.Memberid, message, "Loan Request (Declined)", org);
+            }
+            catch
+            {
+
+            }*/
+
+            return Ok(loan);
+
+        }
+        
+        
+
         #endregion
 
         #region Helper
