@@ -3,8 +3,11 @@ using AutoMapper.Execution;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Storage;
 using PallyWad.Domain;
+using PallyWad.Domain.Dto;
 using PallyWad.Domain.Entities;
+using PallyWad.Infrastructure.Migrations.AccountDb;
 using PallyWad.Services;
 using PallyWad.Services.Repository;
 
@@ -128,6 +131,14 @@ namespace PallyWad.AdminApi.Controllers
         {
             var _result = _loanRequestService.GetAllLoanRequests();
             var result = _result.Where(u => u.loanId == loanId).FirstOrDefault();
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("accno")]
+        public IActionResult GenerateAccNos(string type)
+        {
+            var result = GenerateAccNo(type);
             return Ok(result);
         }
 
@@ -342,8 +353,119 @@ namespace PallyWad.AdminApi.Controllers
             return Ok(loan);
 
         }
-        
-        
+
+        [Authorize]
+        [HttpPut]
+        [Route("ProcessLoanRequest")]
+        public IActionResult ProcessLoanRequests([FromBody] LoanRequestVM lr)
+        {
+            var princ = HttpContext.User;
+            var id = princ.Identity.Name;
+            //var bankAcc = _glAccountServiceD.GetAccByName(_config["BankAccountName"]);
+            var bankAcc = _glAccountService.GetAccByName("BANK ACCOUNT");
+            var GLbankAcc = _glAccountService.GetAccByName("POLARIS");
+            var loanSetup = _loanSetupService.GetLoanSetup(lr.loanCode);
+            //var baseSetup = _baseSettingService.GetBaseSettings(tenantId);
+            var member = _userService.GetUserByEmail(lr.memberId);  //_memberService.Getmember(lr.memberId);
+            var loanInterest = lr.loaninterest; //loanSetup.Loaninterest;
+            var loanDuration = lr.duration; //Convert.ToInt32(loanSetup.Duration);
+            var processingFee = lr.processingFee;
+            var amount = lr.amount;
+            var interest = amount * Convert.ToDouble(loanInterest) / 100;
+            var repayAmount = amount + interest;
+            var accno = "";
+            var category = loanSetup.category;
+            var repayOrder = loanSetup.repayOrder;
+
+            var pp = _membersAccountService.ListMembersAccounts(lr.memberId).Where(u => u.transtype == category).FirstOrDefault();
+            string fullname = member.lastname + " " + member.firstname + " " + member.othernames;
+            if (pp == null)
+            {
+                var sfullname = member.lastname + " " + member.firstname + " " + member.othernames.Substring(0,1);
+                var accSchema = new AccSchema()
+                {
+                    desc = $"{sfullname} ({loanSetup.category})",
+                    memberId = member.UserName,
+                    name = sfullname,
+                    type = loanSetup.category,
+                };
+                var memacc = createMemberAccount(accSchema);
+                accno = memacc.accountno;
+                //return BadRequest("Member " + fullname + " does not have a " + category + " account number set up");
+            }
+            else
+            {
+                accno = pp.accountno;
+            }
+
+            /*if(category == "Long Term")
+            {
+                accno = member.Loanaccountno;
+            }
+            else
+            {
+                accno = member.Shortloanaccountno;
+            }*/
+            var monthlyPay = repayAmount / loanDuration;
+
+            //get loan type for specific account
+
+
+            var loanTrans = new LoanTrans()
+            {
+                memberid = lr.memberId,
+                loanrefnumber = lr.loanId,
+                transdate = lr.approvalDate, //DateTime.Now,
+                repaystartdate = lr.approvalDate.AddMonths(1), //DateTime.Now,
+                loanamount = (lr.amount),
+                totrepayable = (repayAmount),
+                repayamount = (monthlyPay??0),
+                interestamt = (interest),
+                payableacctno = loanSetup.accountno,
+                loaninterest = (loanInterest??0), //loanSetup.Loaninterest,
+                processrate = loanSetup.processrate,
+                //Processamt
+                duration = Convert.ToInt16(loanDuration), //loanSetup.Duration,
+                glrefnumber = "",
+                glbankaccount = GLbankAcc.accountno,
+                gapproved = true,
+                accountno = accno,
+                description = loanSetup.loandesc,
+                repay = 1,
+                loancode = loanSetup.loancode,
+                repayOrder = repayOrder
+            };
+            var glref = gLPostingRepository.PostLoanRequest((amount), (interest),
+            accno, loanSetup.accountno, bankAcc.accountno, id, loanSetup.loandesc,
+            "", fullname, lr.approvalDate);
+
+            if (processingFee > 0)
+            {
+                try
+                {
+                    var chargecode = _chargesService.GetCharges(loanSetup.chargecode);
+                    //var procFeeAcc = _glAccountServiceD.GetAccByName(chargecode.Accountno);
+                    var procFeeref = gLPostingRepository.PostProcessingFeeDeductMemberSaving((processingFee),
+                accno, chargecode.accountno, id, "",
+                "", lr.approvalDate, fullname);
+                }
+                catch
+                {
+
+                }
+
+            }
+            loanTrans.glrefnumber = glref;
+            _loanTransService.AddLoanTrans(loanTrans);
+            //PostLoanGuarantors(lr, tenantId, repayAmount);
+            //PostLoanProcessedForMemberAccount(lr, glref, loanTrans.loanrefnumber, tenantId, id, repayAmount, loanSetup.loandesc, member.Fullname);
+            updateProcessed(lr.Id, id);
+            return Ok(loanTrans);
+
+        }
+
+
+
 
         #endregion
 
@@ -386,6 +508,78 @@ namespace PallyWad.AdminApi.Controllers
 
             return $"{tempSav.accountno}{sch}";
         }
+
+        private AccFormat GenerateAccNo(string type)
+        {
+            var tempLoan = _glAccountTier3Service.GetGlAccountByDesc(type); //"LOANS"
+            var id = 1;
+            var top = _glAccountService
+                .GetAllGlAccounts()
+                .Where(u => u.glacctc == tempLoan.glacctc)
+                        .OrderByDescending(x => x.Id).FirstOrDefault();
+
+            if (top != null)
+            {
+                //id = top.Id + 1;
+                int iaccno = int.Parse(top.glacctd);
+                id = iaccno + 1;
+            }
+            else
+            {
+
+            }
+            var interim = _glAccountTier3Service.GetGlAccount($"{tempLoan.glaccta}{tempLoan.glacctb}{tempLoan.glacctc}");
+            string glacctd = String.Format("{0,4:0000}", id);//"0" + id.ToString(),
+            string accountno = interim.accountno + String.Format("{0,4:0000}", id);//"0" + id.ToString()
+            var accform = new AccFormat()
+            {
+                accno = accountno,
+                accd = glacctd
+            };
+            //return accountno;
+            return accform;
+        }
+
+        private MemberAccount createMemberAccount(AccSchema accSchema)
+        {
+            var loanType = _loanSetupService.GetLoanSetup(accSchema.type);
+            var member = _userService.GetUserByEmail(accSchema.memberId);
+            var tempLoan = _glAccountTier3Service.GetGlAccountByDesc("LOANS");
+
+            var accnform = GenerateAccNo(accSchema.type);
+            //var suf = GetAccStr(member.Accountno, 6).ToList();
+            var memberacc = new MemberAccount()
+            {
+                memberid = accSchema.memberId,
+                deductcode = loanType.loancode,
+                memgroupacct = loanType.memgroupacct,
+                transtype = loanType.category,
+                accountno = accnform.accno //.memgroupacct + suf[1]
+            };
+
+            saveNewGLAccount(accnform.accd, accnform.accno, accSchema.name);
+            _membersAccountService.AddMembersAccount(memberacc);
+            return memberacc;
+        }
+
+        private void saveNewGLAccount(string accd, string accno, string shortdesc)
+        {
+            GLAccount gl = new GLAccount();
+            var accname = shortdesc.ToUpper();
+            gl.shortdesc = accname;
+            gl.fulldesc = accname;
+
+            gl.glacctd = accd;
+            gl.accountno = accno;
+            _glAccountService.AddGlAccount(gl);
+        }
+
+        class AccFormat
+        {
+            public string accno { get; set; }
+            public string accd { get; set; }
+        }
+
         #endregion
     }
 }

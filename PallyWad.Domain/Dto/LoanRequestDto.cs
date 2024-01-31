@@ -29,4 +29,34 @@ namespace PallyWad.Domain.Dto
         public List<string> documentIdRefs { get; set; }
         //public double processingFee { get; set; }
     }
+
+    public class LoanRequestVM
+    {
+        public int Id { get; set; }
+        public string loanId { get; set; }
+        public string loanCode { get; set; }
+        public string memberId { get; set; }
+        public string bvn { get; set; }
+        public string bankname { get; set; }
+        public string bankaccountno { get; set; }
+        [Required]
+        public double amount { get; set; }
+        public double othercoorp { get; set; }
+        public double? monthtotalrepay { get; set; }
+        public double? monthlyrepay { get; set; }
+        public double? monthlyendsalary { get; set; }
+        public double? monthlnetsalary { get; set; }
+        public string? guarantorId1 { get; set; }
+        public string? guarantorId2 { get; set; }
+        public string? guarantorId3 { get; set; }
+        public string status { get; set; }
+        public string processState { get; set; }
+        public DateTime? requestDate { get; set; }
+        public DateTime approvalDate { get; set; }
+        public string approvedBy { get; set; }
+        public string? postedBy { get; set; }
+        public int? duration { get; set; }
+        public double? loaninterest { get; set; }
+        public double processingFee { get; set; }
+    }
 }
