@@ -8,6 +8,7 @@ namespace PallyWad.Domain
 {
     public partial class MemberAccount: BaseModel
     {
+        public string AppIdentityUserId { get; set; }
         public string memberid { get; set; }
 
         public string memgroupacct { get; set; }

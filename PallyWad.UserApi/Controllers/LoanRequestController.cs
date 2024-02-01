@@ -1,5 +1,7 @@
 ﻿using Amazon;
 using AutoMapper;
+using AutoMapper.Execution;
+
 //using MailKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -64,6 +66,85 @@ namespace PallyWad.UserApi.Controllers
             return Ok(result);
         }
 
+
+        [HttpGet]
+        [Route("PendingLoanRequests")]
+        public IActionResult GetPendingLoanRequests()
+        {
+            var princ = HttpContext.User;
+            var memberId = princ.Identity.Name;
+            var member = _loanRequestService.GetAllPendingLoanRequests()
+                .Where(u=>u.memberId == memberId)
+                .OrderByDescending(u => u.requestDate).OrderByDescending(u => u.status);
+            return Ok(member);
+
+        }
+
+        [HttpGet]
+        [Route("DeclinedLoanRequests")]
+        public IActionResult GetDeclinedLoanRequests()
+        {
+            var princ = HttpContext.User;
+            var memberId = princ.Identity.Name;
+            var member = _loanRequestService.GetAllDeclinedLoanRequests()
+                .Where(u => u.memberId == memberId)
+                .OrderByDescending(u => u.requestDate).OrderByDescending(u => u.status);
+            return Ok(member);
+
+        }
+
+        [HttpGet]
+        [Route("ApprovedLoanRequests")]
+        public IActionResult GetApprovedLoanRequests()
+        {
+            var princ = HttpContext.User;
+            var memberId = princ.Identity.Name;
+            var member = _loanRequestService.GetAllApprovedLoanRequests()
+                .Where(u => u.memberId == memberId)
+                .OrderByDescending(u => u.requestDate).OrderByDescending(u => u.status);
+            return Ok(member);
+
+        }
+
+        [HttpGet]
+        [Route("CollaterizedLoanRequests")]
+        public IActionResult GetCollaterizedLoanRequests()
+        {
+            var princ = HttpContext.User;
+            var memberId = princ.Identity.Name;
+            var member = _loanRequestService.GetAllCollaterizedLoanRequests()
+                .Where(u => u.memberId == memberId)
+                .OrderByDescending(u => u.requestDate).OrderByDescending(u => u.status);
+            return Ok(member);
+
+        }
+
+        [HttpGet]
+        [Route("ProcessedLoanRequests")]
+        public IActionResult GetProcessedLoanRequests()
+        {
+            var princ = HttpContext.User;
+            var memberId = princ.Identity.Name;
+            var member = _loanRequestService.GetAllProcessedLoanRequests()
+                .Where(u => u.memberId == memberId)
+                .OrderByDescending(u => u.requestDate).OrderByDescending(u => u.status);
+            return Ok(member);
+
+        }
+
+        [HttpGet]
+        [Route("UnProcessedLoanRequests")]
+        public IActionResult GetUnProcessedLoanRequests()
+        {
+            var princ = HttpContext.User;
+            var memberId = princ.Identity.Name;
+            var member = _loanRequestService.GetAllUnProcessedLoanRequests()
+                .Where(u => u.memberId == memberId)
+                .OrderBy(u => u.requestDate).OrderByDescending(u => u.status);
+            return Ok(member);
+
+        }
+
         [HttpGet("loantypes")]
         public IActionResult GetLoanType(int id)
         {
@@ -111,19 +192,6 @@ namespace PallyWad.UserApi.Controllers
             string fullname = "";
 
             var user = _userService.GetUser(memberId);
-
-            //var identity = princ.Identity as ClaimsIdentity;
-            //if (identity != null)
-            //{
-            //    IEnumerable<Claim> claims = identity.Claims;
-            //    // or
-            //    var lastname = identity.FindFirst("lastname").Value;
-            //    var firstname = identity.FindFirst("firstname").Value;
-            //    var othernames = identity.FindFirst("othernames").Value;
-
-            //    fullname = $"{lastname}, {firstname} {othernames}";
-
-            //}
 
             if(user == null )
             {

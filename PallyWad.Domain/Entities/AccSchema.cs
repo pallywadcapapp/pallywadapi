@@ -12,5 +12,6 @@ namespace PallyWad.Domain.Entities
         public string name { get; set; }
         public string memberId { get; set; }
         public string desc { get; set; }
+        public string loancode { get; set; }
     }
 }

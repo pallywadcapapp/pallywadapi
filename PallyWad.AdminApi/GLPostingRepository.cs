@@ -265,6 +265,10 @@ namespace PallyWad.AdminApi
             var accLength = accno.Length;
             var trans = new GL()
             {
+                acc_name = "",
+                month = DateTime.Now.Month.ToString(),
+                year = DateTime.Now.Year,
+                ref_trans = refno,
                 accountno = accno,
                 refnumber = refno,
                 transdate = DateTime.Now,
@@ -288,6 +292,10 @@ namespace PallyWad.AdminApi
             var accLength = accno.Length;
             var trans = new GL()
             {
+                acc_name = "",
+                month = monthend.Month.ToString(),
+                year = monthend.Year,
+                ref_trans = refno,
                 accountno = accno,
                 refnumber = refno,
                 transdate = monthend,//DateTime.Now,
@@ -309,7 +317,7 @@ namespace PallyWad.AdminApi
 
         private void PostAccTrans(GL accGl)
         {
-            _glAccountTransService.AddGlAccount(accGl);
+            _glAccountTransService.AddGlAccount(accGl,"");
         }
     }
 }

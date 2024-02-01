@@ -39,6 +39,7 @@ namespace PallyWad.Infrastructure.Data
             optionsBuilder.UseSqlServer(connstr);//.UseSnakeCaseNamingConvention();
             base.OnConfiguring(optionsBuilder);
         }
+        public virtual DbSet<GL> GL { get; set; }
 
         public virtual DbSet<AppUploadedFiles> AppUploadedFiles { get; set; }
         public virtual DbSet<UserDocument> UserDocuments { get; set; }
@@ -51,6 +52,9 @@ namespace PallyWad.Infrastructure.Data
         public virtual DbSet<LoanTrans> LoanTrans { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<GL>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
             modelBuilder.Entity<AppUploadedFiles>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 

@@ -30,6 +30,21 @@ namespace PallyWad.Services
             Save();
         }
 
+        public void AddMembersAccount(MemberAccount membersAccount, string query)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@memberid", membersAccount.memberid);
+            parameters.Add("@memgroupacct", membersAccount.memgroupacct);
+            parameters.Add("@accountno", membersAccount.accountno);
+            parameters.Add("@deductcode", membersAccount.deductcode);
+            parameters.Add("@transtype", membersAccount.transtype);
+            parameters.Add("@created_date", membersAccount.created_date);
+            parameters.Add("@updated_date", membersAccount.updated_date);
+            parameters.Add("@AppIdentityUserId", membersAccount.AppIdentityUserId);
+            //[InsertMemberAccounts]
+            var result = _membersAccountRepository.Query<int>("InsertMemberAccounts", parameters);
+        }
+
         public List<MemberAccount> ListAllMembersAccounts()
         {
             var parameters = new DynamicParameters();
@@ -84,6 +99,7 @@ namespace PallyWad.Services
     public interface IMembersAccountService
     {
         void AddMembersAccount(MemberAccount membersAccount);
+        void AddMembersAccount(MemberAccount membersAccount, string query);
         List<MemberAccount> ListAllMembersAccounts();
         List<MemberAccount> ListMembersAccounts(string memberId);
         List<string> ListMembersAccountsOnly(string memberId);

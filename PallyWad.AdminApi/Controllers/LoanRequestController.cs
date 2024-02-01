@@ -363,7 +363,7 @@ namespace PallyWad.AdminApi.Controllers
             var id = princ.Identity.Name;
             //var bankAcc = _glAccountServiceD.GetAccByName(_config["BankAccountName"]);
             var bankAcc = _glAccountService.GetAccByName("BANK ACCOUNT");
-            var GLbankAcc = _glAccountService.GetAccByName("POLARIS");
+            //var GLbankAcc = _glAccountService.GetAccByName("POLARIS");
             var loanSetup = _loanSetupService.GetLoanSetup(lr.loanCode);
             //var baseSetup = _baseSettingService.GetBaseSettings(tenantId);
             var member = _userService.GetUserByEmail(lr.memberId);  //_memberService.Getmember(lr.memberId);
@@ -388,8 +388,9 @@ namespace PallyWad.AdminApi.Controllers
                     memberId = member.UserName,
                     name = sfullname,
                     type = loanSetup.category,
+                    loancode = loanSetup.loancode,
                 };
-                var memacc = createMemberAccount(accSchema);
+                var memacc = createMemberAccount(accSchema, member.Id);
                 accno = memacc.accountno;
                 //return BadRequest("Member " + fullname + " does not have a " + category + " account number set up");
             }
@@ -419,15 +420,15 @@ namespace PallyWad.AdminApi.Controllers
                 repaystartdate = lr.approvalDate.AddMonths(1), //DateTime.Now,
                 loanamount = (lr.amount),
                 totrepayable = (repayAmount),
-                repayamount = (monthlyPay??0),
+                repayamount = (monthlyPay ?? 0),
                 interestamt = (interest),
                 payableacctno = loanSetup.accountno,
-                loaninterest = (loanInterest??0), //loanSetup.Loaninterest,
+                loaninterest = (loanInterest ?? 0), //loanSetup.Loaninterest,
                 processrate = loanSetup.processrate,
                 //Processamt
                 duration = Convert.ToInt16(loanDuration), //loanSetup.Duration,
                 glrefnumber = "",
-                glbankaccount = GLbankAcc.accountno,
+                glbankaccount = "", // GLbankAcc.accountno,
                 gapproved = true,
                 accountno = accno,
                 description = loanSetup.loandesc,
@@ -455,6 +456,7 @@ namespace PallyWad.AdminApi.Controllers
                 }
 
             }
+            loanTrans.grefnumber = glref;
             loanTrans.glrefnumber = glref;
             _loanTransService.AddLoanTrans(loanTrans);
             //PostLoanGuarantors(lr, tenantId, repayAmount);
@@ -540,11 +542,11 @@ namespace PallyWad.AdminApi.Controllers
             return accform;
         }
 
-        private MemberAccount createMemberAccount(AccSchema accSchema)
+        private MemberAccount createMemberAccount(AccSchema accSchema, string appId)
         {
-            var loanType = _loanSetupService.GetLoanSetup(accSchema.type);
-            var member = _userService.GetUserByEmail(accSchema.memberId);
-            var tempLoan = _glAccountTier3Service.GetGlAccountByDesc("LOANS");
+            var loanType = _loanSetupService.GetLoanSetup(accSchema.loancode);
+            //var member = _userService.GetUserByEmail(accSchema.memberId);
+            //var tempLoan = _glAccountTier3Service.GetGlAccountByDesc("LOANS");
 
             var accnform = GenerateAccNo(accSchema.type);
             //var suf = GetAccStr(member.Accountno, 6).ToList();
@@ -554,11 +556,12 @@ namespace PallyWad.AdminApi.Controllers
                 deductcode = loanType.loancode,
                 memgroupacct = loanType.memgroupacct,
                 transtype = loanType.category,
-                accountno = accnform.accno //.memgroupacct + suf[1]
+                accountno = accnform.accno,
+                AppIdentityUserId = appId
             };
 
             saveNewGLAccount(accnform.accd, accnform.accno, accSchema.name);
-            _membersAccountService.AddMembersAccount(memberacc);
+            _membersAccountService.AddMembersAccount(memberacc, "");
             return memberacc;
         }
 
@@ -568,10 +571,21 @@ namespace PallyWad.AdminApi.Controllers
             var accname = shortdesc.ToUpper();
             gl.shortdesc = accname;
             gl.fulldesc = accname;
-
+            gl.glaccta = accno.Substring(0, 2);
+            gl.glacctb = accno.Substring(2, 2);
+            gl.glacctc = accno.Substring(4, 2);
             gl.glacctd = accd;
             gl.accountno = accno;
-            _glAccountService.AddGlAccount(gl);
+            gl.fulldesc = shortdesc.ToUpper();
+            gl.updated_date = DateTime.Now;
+            gl.accttype = "ASSETS";
+            gl.acctlevel = 4;
+            gl.balanceSheetMap = "";
+            gl.created_date = DateTime.Now;
+            gl.internalind = false;
+            gl.reportMap = "";
+            gl.reportMapSub = "";
+            _glAccountService.AddGlAccount(gl,"");
         }
 
         class AccFormat

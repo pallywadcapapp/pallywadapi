@@ -58,6 +58,12 @@ namespace PallyWad.Infrastructure.Data
             builder.Entity<MemberAccount>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 
+            builder.Entity<MemberAccount>()
+                .HasOne(u => u.member)
+                .WithMany(u => u.account)
+                .HasForeignKey(u => u.AppIdentityUserId);
+
+
             builder.ApplyConfiguration(new UserConfiguration());
             //builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 

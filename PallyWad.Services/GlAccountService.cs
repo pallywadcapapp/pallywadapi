@@ -29,6 +29,27 @@ namespace PallyWad.Services
             Save();
         }
 
+        public void AddGlAccount(GLAccount glAccount, string query)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@acctlevel", glAccount.acctlevel);
+            parameters.Add("@accttype", glAccount.accttype);
+            parameters.Add("@accountno", glAccount.accountno);
+            parameters.Add("@glaccta", glAccount.glaccta);
+            parameters.Add("@glacctb", glAccount.glacctb);
+            parameters.Add("@glacctc", glAccount.glacctc);
+            parameters.Add("@glacctd", glAccount.glacctd);
+            parameters.Add("@balanceSheetMap", glAccount.balanceSheetMap);
+            parameters.Add("@fulldesc", glAccount.fulldesc);
+            parameters.Add("@internalind", glAccount.internalind);
+            parameters.Add("@reportMap", glAccount.reportMap);
+            parameters.Add("@reportMapSub", glAccount.reportMapSub);
+            parameters.Add("@shortdesc", glAccount.shortdesc);
+            parameters.Add("@created_date", glAccount.created_date);
+            parameters.Add("@updated_date", glAccount.updated_date);
+            //[InsertMemberAccounts]
+            var result = _glAccountRepository.Query<int>("InsertGLAccounts", parameters);
+        }
         public List<GLAccount> GetAllGlAccounts()
         {
             var parameters = new DynamicParameters();
@@ -77,6 +98,7 @@ namespace PallyWad.Services
     public interface IGlAccountService
     {
         void AddGlAccount(GLAccount GlAccount);
+        void AddGlAccount(GLAccount glAccount, string query);
         GLAccount GetAccByName(string name);
         string GetAllGlAccountByDesc();
         List<GLAccount> GetAllGlAccounts();

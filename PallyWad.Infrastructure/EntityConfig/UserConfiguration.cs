@@ -23,6 +23,8 @@ namespace PallyWad.Infrastructure.EntityConfig
             builder
             .HasMany(a => a.account)
             .WithOne(a => a.member);
+
+            
     }
     }
 }

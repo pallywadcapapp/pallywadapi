@@ -30,6 +30,37 @@ namespace PallyWad.Services
             Save();
         }
 
+        public void AddGlAccount(GL glAccount, string query)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@acc_name", glAccount.acc_name);
+            parameters.Add("@accountno", glAccount.accountno);
+            parameters.Add("@batchno", glAccount.batchno);
+            parameters.Add("@balance", glAccount.balance);
+            parameters.Add("@glaccta", glAccount.glaccta);
+            parameters.Add("@created_date", glAccount.created_date);
+            parameters.Add("@updated_date", glAccount.updated_date);
+            parameters.Add("@chequeno", glAccount.chequeno);
+
+            parameters.Add("@creditamt", glAccount.creditamt);
+            parameters.Add("@debitamt", glAccount.debitamt);
+            parameters.Add("@description", glAccount.description);
+            parameters.Add("@glacctb", glAccount.glacctb);
+            parameters.Add("@glacctc", glAccount.glacctc);
+            parameters.Add("@glacctd", glAccount.glacctd);
+            parameters.Add("@month", glAccount.month);
+            parameters.Add("@processedDate", glAccount.processedDate);
+
+
+            parameters.Add("@refnumber", glAccount.refnumber);
+            parameters.Add("@ref_trans", glAccount.ref_trans);
+            parameters.Add("@transdate", glAccount.transdate);
+            parameters.Add("@userid", glAccount.userid);
+            parameters.Add("@year", glAccount.year);
+            //[InsertMemberAccounts]
+            var result = _glAccountRepository.Query<int>("InsertGL", parameters);
+        }
+
         public List<GL> GetAllGlAccounts()
         {
             var parameters = new DynamicParameters();
@@ -351,6 +382,7 @@ namespace PallyWad.Services
     public interface IGlAccountTransService
     {
         void AddGlAccount(GL GlAccount);
+        void AddGlAccount(GL glAccount, string query);
         List<GL> GetAllGlAccounts();
         List<GLComp> GetAllGlCompAccounts();
         List<GlReport> GetAllMembersSavings();
