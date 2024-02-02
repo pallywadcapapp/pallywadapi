@@ -96,8 +96,11 @@ namespace PallyWad.UserApi.Controllers
         }
         #endregion
 
+
+        #region Post
+
         [HttpPost, Route("UploadFile")]
-        public async Task<IActionResult> OnPostUploadAsync( UserDocumentFileDto userDocument)
+        public async Task<IActionResult> OnPostUploadAsync(UserDocumentFileDto userDocument)
         {
             List<IFormFile> files = userDocument.file;
             long size = files.Sum(f => f.Length);
@@ -160,9 +163,6 @@ namespace PallyWad.UserApi.Controllers
 
             return Ok(new { count = files.Count, size, filenames, status });
         }
-        #region Post
-
-
         #endregion
 
         #region Put

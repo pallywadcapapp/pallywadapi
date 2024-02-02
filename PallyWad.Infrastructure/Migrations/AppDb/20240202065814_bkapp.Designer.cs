@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PallyWad.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using PallyWad.Infrastructure.Data;
 namespace PallyWad.Infrastructure.Migrations.AppDb
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240202065814_bkapp")]
+    partial class bkapp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -85,6 +88,7 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
                         .HasColumnType("datetime2");
 
                     b.Property<string>("approvedBy")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("channel")
@@ -96,9 +100,7 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
 
                     b.Property<string>("depositId")
                         .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("nvarchar(max)")
-                        .HasComputedColumnSql("CONCAT('PLLY/BP/',cast(Id as varchar(100)))", true);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("fullname")
                         .IsRequired()
@@ -108,6 +110,7 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
                         .HasColumnType("float");
 
                     b.Property<string>("loanRefId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("memberId")
@@ -119,6 +122,7 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("postedBy")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("processState")
@@ -127,8 +131,7 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
 
                     b.Property<DateTime>("requestDate")
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getdate()");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("status")
                         .IsRequired()

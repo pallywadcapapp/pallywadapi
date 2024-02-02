@@ -19,5 +19,6 @@ namespace PallyWad.Domain
         public bool extractedStatus { get; set; }
         public string type { get; set; }
         public int year { get; set; } = DateTime.Now.Year;
+        public string? transOwner { get; set; }
     }
 }

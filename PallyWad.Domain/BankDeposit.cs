@@ -15,7 +15,7 @@ namespace PallyWad.Domain
         public double amount { get; set; }
         public string otherdetails { get; set; }
         public double? loanDeductAmount { get; set; }
-        public string loanRefId { get; set; }
+        public string? loanRefId { get; set; }
         [Required]
         public string memberId { get; set; }
         public string fullname { get; set; }
@@ -24,8 +24,8 @@ namespace PallyWad.Domain
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime requestDate { get; set; }
         public DateTime? approvalDate { get; set; }
-        public string approvedBy { get; set; }
-        public string postedBy { get; set; }
+        public string? approvedBy { get; set; }
+        public string? postedBy { get; set; }
         public string channel { get; set; }
     }
 }

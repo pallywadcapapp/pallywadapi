@@ -69,6 +69,13 @@ namespace PallyWad.Infrastructure.Data
 
             modelBuilder.Entity<BankDeposit>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+            modelBuilder.Entity<BankDeposit>(entity => {
+                //entity.ToTable("BankDeposits");
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.depositId).HasComputedColumnSql($"CONCAT('PLLY/BP/'," + "cast(Id as varchar(100)))", true);
+                entity.Property(e => e.requestDate).HasDefaultValueSql("getdate()");
+
+            });
 
             modelBuilder.Entity<LoanRepayment>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
