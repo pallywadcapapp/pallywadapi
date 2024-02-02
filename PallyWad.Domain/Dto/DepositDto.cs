@@ -14,5 +14,6 @@ namespace PallyWad.Domain.Dto
         public double amount { get; set; }
         public string otherdetails { get; set; }
         public string channel { get; set; }
+        public string loanRefId { get; set; }
     }
 }

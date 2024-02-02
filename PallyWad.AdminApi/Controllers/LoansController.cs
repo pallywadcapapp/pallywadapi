@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PallyWad.Domain;
 using PallyWad.Domain.Dto;
@@ -53,6 +54,17 @@ namespace PallyWad.AdminApi.Controllers
                 .Where(u => u.transdate >= start && u.transdate <= end)
                 .OrderByDescending(x => x.transdate);
             return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("LoanTransDetail")]
+        public IActionResult GetLoanTransDetail(string loanId)
+        {
+            var loans = _loanTransService.GetAllLoanTrans()
+            .Where(u => u.loanrefnumber == loanId)
+            .OrderByDescending(u => u.transdate).FirstOrDefault();
+            return Ok(loans);
+
         }
         #endregion
 
@@ -128,6 +140,18 @@ namespace PallyWad.AdminApi.Controllers
                     "", pid, fullname);
             }*/
             return Ok(savingsDeduction);
+        }
+        #endregion
+
+        #region Put
+
+
+        [Authorize]
+        [HttpPost("loanclearance")]
+        public IActionResult PostLoanClearance(LoanTrans loanTrans)
+        {
+            _loanTransService.UpdateLoanTrans(loanTrans);
+            return Ok(loanTrans);
         }
         #endregion
     }
