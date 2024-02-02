@@ -104,7 +104,7 @@ namespace PallyWad.AdminApi.Controllers
             return Ok(deposit);
         }
 
-        /*
+        
         [HttpPost, Route("processDeposit")]
         public async Task<IActionResult> ProcessDeposit(BankDeposit deposit)
         {
@@ -117,12 +117,13 @@ namespace PallyWad.AdminApi.Controllers
             var intAcc = _glAccountService.GetAccByName("INTEREST RECEIVED (MEMBER WITHDRAWAL)");
             var member = _userService.GetUser(deposit.memberId); //_memberService.Getmember(deposit.MemberId);
             DateTime endOfMonth = deposit.approvalDate.Value; //DateTime.Now;
+            var fullname = member.lastname + " " + member.firstname + " " + member.othernames;
 
             //var interestRate = header.savingsIntRate;
             //double interest = fundsRequest.amount * interestRate / 100;
 
-            var glref = gLPostingRepository.PostMemberSaving(Convert.ToDecimal(deposit.amount), member.Accountno,
-               bankAcc.accountno, member.Memberid, "(" + pid + ")", "", endOfMonth, member.Fullname);
+            //var glref = gLPostingRepository.PostMemberSaving(Convert.ToDecimal(deposit.amount), member.Accountno,
+            //   bankAcc.accountno, member.Memberid, "(" + pid + ")", "", endOfMonth, fullname);
             if (deposit.loanDeductAmount > 0)
             {
 
@@ -134,9 +135,9 @@ namespace PallyWad.AdminApi.Controllers
                     if (repayment != null)
                     {
 
-                        var loanAccNo = GetAccNo(loan.loanrefnumber, member.Memberid);
-                        var deductloan = gLPostingRepository.PostSavingToLoan(Convert.ToDecimal(deposit.loanDeductAmount),
-                        member.Accountno, loanAccNo, member.Memberid, "(" + pid + ")", "", endOfMonth, member.Fullname, category);
+                        var loanAccNo = GetAccNo(loan.loanrefnumber, member.UserName);
+                        var deductloan = gLPostingRepository.PostPaymentToLoan((deposit.loanDeductAmount??0),
+                        bankAcc.accountno, loanAccNo, member.UserName, "(" + pid + ")", "", endOfMonth, fullname, category);
                         var repay = repayment.loanamount - repayment.repayamount;
                         if (repay > 0)
                         {
@@ -164,11 +165,11 @@ namespace PallyWad.AdminApi.Controllers
 
                 //lodgeLoanDeductions(deposit, loan, tenantId, member, id);
             }
-            PostSavingsProcessedForMemberAccount(deposit, glref, glref, pid, member.Fullname);
+            //PostSavingsProcessedForMemberAccount(deposit, glref, glref, pid, member.Fullname);
             //PostFundsWithdrawalInterestProcessedForMemberAccount(fundsRequest.memberId, interest, intglref, intglref, tenantId, id);
             await UpdateRequest(deposit.Id, pid);
             return Ok(deposit);
-        }*/
+        }
 
         [HttpPost, Route("fundrequestdecline")]
         public async Task<IActionResult> ProcessFundRequest(int id)
@@ -251,7 +252,7 @@ namespace PallyWad.AdminApi.Controllers
             var loanrepay = new LoanRepayment() { };
             var refno = DateTime.Now.ToString("yyyyMMddHHmmssffff");
             //loanrepay.branchname = member.Branchname;
-            loanrepay.description = loan.description + " REPAYMENT IN THE MONTH OF " +
+            loanrepay.description = loan.description + " REPAYMENT OF "+ mntly.loanRefId +" IN THE MONTH OF " +
              CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(DateTime.Now.Month) + " " + DateTime.Now.Year;
             loanrepay.interestamt = loan.interestamt;
             loanrepay.memberid = memberId;

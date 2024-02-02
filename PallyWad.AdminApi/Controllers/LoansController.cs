@@ -66,6 +66,18 @@ namespace PallyWad.AdminApi.Controllers
             return Ok(loans);
 
         }
+
+        [HttpGet]
+        [Route("ActiveLoan")]
+        public IActionResult GetctiveLoanHistory(string memberId)
+        {
+            var princ = HttpContext.User;
+            var id = princ.Identity.Name;
+            var loanHistory = _loanTransService.ListLoanHistory(memberId)
+                .Where(u => u.repay == 1)
+            .OrderByDescending(u => u.transdate);
+            return Ok(loanHistory);
+        }
         #endregion
 
         #region Post

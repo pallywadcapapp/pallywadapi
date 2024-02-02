@@ -194,7 +194,7 @@ namespace PallyWad.UserApi.Controllers
                 expiryDate = expiryDate,
                 name = name,
                 doctype = type,
-                status = false,
+                status = true,
                 url = path,
                 userId = memberId
             };

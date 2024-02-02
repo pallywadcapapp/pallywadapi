@@ -30,7 +30,9 @@ namespace PallyWad.UserApi.Controllers
         [Authorize]
         public IActionResult GetAllCollaterals()
         {
-            var result = _userCollateralService.ListAllUserCollateral();
+            var princ = HttpContext.User;
+            var memberId = princ.Identity?.Name;
+            var result = _userCollateralService.ListAllUserCollateral(memberId);
             return Ok(result);
         }
 

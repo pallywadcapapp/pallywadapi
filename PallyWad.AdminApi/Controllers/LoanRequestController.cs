@@ -31,13 +31,14 @@ namespace PallyWad.AdminApi.Controllers
         private readonly IMapper _mapper;
         //private readonly ILoanCollateralService _loanCollateralService;
         private readonly IGlAccountTier3Service _glAccountTier3Service;
+        private readonly ILoanRepaymentService _loanRepaymentService;
 
         public LoanRequestController(IHttpContextAccessor contextAccessor, ILogger<LoanRequestController> logger,
             ILoanSetupService loanSetupService, ILoanRequestService loanRequestService, IMembersAccountService membersAccountService,
             IGlAccountService glAccountService, IUserService userService, IGlAccountTransService glAccountTransService,
             ILoanTransService loanTransService, IChargesService chargesService, IMapper mapper, 
             //ILoanCollateralService loanCollateralService,
-            IGlAccountTier3Service glAccountTier3Service)
+            IGlAccountTier3Service glAccountTier3Service, ILoanRepaymentService loanRepaymentService)
         {
             _contextAccessor = contextAccessor;
             _logger = logger;
@@ -586,6 +587,32 @@ namespace PallyWad.AdminApi.Controllers
             gl.reportMap = "";
             gl.reportMapSub = "";
             _glAccountService.AddGlAccount(gl,"");
+        }
+
+        private void RegisterLoanDeduction(LoanTrans loan)
+        {
+            var currLoan = _loanTransService.GetLoanTransByRef(loan.loanrefnumber);
+            var refno = DateTime.Now.ToString("yyyyMMddHHmmssffff");
+            var repayment = new LoanRepayment()
+            {
+                description = currLoan.description,
+                interestamt = currLoan.interestamt,
+                //branchname = currLoan.Branchname,
+                loanamount = currLoan.totrepayable,
+                loancode = currLoan.loancode,
+                loanrefnumber = currLoan.loanrefnumber,
+                memberid = currLoan.memberid,
+                repayamount = currLoan.repayamount,
+                repayrefnumber = "LRPY/" + refno,
+                transdate = DateTime.Now, //DateTime.Now,
+                transmonth = DateTime.Now.Month, //DateTime.Now.Month,
+                transyear = DateTime.Now.Year, //DateTime.Now.Year,
+                created_date = DateTime.Now,
+                updated = 1,
+                Id = 0
+                //Updated = 1
+            };
+            _loanRepaymentService.AddLoanRepayment(repayment);
         }
 
         class AccFormat

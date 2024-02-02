@@ -239,7 +239,22 @@ namespace PallyWad.AdminApi
 
             return refno;
         }
+        public string PostPaymentToLoan(double amount, string accno, string memberLoanAcc, string userid,
+        string desc, string chequeNo, DateTime endofmonth, string fullname, string category)
+        {
+            var refno = DateTime.Now.ToString("yyyyMMddHHmmssffff");
+            var memberAcc = BuildTransaction(accno, amount, 0, userid,
+               "BEING " + category.ToUpper() + " REPAYMENT BY MEMBER " + fullname + " ON " + endofmonth.Day + " " + CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(endofmonth.Month) + " " + endofmonth.Year,
+                chequeNo, refno, endofmonth);
+            var bankAcc = BuildTransaction(memberLoanAcc, 0, amount, userid,
+                "BEING " + category.ToUpper() + " REPAYMENT BY MEMBER " + fullname + " ON " + endofmonth.Day + " " + CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(endofmonth.Month) + " " + endofmonth.Year,
+                chequeNo, refno, endofmonth);
 
+            PostAccTrans(memberAcc);
+            PostAccTrans(bankAcc);
+
+            return refno;
+        }
 
 
         public string PostAccountClosure(double amount, string accountno, string bankaccno, string postedBy, string desc, string v3, string fullname,
