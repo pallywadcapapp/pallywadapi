@@ -324,7 +324,8 @@ namespace PallyWad.Auth.Controllers
                 type = filetype,
                 year = DateTime.Now.Year,
                 created_date = DateTime.Now,
-                extractedStatus = true
+                extractedStatus = true,
+                transOwner = "profile"
             };
             _appUploadedFilesService.AddAppUploadedFiles(newAppUpload);
         }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using PallyWad.Domain;
 using PallyWad.Services;
@@ -93,7 +94,37 @@ namespace PallyWad.UserApi.Controllers
             memory.Position = 0;
             return File(memory, GetContentType(path), Path.GetFileName(path));
         }
+
+        [HttpGet, Route("Files")]
+        public async Task<IActionResult> GetFileDownload(string id)
+        {
+            if (id == null)
+                return BadRequest("filename not present");
+            var coll = _appUploadedFilesService.ListAllSetupAppUploadedFiles()
+                .Where(u=>u.comment == id && u.transOwner == "collateral");
+
+            if (coll == null)
+                return NotFound("collateral file not found");
+
+
+            //var filepath = coll.fileurl;
+
+            //var path = Path.Combine(
+            //               Directory.GetCurrentDirectory(),
+            //                filepath);
+
+            //var memory = new MemoryStream();
+            //using (var stream = new FileStream(path, FileMode.Open))
+            //{
+            //    await stream.CopyToAsync(memory);
+            //}
+            //memory.Position = 0;
+            //return File(memory, GetContentType(path), Path.GetFileName(path));
+            return Ok(coll);
+        }
         #endregion
+
+        #region Post
 
         [HttpPost, Route("UploadFile")]
         public async Task<IActionResult> OnPostUploadAsync(UserCollateralFileDto userCollateral)
@@ -157,9 +188,7 @@ namespace PallyWad.UserApi.Controllers
 
             return Ok(new { count = files.Count, size, filenames, status });
         }
-        #region Post
-
-
+       
         #endregion
 
         #region Put
@@ -176,7 +205,8 @@ namespace PallyWad.UserApi.Controllers
                 fileurl = path,
                 uploaderId = Id,
                 type = filetype,
-                year = DateTime.Now.Year
+                year = DateTime.Now.Year,
+                transOwner = "collateral"
             };
             _appUploadedFilesService.AddAppUploadedFiles(newAppUpload);
         }

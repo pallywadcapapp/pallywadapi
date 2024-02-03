@@ -179,7 +179,8 @@ namespace PallyWad.UserApi.Controllers
                 fileurl = path,
                 uploaderId = Id,
                 type = filetype,
-                year = DateTime.Now.Year
+                year = DateTime.Now.Year,
+                transOwner = "documents"
             };
             _appUploadedFilesService.AddAppUploadedFiles(newAppUpload);
         }

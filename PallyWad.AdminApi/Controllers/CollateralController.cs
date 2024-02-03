@@ -10,11 +10,13 @@ namespace PallyWad.AdminApi.Controllers
     {
         private readonly IUserCollateralService _userCollateralService;
         private readonly ICollateralService _collateralService;
-        public CollateralController(IUserCollateralService userCollateralService, ICollateralService collateralService)
+        private readonly IAppUploadedFilesService _appUploadedFilesService;
+        public CollateralController(IUserCollateralService userCollateralService, ICollateralService collateralService,
+            IAppUploadedFilesService appUploadedFilesService)
         {
             _userCollateralService = userCollateralService;
             _collateralService = collateralService;
-
+            _appUploadedFilesService = appUploadedFilesService;
         }
 
         #region Get
@@ -38,6 +40,22 @@ namespace PallyWad.AdminApi.Controllers
         {
             var result = _userCollateralService.ListAllUserCollateral().Where(u => u.Id == Id).FirstOrDefault();
             return Ok(result);
+        }
+
+
+        [HttpGet, Route("Files")]
+        public async Task<IActionResult> GetFileDownload(string id)
+        {
+            if (id == null)
+                return BadRequest("filename not present");
+            var coll = _appUploadedFilesService.ListAllSetupAppUploadedFiles()
+                .Where(u => u.comment == id && u.transOwner == "collateral");
+
+            if (coll == null)
+                return NotFound("collateral file not found");
+
+
+            return Ok(coll);
         }
         #endregion
 

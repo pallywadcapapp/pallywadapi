@@ -39,6 +39,11 @@ namespace PallyWad.Services
             return _appUploadedFilesRepository.Get(x => x.filename == filename);
         }
 
+        public AppUploadedFiles GetUploadedFile(int Id)
+        {
+            return _appUploadedFilesRepository.Get(x => x.Id == Id);
+        }
+
         public List<AppUploadedFiles> ListAllSetupAppUploadedFiles()
         {
             var parameters = new DynamicParameters();
@@ -66,5 +71,6 @@ namespace PallyWad.Services
         List<AppUploadedFiles> ListAllSetupAppUploadedFiles();
         void AddAppUploadedFiles(AppUploadedFiles appUploadedFiles);
         void UpdateAppUploadedFiles(AppUploadedFiles appUploadedFiles);
+        AppUploadedFiles GetUploadedFile(int Id);
     }
 }
