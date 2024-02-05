@@ -558,6 +558,7 @@ namespace PallyWad.Auth.Controllers
         }
 
         [HttpGet("ResetPasswordToken")]
+        [HttpPost("ResetPasswordToken")]
         //[ServiceFilter(typeof(ModelValidationFilter))]
         public async Task<IActionResult> SendChangePasswordToken(string username)
         {
@@ -617,6 +618,19 @@ namespace PallyWad.Auth.Controllers
                 return UnprocessableEntity("invalid user token");
 
             return Ok(new { status = "Ok", message = "Valid Token" });
+        }
+
+        [HttpPost("SetNewPassword")]
+        public async Task<IActionResult> MobileResetPassword(MSetPasswordBindingModel dto)
+        {
+            var _userManager = HttpContext.RequestServices
+                                            .GetRequiredService<UserManager<AppIdentityUser>>();
+            var user = await _userManager.FindByNameAsync(dto.UserId);
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);//new token for reseting password
+            var result = await _userManager.ResetPasswordAsync(user, token, dto.NewPassword);
+            if (!result.Succeeded)
+                return UnprocessableEntity(result.Errors);
+            return Ok();
         }
 
         [HttpPost("resetPassword")]
