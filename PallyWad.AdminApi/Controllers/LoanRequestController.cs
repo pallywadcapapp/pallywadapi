@@ -2,11 +2,16 @@
 using AutoMapper.Execution;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Configuration;
+using MimeKit;
+using PallyWad.Application;
 using PallyWad.Domain;
 using PallyWad.Domain.Dto;
 using PallyWad.Domain.Entities;
+using PallyWad.Infrastructure.Migrations;
 using PallyWad.Infrastructure.Migrations.AccountDb;
 using PallyWad.Services;
 using PallyWad.Services.Repository;
@@ -32,13 +37,16 @@ namespace PallyWad.AdminApi.Controllers
         //private readonly ILoanCollateralService _loanCollateralService;
         private readonly IGlAccountTier3Service _glAccountTier3Service;
         private readonly ILoanRepaymentService _loanRepaymentService;
-
+        private readonly ISmtpConfigService _smtpConfigService;
+        private readonly IConfiguration _config;
+        private readonly IMailService _mailService;
         public LoanRequestController(IHttpContextAccessor contextAccessor, ILogger<LoanRequestController> logger,
             ILoanSetupService loanSetupService, ILoanRequestService loanRequestService, IMembersAccountService membersAccountService,
             IGlAccountService glAccountService, IUserService userService, IGlAccountTransService glAccountTransService,
             ILoanTransService loanTransService, IChargesService chargesService, IMapper mapper, 
             //ILoanCollateralService loanCollateralService,
-            IGlAccountTier3Service glAccountTier3Service, ILoanRepaymentService loanRepaymentService)
+            IGlAccountTier3Service glAccountTier3Service, ILoanRepaymentService loanRepaymentService, ISmtpConfigService smtpConfigService,
+            IConfiguration config, IMailService mailService)
         {
             _contextAccessor = contextAccessor;
             _logger = logger;
@@ -54,6 +62,10 @@ namespace PallyWad.AdminApi.Controllers
             _mapper = mapper;
             //_loanCollateralService = loanCollateralService;
             _glAccountTier3Service = glAccountTier3Service;
+            _config = config;
+            _smtpConfigService = smtpConfigService;
+            _loanRepaymentService = loanRepaymentService;
+            _mailService = mailService;
         }
 
         #region Get
@@ -255,7 +267,12 @@ namespace PallyWad.AdminApi.Controllers
         [Route("loanrequestapproved")]
         public async Task<IActionResult> LoanRequestApproved(int id, int duration, double interest, double processingFee)
         {
+           
             var loan = _loanRequestService.GetLoanRequest(id);
+
+            var user = _userService.GetUserByEmail(loan.memberId);
+            var fullname = $"{user.lastname}, {user.firstname} {user.othernames}";
+
             loan.status = "Approved";
             loan.duration = duration;
             loan.loaninterest = interest;
@@ -263,6 +280,13 @@ namespace PallyWad.AdminApi.Controllers
             loan.approvalDate = DateTime.Now;
             loan.updated_date = DateTime.Now;
             _loanRequestService.UpdateLoanRequest(loan);
+            var mailReq = new MailRequest()
+            {
+                Body = "",
+                ToEmail = loan.memberId,
+                Subject = "Loan Approval"
+            };
+            await SendLoanApprovalMail(mailReq, loan, fullname);
             /*var member = _memberService.Getmember(loan.memberId);
             string message = "Dear " + member.Fullname + ", <br/>" +
                 " We wish to notify you that your loan with ref no " + loan.loanId +
@@ -291,11 +315,22 @@ namespace PallyWad.AdminApi.Controllers
         public async Task<IActionResult> LoanRequestDecline(int id, string reason)
         {
             var loan = _loanRequestService.GetLoanRequest(id);
+
+            var user = _userService.GetUserByEmail(loan.memberId);
+            var fullname = $"{user.lastname}, {user.firstname} {user.othernames}";
+
             loan.status = "Declined";
             loan.reason = reason;
             loan.approvalDate = DateTime.Now;
             loan.updated_date = DateTime.Now;
             _loanRequestService.UpdateLoanRequest(loan);
+            var mailReq = new MailRequest()
+            {
+                Body = "",
+                ToEmail = loan.memberId,
+                Subject = "Notice: Your Loan Application Status"
+            };
+            await SendLoanDeclineMail(mailReq, loan, fullname);
             /*var member = _memberService.Getmember(loan.memberId);
             string message = "Dear " + member.Fullname + ", <br/>" +
                 " We wish to notify you that your loan with ref no " + loan.loanId +
@@ -326,12 +361,25 @@ namespace PallyWad.AdminApi.Controllers
             var princ = HttpContext.User;
             var username = princ.Identity.Name;
             var loan = _loanRequestService.GetLoanRequest(Id);
+
+            var user = _userService.GetUserByEmail(loan.memberId);
+            var fullname = $"{user.lastname}, {user.firstname} {user.othernames}";
+
             loan.status = "Collaterized";
             loan.processState = "Collaterized";
             loan.approvalDate = DateTime.Now;
             loan.updated_date = DateTime.Now;
             loan.approvedBy = username;
             _loanRequestService.UpdateLoanRequest(loan);
+
+            var mailReq = new MailRequest()
+            {
+                Body = "",
+                ToEmail = loan.memberId,
+                Subject = "Loan Approval"
+            };
+            // await SendLoanDeclineMail(mailReq, loan, fullname);
+
             /*var member = _memberService.Getmember(loan.memberId);
             string message = "Dear " + member.Fullname + ", <br/>" +
                 " We wish to notify you that your loan with ref no " + loan.loanId +
@@ -614,6 +662,65 @@ namespace PallyWad.AdminApi.Controllers
             };
             _loanRepaymentService.AddLoanRepayment(repayment);
         }
+
+        internal async Task SendLoanApprovalMail(MailRequest request, LoanRequest lr, string fullname)
+        {
+
+            var mailkey = _config.GetValue<string>("AppSettings:AWSMail");
+            var mailConfig = _smtpConfigService.ListAllSetupSmtpConfig().Where(u => u.configname == mailkey).FirstOrDefault();
+            var company = _config.GetValue<string>("AppSettings:companyName");
+            if (mailConfig == null)
+            {
+                //return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Check email configuration!" });
+            }
+            else
+            {
+                var urllink = "<a href=\"https://pallywad.com/tos\">Terms and Conditions</a>";
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "loanapproval.html");
+                string emailTemplateText = System.IO.File.ReadAllText(filePath);
+                emailTemplateText = string.Format(emailTemplateText, fullname,
+                    AppCurrFormatter.GetFormattedCurrency(lr.amount, 2, "HA-LATN-NG"),
+                    $"{urllink}");
+                    //DateTime.Today.Date.ToShortDateString());
+
+                BodyBuilder emailBodyBuilder = new BodyBuilder();
+                emailBodyBuilder.HtmlBody = emailTemplateText;
+
+                var body = emailBodyBuilder.ToMessageBody();
+                await _mailService.SendEmailAsync(request, mailConfig, company, body);
+            }
+
+        }
+
+        internal async Task SendLoanDeclineMail(MailRequest request, LoanRequest lr, string fullname)
+        {
+
+            var mailkey = _config.GetValue<string>("AppSettings:AWSMail");
+            var mailConfig = _smtpConfigService.ListAllSetupSmtpConfig().Where(u => u.configname == mailkey).FirstOrDefault();
+            var company = _config.GetValue<string>("AppSettings:companyName");
+            if (mailConfig == null)
+            {
+                //return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Check email configuration!" });
+            }
+            else
+            {
+                var urllink = "<a href=\"https://app.pallywad.com/login\">Here</a>";
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "loandeclined.html");
+                string emailTemplateText = System.IO.File.ReadAllText(filePath);
+                emailTemplateText = string.Format(emailTemplateText, fullname,
+                    AppCurrFormatter.GetFormattedCurrency(lr.amount, 2, "HA-LATN-NG"),
+                    $"{urllink}");
+                //DateTime.Today.Date.ToShortDateString());
+
+                BodyBuilder emailBodyBuilder = new BodyBuilder();
+                emailBodyBuilder.HtmlBody = emailTemplateText;
+
+                var body = emailBodyBuilder.ToMessageBody();
+                await _mailService.SendEmailAsync(request, mailConfig, company, body);
+            }
+
+        }
+
 
         class AccFormat
         {
