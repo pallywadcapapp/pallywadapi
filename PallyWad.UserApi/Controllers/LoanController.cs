@@ -9,9 +9,11 @@ namespace PallyWad.UserApi.Controllers
     public class LoanController : ControllerBase
     {
         public readonly ILoanSetupService _loanSetupService;
-        public LoanController(ILoanSetupService loanSetupService)
+        public readonly ILoanTransService _loanTransService;
+        public LoanController(ILoanSetupService loanSetupService, ILoanTransService loanTransService)
         {
             _loanSetupService = loanSetupService;
+            _loanTransService = loanTransService;
         }
         #region
         [HttpGet]
@@ -20,6 +22,32 @@ namespace PallyWad.UserApi.Controllers
             var result = _loanSetupService.GetAllLoanSetups()
                 .OrderByDescending(u => u.Id);
             return Ok(result);
+        }
+
+
+        [HttpGet]
+        [Route("ActiveLoan")]
+        public IActionResult GetActiveLoanHistory()
+        {
+            var princ = HttpContext.User;
+            var memberid = princ.Identity.Name;
+            var loanHistory = _loanTransService.ListLoanHistory(memberid)
+                .Where(u => u.repay == 1)
+            .OrderByDescending(u => u.transdate);
+            return Ok(loanHistory);
+        }
+
+
+        [HttpGet]
+        [Route("InactiveLoan")]
+        public IActionResult GetInactiveLoanHistory()
+        {
+            var princ = HttpContext.User;
+            var memberid = princ.Identity.Name;
+            var loanHistory = _loanTransService.ListLoanHistory(memberid)
+                .Where(u => u.repay == 2)
+            .OrderByDescending(u => u.transdate);
+            return Ok(loanHistory);
         }
         #endregion
     }
