@@ -265,20 +265,25 @@ namespace PallyWad.AdminApi.Controllers
         #region Put
         [HttpPut]
         [Route("loanrequestapproved")]
-        public async Task<IActionResult> LoanRequestApproved(int id, int duration, double interest, double processingFee)
+        public async Task<IActionResult> LoanRequestApproved(LoanRequestVM lr)//, int Id, int duration, double interest, double processingFee)
         {
            
-            var loan = _loanRequestService.GetLoanRequest(id);
+            var loan = _loanRequestService.GetLoanRequest(lr.Id);
 
             var user = _userService.GetUserByEmail(loan.memberId);
             var fullname = $"{user.lastname}, {user.firstname} {user.othernames}";
 
+            double? mtrepay = (lr.amount / lr.duration) + lr.monthlyrepay;
+
             loan.status = "Approved";
-            loan.duration = duration;
-            loan.loaninterest = interest;
-            loan.processingFee = processingFee;
+            loan.duration = lr.duration;
+            loan.loaninterest = lr.loaninterest; // interest;
+            loan.processingFee = lr.processingFee;
             loan.approvalDate = DateTime.Now;
             loan.updated_date = DateTime.Now;
+            loan.monthlyrepay = lr.monthlyrepay;
+            loan.monthtotalrepay = mtrepay;
+            loan.loanmonthlyinterest = lr.loanmonthlyinterest;
             _loanRequestService.UpdateLoanRequest(loan);
             var mailReq = new MailRequest()
             {
@@ -530,7 +535,7 @@ namespace PallyWad.AdminApi.Controllers
         void updateProcessed(int id, string userid)
         {
             var loanreq = _loanRequestService.GetLoanRequest(id);
-            loanreq.status = "Approved";
+            loanreq.status = "Processed";
             loanreq.processState = "Processed";
             loanreq.approvalDate = DateTime.Now;
             loanreq.approvedBy = userid;

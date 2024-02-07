@@ -10,6 +10,7 @@ using System.Text;
 using PallyWad.Services.Extensions;
 using Microsoft.AspNetCore.Identity;
 using PallyWad.Domain;
+using PallyWad.Services.Connection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,8 @@ builder.AddServiceDefaults();
 
 ConfigurationManager configuration = builder.Configuration;
 var jwtAppSettingOptions = configuration.GetSection(nameof(JwtIssuerOptions));
+
+
 
 builder.Services.AddDbContext<AppIdentityDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ConnStr")));
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ConnStr")));

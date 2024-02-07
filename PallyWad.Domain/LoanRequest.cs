@@ -42,5 +42,6 @@ namespace PallyWad.Domain
         public virtual ICollection<LoanUserCollateral> loanUserCollaterals { get; set; }
         public virtual ICollection<LoanUserDocument> loanUserDocuments { get; set; }
         public string? reason { get; set; }
+        public double? loanmonthlyinterest { get; set; }
     }
 }

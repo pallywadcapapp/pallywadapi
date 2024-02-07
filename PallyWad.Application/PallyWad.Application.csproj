@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\PallyWad.Domain\PallyWad.Domain.csproj" />
   </ItemGroup>
 

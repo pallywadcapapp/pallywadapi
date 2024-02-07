@@ -77,7 +77,7 @@ namespace PallyWad.Services
         {
             var parameters = new DynamicParameters();
 
-            var result = _loanRequestRepository.FindAll().Where(x => x.status == "Approved" && x.processState == "Processed").ToList();
+            var result = _loanRequestRepository.FindAll().Where(x => x.status == "Processed" && x.processState == "Processed").ToList();
             return result;
             //return _LoanRequestRepository.Query<LoanRequest>("ListAllLoanRequest", parameters);
         }
@@ -86,7 +86,7 @@ namespace PallyWad.Services
         {
             var parameters = new DynamicParameters();
 
-            var result = _loanRequestRepository.FindAll().Where(x => x.status == "Approved" && x.processState != "Processed").ToList();
+            var result = _loanRequestRepository.FindAll().Where(x => x.status == "Collaterized" && x.processState != "Processed").ToList();
             return result;
             //return _LoanRequestRepository.Query<LoanRequest>("ListAllLoanRequest", parameters);
         }

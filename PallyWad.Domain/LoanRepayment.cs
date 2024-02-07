@@ -31,5 +31,6 @@ namespace PallyWad.Domain
         public int transyear { get; set; }
 
         public int updated { get; set; }
+        public double? interestRate { get; set; }
     }
 }

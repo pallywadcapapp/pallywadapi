@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PallyWad.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using PallyWad.Infrastructure.Data;
 namespace PallyWad.Infrastructure.Migrations.AppDb
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240206160232_loanmonthlyinterest")]
+    partial class loanmonthlyinterest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -245,9 +248,6 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
                     b.Property<string>("description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<double?>("interestRate")
-                        .HasColumnType("float");
 
                     b.Property<double>("interestamt")
                         .HasColumnType("float");

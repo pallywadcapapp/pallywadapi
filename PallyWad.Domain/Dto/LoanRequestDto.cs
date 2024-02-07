@@ -58,5 +58,6 @@ namespace PallyWad.Domain.Dto
         public int? duration { get; set; }
         public double? loaninterest { get; set; }
         public double processingFee { get; set; }
+        public double? loanmonthlyinterest { get; set; }
     }
 }

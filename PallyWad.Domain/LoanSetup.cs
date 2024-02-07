@@ -11,6 +11,7 @@ namespace PallyWad.Domain
         public string loancode { get; set; }
 
         public string loandesc { get; set; }
+        public string loanInterestType { get; set; }
 
         public double loaninterest { get; set; }
 

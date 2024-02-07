@@ -264,6 +264,7 @@ namespace PallyWad.AdminApi.Controllers
             loanrepay.transdate = DateTime.Now;
             loanrepay.transmonth = (DateTime.Now.Month);
             loanrepay.transyear = (DateTime.Now.Year);
+            loanrepay.interestRate = loan.interestRate;
 
             _loanRepaymentService.AddLoanRepayment(loanrepay);
 
