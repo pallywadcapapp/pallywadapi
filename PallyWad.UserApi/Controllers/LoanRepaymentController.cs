@@ -49,5 +49,17 @@ namespace PallyWad.UserApi.Controllers
             .OrderByDescending(u => u.transdate);
             return Ok(result);
         }
+
+        [HttpGet("LoanPosition")]
+        public IActionResult GetLoanPosition(string loanId)
+        {
+            var princ = HttpContext.User;
+            var memberid = princ.Identity.Name;
+            var result = _loanRepaymentService.GetAllLoanRepayments()
+               .Where(u => u.memberid == memberid && u.loanrefnumber == loanId)
+           .OrderByDescending(u => u.Id)
+           .FirstOrDefault();
+            return Ok(result);
+        }
     }
 }

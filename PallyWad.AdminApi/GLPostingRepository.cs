@@ -22,17 +22,17 @@ namespace PallyWad.AdminApi
             var bankAcc = BuildTransaction(bankacc, 0, amount, userid,
             "BEING " + desc + " REQUEST GRANTED FOR MEMBER " + fullname,
             chequeNo, refno, endOfMonth);
-            var memberIntAcc = BuildTransaction(accno, interest, 0, userid,
-            "BEING INTEREST ON " + desc + " REQUEST GRANTED FOR MEMBER " + fullname,
-            chequeNo, refno, endOfMonth);
-            var interestAcc = BuildTransaction(loanIntAcc, 0, interest, userid,
-            "BEING INTEREST ON " + desc + " REQUEST GRANTED FOR MEMBER " + fullname,
-            chequeNo, refno, endOfMonth);
+            //var memberIntAcc = BuildTransaction(accno, interest, 0, userid,
+            //"BEING INTEREST ON " + desc + " REQUEST GRANTED FOR MEMBER " + fullname,
+            //chequeNo, refno, endOfMonth);
+            //var interestAcc = BuildTransaction(loanIntAcc, 0, interest, userid,
+            //"BEING INTEREST ON " + desc + " REQUEST GRANTED FOR MEMBER " + fullname,
+            //chequeNo, refno, endOfMonth);
 
             PostAccTrans(memberAcc);
             PostAccTrans(bankAcc);
-            PostAccTrans(memberIntAcc);
-            PostAccTrans(interestAcc);
+            //PostAccTrans(memberIntAcc);
+            //PostAccTrans(interestAcc);
 
             return refno;
         }
@@ -255,6 +255,40 @@ namespace PallyWad.AdminApi
 
             return refno;
         }
+        public string PostInterestPaymentOnLoan(double amount, string accno, string memberLoanAcc, string userid,
+        string desc, string chequeNo, DateTime endofmonth, string fullname, string category)
+        {
+            var refno = DateTime.Now.ToString("yyyyMMddHHmmssffff");
+            var memberAcc = BuildTransaction(accno, amount, 0, userid,
+               "BEING " + category.ToUpper() + " INTEREST REPAYMENT BY MEMBER " + fullname + " ON " + endofmonth.Day + " " + CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(endofmonth.Month) + " " + endofmonth.Year,
+                chequeNo, refno, endofmonth);
+            var bankAcc = BuildTransaction(memberLoanAcc, 0, amount, userid,
+                "BEING " + category.ToUpper() + " INTEREST REPAYMENT BY MEMBER " + fullname + " ON " + endofmonth.Day + " " + CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(endofmonth.Month) + " " + endofmonth.Year,
+                chequeNo, refno, endofmonth);
+
+            PostAccTrans(memberAcc);
+            PostAccTrans(bankAcc);
+
+            return refno;
+        }
+        public string PostCapitalPaymentToLoan(double amount, string accno, string memberLoanAcc, string userid,
+        string desc, string chequeNo, DateTime endofmonth, string fullname, string category)
+        {
+            var refno = DateTime.Now.ToString("yyyyMMddHHmmssffff");
+            var memberAcc = BuildTransaction(accno, amount, 0, userid,
+               "BEING " + category.ToUpper() + " CAPITAL REPAYMENT BY MEMBER " + fullname + " ON " + endofmonth.Day + " " + CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(endofmonth.Month) + " " + endofmonth.Year,
+                chequeNo, refno, endofmonth);
+            var bankAcc = BuildTransaction(memberLoanAcc, 0, amount, userid,
+                "BEING " + category.ToUpper() + " CAPITAL REPAYMENT BY MEMBER " + fullname + " ON " + endofmonth.Day + " " + CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(endofmonth.Month) + " " + endofmonth.Year,
+                chequeNo, refno, endofmonth);
+
+            PostAccTrans(memberAcc);
+            PostAccTrans(bankAcc);
+
+            return refno;
+        }
+        
+
 
 
         public string PostAccountClosure(double amount, string accountno, string bankaccno, string postedBy, string desc, string v3, string fullname,

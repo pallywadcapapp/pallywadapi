@@ -42,7 +42,8 @@ namespace PallyWad.Services
         public LoanRepayment GetLoanRepayment(string id)
         {
             var _result = _loanRepaymentRepository.FindAll().Where(u => u.loanrefnumber == id)
-                .OrderByDescending(u => u.transdate);
+                .OrderByDescending(u => u.Id);
+                //.OrderByDescending(u => u.transdate);
             var result = _result.FirstOrDefault();
             return result;
         }

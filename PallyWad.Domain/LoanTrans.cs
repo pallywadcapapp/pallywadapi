@@ -55,6 +55,7 @@ namespace PallyWad.Domain
 
         public string glbankaccount { get; set; }
         public int repayOrder { get; set; }
+        public double? monthlyInterest { get; set; }
     }
 
     public class LoanTransExt : LoanTrans

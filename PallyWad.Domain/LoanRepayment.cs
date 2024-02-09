@@ -32,5 +32,7 @@ namespace PallyWad.Domain
 
         public int updated { get; set; }
         public double? interestRate { get; set; }
+        public int cappaymentcount { get; set; }
+
     }
 }

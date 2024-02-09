@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MimeKit;
+using PallyWad.Application;
 using PallyWad.Domain;
+using PallyWad.Domain.Entities;
 using PallyWad.Services;
 using System.Globalization;
 using System.Net.Mail;
@@ -22,11 +25,13 @@ namespace PallyWad.AdminApi.Controllers
         private readonly IUserService _userService;
         private readonly IConfiguration _config;
         GLPostingRepository gLPostingRepository;
+        private readonly ILoanRequestService _loanRequestService;
+        private readonly IMailService _mailService;
         public BankDepositController(IUserService userService, IBankDepositService bankDepositService,
             IGlAccountService glAccountService, IGlAccountTransService glAccountTransService,
             ILoanRepaymentService loanRepaymentService, ILoanTransService loanTransService,
             IMembersAccountService membersAccountService, ILoanSetupService loanSetupService, ISmtpConfigService smtpConfigService,
-             IConfiguration config) 
+             IConfiguration config, ILoanRequestService loanRequestService, IMailService mailService) 
         {
             _bankDepositService = bankDepositService;
             //_memberService = memberService;
@@ -38,6 +43,8 @@ namespace PallyWad.AdminApi.Controllers
             _loanSetupService = loanSetupService;
             _smtpConfigService = smtpConfigService;
             _userService = userService;
+            _loanRequestService = loanRequestService;
+            _mailService = mailService;
 
 
             gLPostingRepository = new GLPostingRepository(_glAccountTransService);
@@ -112,44 +119,100 @@ namespace PallyWad.AdminApi.Controllers
             var pid = princ.Identity.Name;
 
             //var header = _heaerService.Listheaders().FirstOrDefault();
+            var loanDet = _loanRequestService.GetAllLoanRequests().Where(u => u.loanId == deposit.loanRefId).FirstOrDefault();
+            if (loanDet == null)
+                return BadRequest("Invalid Loan Reference");
+            var bankname = $"INTEREST RECEIVED ({loanDet.category.ToUpper()})";
 
             var bankAcc = _glAccountService.GetAccByName("BANK ACCOUNT");
-            var intAcc = _glAccountService.GetAccByName("INTEREST RECEIVED (MEMBER WITHDRAWAL)");
+            var intAcc = _glAccountService.GetAccByName(bankname); //"INTEREST RECEIVED (MEMBER WITHDRAWAL)"
             var member = _userService.GetUser(deposit.memberId); //_memberService.Getmember(deposit.MemberId);
-            DateTime endOfMonth = deposit.approvalDate.Value; //DateTime.Now;
+            DateTime endOfMonth = DateTime.Now; //deposit.approvalDate.Value; //
             var fullname = member.lastname + " " + member.firstname + " " + member.othernames;
+
+            var mailReq = new MailRequest()
+            {
+                Body = "",
+                ToEmail = deposit.memberId,
+                Subject = "Loan Payment"
+            };
 
             //var interestRate = header.savingsIntRate;
             //double interest = fundsRequest.amount * interestRate / 100;
 
             //var glref = gLPostingRepository.PostMemberSaving(Convert.ToDecimal(deposit.amount), member.Accountno,
             //   bankAcc.accountno, member.Memberid, "(" + pid + ")", "", endOfMonth, fullname);
-            if (deposit.loanDeductAmount > 0)
+            if (deposit.amount > 0)
             {
 
-                try
-                {
-                    var loan = _loanTransService.ListLoanHistory(deposit.memberId).Where(u => u.repay == 1 && u.loancode == deposit.loanRefId).FirstOrDefault();//GetLoanTrans(deposit.loanRefId);
-                    var category = loanCategory(loan.loancode);
+                //try
+                //{
+                    //var loan = _loanTransService.ListLoanHistory(deposit.memberId).Where(u => u.repay == 1 && u.loancode == deposit.loanRefId).FirstOrDefault();//GetLoanTrans(deposit.loanRefId);
+                    var loan = _loanTransService.GetLoanTransByRef(deposit.loanRefId); // (deposit.memberId).Where(u => u.repay == 1 && u.loancode == deposit.loanRefId).FirstOrDefault();
+                    var category = loanDet.category; //loanCategory(loan.loancode);
                     var repayment = _loanRepaymentService.GetLoanRepayment(loan.loanrefnumber);
                     if (repayment != null)
                     {
 
                         var loanAccNo = GetAccNo(loan.loanrefnumber, member.UserName);
-                        var deductloan = gLPostingRepository.PostPaymentToLoan((deposit.loanDeductAmount??0),
-                        bankAcc.accountno, loanAccNo, member.UserName, "(" + pid + ")", "", endOfMonth, fullname, category);
-                        var repay = repayment.loanamount - repayment.repayamount;
-                        if (repay > 0)
-                        {
-                            double loanAmount = repayment.loanamount - (deposit.loanDeductAmount??0);
-                            double repayAmount = (deposit.loanDeductAmount??0);
+                        var interestamount = repayment.interestamt;
+                        var loanamount = repayment.loanamount;
+                        var capcount = repayment.cappaymentcount;
+                        
 
-                            lodgeLoanDeductions(deposit, repayment, member.UserName, pid, loanAmount, repayAmount);
+                        if(deposit.amount > interestamount)
+                        {
+                            //var repay = repayment.loanamount - repayment.repayamount;
+                            var dur = loanDet.duration??0 - capcount; // payment duration left
+                            var capAmount = deposit.amount - interestamount;
+                            var loanCapital = repayment.loanamount - capAmount;
+
+                            if (dur < 1)
+                                dur = 1;
+
+                            var newInterest = loanCapital *  repayment.interestRate / dur;
+
+
+                            var interestpayable = gLPostingRepository.PostInterestPaymentOnLoan(interestamount, bankAcc.accountno, loanAccNo,
+                               member.UserName, "(" + pid + ")", "", endOfMonth, fullname, category);
+
+                            var deductloan = gLPostingRepository.PostCapitalPaymentToLoan((capAmount),
+                       bankAcc.accountno, loanAccNo, member.UserName, "(" + pid + ")", "", endOfMonth, fullname, category);
+                             capcount +=1 ;
+                            lodgeLoanDeductions(deposit, repayment, member.UserName,pid, loanCapital, deposit.loanDeductAmount??0,newInterest??0,
+                                repayment.interestRate??0,capcount);
+
+                            await SendLoanInterestPaymentMail(mailReq, repayment, fullname, interestamount);
+
+                            await SendLoanCapitalPaymentMail(mailReq, repayment, fullname, capAmount);
+
+                            //if (repay > 0)
+                            //{
+                            //    double loanAmount = repayment.loanamount - (deposit.loanDeductAmount ?? 0);
+                            //    double repayAmount = (deposit.loanDeductAmount ?? 0);
+
+                            //    lodgeLoanDeductions(deposit, repayment, member.UserName, pid, loanAmount, repayAmount);
+                            //}
+                            //else
+                            //{
+                            //    // update loan as fully paid
+                            //}
                         }
                         else
                         {
-                            // update loan as fully paid
+                            // only interest payable
+
+                            var interestpayable = gLPostingRepository.PostInterestPaymentOnLoan(deposit.amount, bankAcc.accountno, loanAccNo,
+                                member.UserName, "(" + pid + ")", "", endOfMonth, fullname, category);
+
+                            lodgeLoanDeductions(deposit, repayment, member.UserName, pid, repayment.loanamount, deposit.loanDeductAmount??0,
+                                deposit.amount,repayment.interestRate??0, capcount);
+
+                            await SendLoanInterestPaymentMail(mailReq, repayment, fullname, deposit.amount);
+
                         }
+
+                       
 
                     }
                     else
@@ -157,11 +220,11 @@ namespace PallyWad.AdminApi.Controllers
                         //loan repayment record does not exist
 
                     }
-                }
-                catch (Exception e)
-                {
+                //}
+                //catch (Exception e)
+                //{
 
-                }
+                //}
 
                 //lodgeLoanDeductions(deposit, loan, tenantId, member, id);
             }
@@ -217,6 +280,7 @@ namespace PallyWad.AdminApi.Controllers
         }
 
 
+        #region Helper
         async Task UpdateRequest(int id, string user)
         {
             var fr = _bankDepositService.GetBankDeposits(id);
@@ -238,7 +302,7 @@ namespace PallyWad.AdminApi.Controllers
             string org = "";
             try
             {
-                await SendEmailNotification(member.UserName, message, "Fund Deposit (Approved)", org);
+                //await SendEmailNotification(member.UserName, message, "Fund Deposit (Approved)", org);
             }
             catch
             {
@@ -246,7 +310,8 @@ namespace PallyWad.AdminApi.Controllers
             }
         }
 
-        private void lodgeLoanDeductions(BankDeposit mntly, LoanRepayment loan, string memberId, string postedBy, double loanAmount, double repayAmount)
+        private void lodgeLoanDeductions(BankDeposit mntly, LoanRepayment loan, string memberId, string postedBy, double loanAmount,
+            double repayAmount, double interestamt, double interestRate, int capcount)
         {
 
             var loanrepay = new LoanRepayment() { };
@@ -254,7 +319,7 @@ namespace PallyWad.AdminApi.Controllers
             //loanrepay.branchname = member.Branchname;
             loanrepay.description = loan.description + " REPAYMENT OF "+ mntly.loanRefId +" IN THE MONTH OF " +
              CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(DateTime.Now.Month) + " " + DateTime.Now.Year;
-            loanrepay.interestamt = loan.interestamt;
+            loanrepay.interestamt = interestamt; //loan.interestamt;
             loanrepay.memberid = memberId;
             loanrepay.loanamount = loanAmount; //  Convert.ToDecimal(mntly.loanDeductAmount);
             loanrepay.loancode = loan.loancode;
@@ -264,7 +329,8 @@ namespace PallyWad.AdminApi.Controllers
             loanrepay.transdate = DateTime.Now;
             loanrepay.transmonth = (DateTime.Now.Month);
             loanrepay.transyear = (DateTime.Now.Year);
-            loanrepay.interestRate = loan.interestRate;
+            loanrepay.interestRate = interestRate; // loan.interestRate;
+            loanrepay.cappaymentcount = capcount;
 
             _loanRepaymentService.AddLoanRepayment(loanrepay);
 
@@ -305,5 +371,65 @@ namespace PallyWad.AdminApi.Controllers
 
             }
         }
+
+        internal async Task SendLoanInterestPaymentMail(MailRequest request, LoanRepayment lr, string fullname, double amount)
+        {
+
+            var mailkey = _config.GetValue<string>("AppSettings:AWSMail");
+            var mailConfig = _smtpConfigService.ListAllSetupSmtpConfig().Where(u => u.configname == mailkey).FirstOrDefault();
+            var company = _config.GetValue<string>("AppSettings:companyName");
+            if (mailConfig == null)
+            {
+                //return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Check email configuration!" });
+            }
+            else
+            {
+                var urllink = "<a href=\"https://pallywad.com/tos\">Terms and Conditions</a>";
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "loaninterestpay.html");
+                string emailTemplateText = System.IO.File.ReadAllText(filePath);
+                emailTemplateText = string.Format(emailTemplateText, fullname,
+                    AppCurrFormatter.GetFormattedCurrency(amount, 2, "HA-LATN-NG"),
+                    $"{urllink}");
+                //DateTime.Today.Date.ToShortDateString());
+
+                BodyBuilder emailBodyBuilder = new BodyBuilder();
+                emailBodyBuilder.HtmlBody = emailTemplateText;
+
+                var body = emailBodyBuilder.ToMessageBody();
+                await _mailService.SendEmailAsync(request, mailConfig, company, body);
+            }
+
+        }
+
+
+        internal async Task SendLoanCapitalPaymentMail(MailRequest request, LoanRepayment lr, string fullname, double capAmount)
+        {
+
+            var mailkey = _config.GetValue<string>("AppSettings:AWSMail");
+            var mailConfig = _smtpConfigService.ListAllSetupSmtpConfig().Where(u => u.configname == mailkey).FirstOrDefault();
+            var company = _config.GetValue<string>("AppSettings:companyName");
+            if (mailConfig == null)
+            {
+                //return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Check email configuration!" });
+            }
+            else
+            {
+                var urllink = "<a href=\"https://pallywad.com/tos\">Terms and Conditions</a>";
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "loancapitalpay.html");
+                string emailTemplateText = System.IO.File.ReadAllText(filePath);
+                emailTemplateText = string.Format(emailTemplateText, fullname,
+                    AppCurrFormatter.GetFormattedCurrency(capAmount, 2, "HA-LATN-NG"),
+                    $"{urllink}");
+                //DateTime.Today.Date.ToShortDateString());
+
+                BodyBuilder emailBodyBuilder = new BodyBuilder();
+                emailBodyBuilder.HtmlBody = emailTemplateText;
+
+                var body = emailBodyBuilder.ToMessageBody();
+                await _mailService.SendEmailAsync(request, mailConfig, company, body);
+            }
+
+        }
+        #endregion
     }
 }

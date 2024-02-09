@@ -236,7 +236,7 @@ namespace PallyWad.AdminApi.Controllers
             _loanTransService.AddLoanTrans(loanTrans);
             PostLoanCollaterals(loanRequest, loanRequest.collateralId);
             //PostLoanProcessedForMemberAccount(lr, glref, loanTrans.loanrefnumber, id, repayAmount, loanSetup.loandesc, member.lastname);
-            updateProcessed(loanRequest.Id, id);
+            updateApprProcessed(loanRequest.Id, id);
             return Ok(loanTrans);
         }
 
@@ -292,24 +292,6 @@ namespace PallyWad.AdminApi.Controllers
                 Subject = "Loan Approval"
             };
             await SendLoanApprovalMail(mailReq, loan, fullname);
-            /*var member = _memberService.Getmember(loan.memberId);
-            string message = "Dear " + member.Fullname + ", <br/>" +
-                " We wish to notify you that your loan with ref no " + loan.loanId +
-                " has been approved. <br /> Loan Amount: " +
-                GetFormattedCurrency(Convert.ToDecimal(loan.amount), 2, "HA-LATN-NG")
-                //string.Format("{0:C}", Convert.ToDecimal(gr.amount ) )
-                + ".";
-
-            
-            string org = header.Coyname;
-            try
-            {
-                await SendEmailNotification(member.Memberid, message, "Loan Request (Approval)", org);
-            }
-            catch
-            {
-
-            }*/
 
             return Ok(loan);
 
@@ -336,24 +318,6 @@ namespace PallyWad.AdminApi.Controllers
                 Subject = "Notice: Your Loan Application Status"
             };
             await SendLoanDeclineMail(mailReq, loan, fullname);
-            /*var member = _memberService.Getmember(loan.memberId);
-            string message = "Dear " + member.Fullname + ", <br/>" +
-                " We wish to notify you that your loan with ref no " + loan.loanId +
-                " has been declined. <br /> Loan Amount: " +
-                GetFormattedCurrency(Convert.ToDecimal(loan.amount), 2, "HA-LATN-NG")
-                //string.Format("{0:C}", Convert.ToDecimal(gr.amount ) )
-                + ".";
-
-            var header = _tblHeaderService.Getheaders();
-            string org = header.Coyname;
-            try
-            {
-                await SendEmailNotification(member.Memberid, message, "Loan Request (Declined)", org);
-            }
-            catch
-            {
-
-            }*/
 
             return Ok(loan);
 
@@ -381,28 +345,11 @@ namespace PallyWad.AdminApi.Controllers
             {
                 Body = "",
                 ToEmail = loan.memberId,
-                Subject = "Loan Approval"
+                Subject = "Loan Collateral Review"
             };
-            // await SendLoanDeclineMail(mailReq, loan, fullname);
+            await SendLoanCollaterizedMail(mailReq, loan, fullname);
 
-            /*var member = _memberService.Getmember(loan.memberId);
-            string message = "Dear " + member.Fullname + ", <br/>" +
-                " We wish to notify you that your loan with ref no " + loan.loanId +
-                " has been declined. <br /> Loan Amount: " +
-                GetFormattedCurrency(Convert.ToDecimal(loan.amount), 2, "HA-LATN-NG")
-                //string.Format("{0:C}", Convert.ToDecimal(gr.amount ) )
-                + ".";
-
-            var header = _tblHeaderService.Getheaders();
-            string org = header.Coyname;
-            try
-            {
-                await SendEmailNotification(member.Memberid, message, "Loan Request (Declined)", org);
-            }
-            catch
-            {
-
-            }*/
+           
 
             return Ok(loan);
 
@@ -419,9 +366,9 @@ namespace PallyWad.AdminApi.Controllers
             var bankAcc = _glAccountService.GetAccByName("BANK ACCOUNT");
             //var GLbankAcc = _glAccountService.GetAccByName("POLARIS");
             var loanSetup = _loanSetupService.GetLoanSetup(lr.loanCode);
-            //var baseSetup = _baseSettingService.GetBaseSettings(tenantId);
             var member = _userService.GetUserByEmail(lr.memberId);  //_memberService.Getmember(lr.memberId);
-            var loanInterest = lr.loaninterest; //loanSetup.Loaninterest;
+            var loanInterest = lr.loaninterest;
+            var monthlyInterest = lr.loanmonthlyinterest;
             var loanDuration = lr.duration; //Convert.ToInt32(loanSetup.Duration);
             var processingFee = lr.processingFee;
             var amount = lr.amount;
@@ -452,16 +399,7 @@ namespace PallyWad.AdminApi.Controllers
             {
                 accno = pp.accountno;
             }
-
-            /*if(category == "Long Term")
-            {
-                accno = member.Loanaccountno;
-            }
-            else
-            {
-                accno = member.Shortloanaccountno;
-            }*/
-            var monthlyPay = repayAmount / loanDuration;
+            //var monthlyPay = repayAmount / loanDuration;
 
             //get loan type for specific account
 
@@ -473,11 +411,13 @@ namespace PallyWad.AdminApi.Controllers
                 transdate = lr.approvalDate, //DateTime.Now,
                 repaystartdate = lr.approvalDate.AddMonths(1), //DateTime.Now,
                 loanamount = (lr.amount),
+                monthlyInterest = lr.monthlyrepay, // monthly interest amount payable
                 totrepayable = (repayAmount),
-                repayamount = (monthlyPay ?? 0),
+                repayamount = lr.monthtotalrepay??0, //(monthlyPay ?? 0),
                 interestamt = (interest),
                 payableacctno = loanSetup.accountno,
                 loaninterest = (loanInterest ?? 0), //loanSetup.Loaninterest,
+                
                 processrate = loanSetup.processrate,
                 //Processamt
                 duration = Convert.ToInt16(loanDuration), //loanSetup.Duration,
@@ -499,7 +439,6 @@ namespace PallyWad.AdminApi.Controllers
                 try
                 {
                     var chargecode = _chargesService.GetCharges(loanSetup.chargecode);
-                    //var procFeeAcc = _glAccountServiceD.GetAccByName(chargecode.Accountno);
                     var procFeeref = gLPostingRepository.PostProcessingFeeDeductMemberSaving((processingFee),
                 accno, chargecode.accountno, id, "",
                 "", lr.approvalDate, fullname);
@@ -515,6 +454,7 @@ namespace PallyWad.AdminApi.Controllers
             _loanTransService.AddLoanTrans(loanTrans);
             //PostLoanGuarantors(lr, tenantId, repayAmount);
             //PostLoanProcessedForMemberAccount(lr, glref, loanTrans.loanrefnumber, tenantId, id, repayAmount, loanSetup.loandesc, member.Fullname);
+            RegisterLoanDeduction(loanTrans);
             updateProcessed(lr.Id, id);
             return Ok(loanTrans);
 
@@ -542,6 +482,17 @@ namespace PallyWad.AdminApi.Controllers
             _loanRequestService.UpdateLoanRequest(loanreq);
         }
 
+        void updateApprProcessed(int id, string userid)
+        {
+            var loanreq = _loanRequestService.GetLoanRequest(id);
+            loanreq.status = "Approved";
+            loanreq.processState = "Approved";
+            loanreq.approvalDate = DateTime.Now;
+            loanreq.approvedBy = userid;
+            _loanRequestService.UpdateLoanRequest(loanreq);
+        }
+
+            
         void PostLoanCollaterals(LoanRequest loanRequest, string collateralId)
         {
             //ILoanCollateralService loanCollateralService
@@ -651,7 +602,8 @@ namespace PallyWad.AdminApi.Controllers
                 description = currLoan.description,
                 interestamt = currLoan.interestamt,
                 //branchname = currLoan.Branchname,
-                loanamount = currLoan.totrepayable,
+                loanamount = currLoan.loanamount,
+                interestRate = loan.loaninterest,
                 loancode = currLoan.loancode,
                 loanrefnumber = currLoan.loanrefnumber,
                 memberid = currLoan.memberid,
@@ -662,7 +614,8 @@ namespace PallyWad.AdminApi.Controllers
                 transyear = DateTime.Now.Year, //DateTime.Now.Year,
                 created_date = DateTime.Now,
                 updated = 1,
-                Id = 0
+                Id = 0,
+                cappaymentcount = 0
                 //Updated = 1
             };
             _loanRepaymentService.AddLoanRepayment(repayment);
@@ -725,6 +678,36 @@ namespace PallyWad.AdminApi.Controllers
             }
 
         }
+
+        internal async Task SendLoanCollaterizedMail(MailRequest request, LoanRequest lr, string fullname)
+        {
+
+            var mailkey = _config.GetValue<string>("AppSettings:AWSMail");
+            var mailConfig = _smtpConfigService.ListAllSetupSmtpConfig().Where(u => u.configname == mailkey).FirstOrDefault();
+            var company = _config.GetValue<string>("AppSettings:companyName");
+            if (mailConfig == null)
+            {
+                //return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Check email configuration!" });
+            }
+            else
+            {
+                var urllink = "<a href=\"https://app.pallywad.com/login\">Here</a>";
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "loancollaterized.html");
+                string emailTemplateText = System.IO.File.ReadAllText(filePath);
+                emailTemplateText = string.Format(emailTemplateText, fullname,
+                    AppCurrFormatter.GetFormattedCurrency(lr.amount, 2, "HA-LATN-NG"),
+                    $"{urllink}");
+                //DateTime.Today.Date.ToShortDateString());
+
+                BodyBuilder emailBodyBuilder = new BodyBuilder();
+                emailBodyBuilder.HtmlBody = emailTemplateText;
+
+                var body = emailBodyBuilder.ToMessageBody();
+                await _mailService.SendEmailAsync(request, mailConfig, company, body);
+            }
+
+        }
+        
 
 
         class AccFormat
