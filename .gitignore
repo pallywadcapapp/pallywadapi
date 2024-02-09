@@ -361,4 +361,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/PallyWad.UserApi/FileUploads
+#/PallyWad.UserApi/FileUploads
