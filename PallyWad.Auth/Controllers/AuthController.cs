@@ -708,7 +708,7 @@ namespace PallyWad.Auth.Controllers
             }
             catch
             {
-                throw;
+                //throw;
             }
         }
 
@@ -751,7 +751,7 @@ namespace PallyWad.Auth.Controllers
             }
             catch
             {
-                throw;
+                //throw;
             }
         }
         async Task SendWelcomeEmail(AppIdentityUser user, SmtpConfig mailConfig)
@@ -796,7 +796,7 @@ namespace PallyWad.Auth.Controllers
             }
             catch
             {
-                throw;
+                //throw;
             }
         }
 
@@ -838,7 +838,7 @@ namespace PallyWad.Auth.Controllers
             }
             catch
             {
-                throw;
+                //throw;
             }
         }
 
@@ -866,7 +866,7 @@ namespace PallyWad.Auth.Controllers
             }
             catch
             {
-                throw;
+                //throw;
             }
         }
 
