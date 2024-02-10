@@ -663,6 +663,7 @@ namespace PallyWad.Auth.Controllers
             return Ok();
         }
 
+        [Authorize]
         [HttpPost]
         [Route("ChangePassword")]
         public async Task<IActionResult> ChangePassword(ChangePasswordBindingModel model)
