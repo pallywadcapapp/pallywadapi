@@ -663,7 +663,60 @@ namespace PallyWad.Auth.Controllers
             return Ok();
         }
 
+        [HttpPost]
+        [Route("ChangePassword")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordBindingModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var _userManager = HttpContext.RequestServices
+                                        .GetRequiredService<UserManager<AppIdentityUser>>();
+            //IdentityResult result = await UserManager.ChangePasswordAsync(User.Identity.GetUserId(), model.OldPassword,
+            //model.NewPassword);
+            var user = _userManager.Users.FirstOrDefault(u => u.Id == User.Identity.Name);
+            IdentityResult result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                return GetErrorResult(result);
+            }
+
+            return Ok();
+        }
+
         #region helpers
+        private IActionResult GetErrorResult(IdentityResult result)
+        {
+            if (result == null)
+            {
+                //return InternalServerError();
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+
+            if (!result.Succeeded)
+            {
+                if (result.Errors != null)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("", error.Description);
+                    }
+                }
+
+                if (ModelState.IsValid)
+                {
+                    // No ModelState errors are available to send, so just return an empty BadRequest.
+                    return BadRequest();
+                }
+
+                return BadRequest(ModelState);
+            }
+
+            return null;
+        }
+
         async Task SendRegEmail(AppIdentityUser user, RegisterModel model, SmtpConfig mailConfig, string route)
         {            
             try
