@@ -674,9 +674,11 @@ namespace PallyWad.Auth.Controllers
             }
             var _userManager = HttpContext.RequestServices
                                         .GetRequiredService<UserManager<AppIdentityUser>>();
+            var princ = HttpContext.User;
+            var memberid = princ.Identity.Name;
             //IdentityResult result = await UserManager.ChangePasswordAsync(User.Identity.GetUserId(), model.OldPassword,
             //model.NewPassword);
-            var user = _userManager.Users.FirstOrDefault(u => u.Id == User.Identity.Name);
+            var user = _userManager.Users.FirstOrDefault(u => u.UserName == User.Identity.Name);
             IdentityResult result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
 
             if (!result.Succeeded)
