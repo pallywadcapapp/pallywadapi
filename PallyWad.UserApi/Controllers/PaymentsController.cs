@@ -63,6 +63,17 @@ namespace PallyWad.UserApi.Controllers
             return Ok(result);
         }
 
+        [HttpGet, Route("TotalLoanPayment")]
+        public IActionResult GetTotalLoanPayment(string loanId)
+        {
+            var princ = HttpContext.User;
+            var memberId = princ.Identity?.Name;
+            var result = _bankDepositService.ListMemberBankDeposits(memberId)
+                .Where(u=>u.loanRefId == loanId && u.status == "Approved")
+                .Sum(u=>u.amount);
+            return Ok(result);
+        }
+
         //[HttpGet, Route("LoanAcc")]
         //public string GetAccNo(string loanrefno, string memberId)
         //{
