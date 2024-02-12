@@ -186,7 +186,7 @@ namespace PallyWad.UserApi.Controllers
             // Process uploaded files
             // Don't rely on or trust the FileName property without validation.
 
-            return Ok(new { count = files.Count, size, filenames, status });
+            return Ok(new { count = files.Count, size, filenames, status, id = collateralId });
         }
        
         #endregion
