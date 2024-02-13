@@ -61,5 +61,16 @@ namespace PallyWad.UserApi.Controllers
            .FirstOrDefault();
             return Ok(result);
         }
+
+        [HttpGet("totalPayment")]
+        public IActionResult GetTotalPayment(string loanId)
+        {
+            var princ = HttpContext.User;
+            var memberid = princ.Identity.Name;
+            var result = _loanRepaymentService.GetAllLoanRepayments()
+                .Where(u => u.memberid == memberid && u.loanrefnumber == loanId)
+                .Sum(u=>u.loanamount);
+            return Ok(result);
+        }
     }
 }

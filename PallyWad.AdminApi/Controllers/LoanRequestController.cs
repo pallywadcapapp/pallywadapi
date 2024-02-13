@@ -369,10 +369,10 @@ namespace PallyWad.AdminApi.Controllers
             var member = _userService.GetUserByEmail(lr.memberId);  //_memberService.Getmember(lr.memberId);
             var loanInterest = lr.loaninterest;
             var monthlyInterest = lr.loanmonthlyinterest;
-            var loanDuration = lr.duration; //Convert.ToInt32(loanSetup.Duration);
+            var loanDuration = lr.duration??1; 
             var processingFee = lr.processingFee;
             var amount = lr.amount;
-            var interest = amount * Convert.ToDouble(loanInterest) / 100;
+            var interest = amount * Convert.ToDouble(loanInterest) * loanDuration / 100;
             var repayAmount = amount + interest;
             var accno = "";
             var category = loanSetup.category;

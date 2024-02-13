@@ -37,6 +37,7 @@ namespace PallyWad.Auth.Controllers
 
         #region Get
 
+        [Authorize]
         [HttpGet("iseligible")]
         public async Task<IActionResult> GetIsEligible(){//string username) {
             try

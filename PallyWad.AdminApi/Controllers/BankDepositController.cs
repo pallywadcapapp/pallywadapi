@@ -170,7 +170,7 @@ namespace PallyWad.AdminApi.Controllers
                             if (dur < 1)
                                 dur = 1;
 
-                            var newInterest = loanCapital *  repayment.interestRate / dur;
+                            var newInterest = loanCapital *  repayment.interestRate / 100;
 
 
                             var interestpayable = gLPostingRepository.PostInterestPaymentOnLoan(interestamount, bankAcc.accountno, loanAccNo,
@@ -179,7 +179,7 @@ namespace PallyWad.AdminApi.Controllers
                             var deductloan = gLPostingRepository.PostCapitalPaymentToLoan((capAmount),
                        bankAcc.accountno, loanAccNo, member.UserName, "(" + pid + ")", "", endOfMonth, fullname, category);
                              capcount +=1 ;
-                            lodgeLoanDeductions(deposit, repayment, member.UserName,pid, loanCapital, deposit.loanDeductAmount??0,newInterest??0,
+                            lodgeLoanDeductions(deposit, repayment, member.UserName,pid, loanCapital, deposit.amount,newInterest??0,
                                 repayment.interestRate??0,capcount);
 
                             await SendLoanInterestPaymentMail(mailReq, repayment, fullname, interestamount);
@@ -205,7 +205,7 @@ namespace PallyWad.AdminApi.Controllers
                             var interestpayable = gLPostingRepository.PostInterestPaymentOnLoan(deposit.amount, bankAcc.accountno, loanAccNo,
                                 member.UserName, "(" + pid + ")", "", endOfMonth, fullname, category);
 
-                            lodgeLoanDeductions(deposit, repayment, member.UserName, pid, repayment.loanamount, deposit.loanDeductAmount??0,
+                            lodgeLoanDeductions(deposit, repayment, member.UserName, pid, repayment.loanamount, deposit.amount,
                                 deposit.amount,repayment.interestRate??0, capcount);
 
                             await SendLoanInterestPaymentMail(mailReq, repayment, fullname, deposit.amount);
@@ -225,11 +225,7 @@ namespace PallyWad.AdminApi.Controllers
                 //{
 
                 //}
-
-                //lodgeLoanDeductions(deposit, loan, tenantId, member, id);
             }
-            //PostSavingsProcessedForMemberAccount(deposit, glref, glref, pid, member.Fullname);
-            //PostFundsWithdrawalInterestProcessedForMemberAccount(fundsRequest.memberId, interest, intglref, intglref, tenantId, id);
             await UpdateRequest(deposit.Id, pid);
             return Ok(deposit);
         }
