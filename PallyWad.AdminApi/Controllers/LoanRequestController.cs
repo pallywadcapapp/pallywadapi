@@ -372,8 +372,9 @@ namespace PallyWad.AdminApi.Controllers
             var loanDuration = lr.duration??1; 
             var processingFee = lr.processingFee;
             var amount = lr.amount;
-            var interest = amount * Convert.ToDouble(loanInterest) * loanDuration / 100;
-            var repayAmount = amount + interest;
+            var interest = amount * Convert.ToDouble(loanInterest) / 100;
+            var totalinterest = amount * Convert.ToDouble(loanInterest) * loanDuration / 100;
+            var repayAmount = amount + totalinterest;
             var accno = "";
             var category = loanSetup.category;
             var repayOrder = loanSetup.repayOrder;
@@ -382,7 +383,7 @@ namespace PallyWad.AdminApi.Controllers
             string fullname = member.lastname + " " + member.firstname + " " + member.othernames;
             if (pp == null)
             {
-                var sfullname = member.lastname + " " + member.firstname + " " + member.othernames.Substring(0,1);
+                var sfullname = member.lastname + " " + member.firstname + " " + member.othernames;//.Substring(0,1);
                 var accSchema = new AccSchema()
                 {
                     desc = $"{sfullname} ({loanSetup.category})",
