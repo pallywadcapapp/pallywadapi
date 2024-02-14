@@ -15,6 +15,7 @@ namespace PallyWad.Domain
         public string repayrefnumber { get; set; }
 
         public DateTime transdate { get; set; }
+        public DateTime repaymentDate { get; set; }
 
         public string loancode { get; set; }
 
@@ -23,6 +24,7 @@ namespace PallyWad.Domain
         public double repayamount { get; set; }
 
         public double interestamt { get; set; }
+        public double interestbalance { get; set; } // used to track interest payment lag
 
         public string description { get; set; }
 

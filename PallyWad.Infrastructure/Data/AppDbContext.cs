@@ -50,6 +50,9 @@ namespace PallyWad.Infrastructure.Data
         public virtual DbSet<BankDeposit> BankDeposits { get; set; }
         public virtual DbSet<LoanRepayment> LoanRepayments { get; set; }
         public virtual DbSet<LoanTrans> LoanTrans { get; set; }
+        
+        public virtual DbSet<Notification> Notifications { get; set; }
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<GL>().Property(u => u.Id)
@@ -59,6 +62,9 @@ namespace PallyWad.Infrastructure.Data
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 
             modelBuilder.Entity<UserDocument>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
+            modelBuilder.Entity<Notification>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 
             modelBuilder.Entity<UserCollateral>().Property(u => u.Id)

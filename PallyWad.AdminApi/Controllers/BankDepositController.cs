@@ -158,10 +158,12 @@ namespace PallyWad.AdminApi.Controllers
                         var interestamount = repayment.interestamt;
                         var loanamount = repayment.loanamount;
                         var capcount = repayment.cappaymentcount;
+                    var interestbal = repayment.interestbalance;
                         
 
-                        if(deposit.amount > interestamount)
+                        if(deposit.amount > interestamount && (interestamount == interestbal))
                         {
+                        //fresh payment
                             //var repay = repayment.loanamount - repayment.repayamount;
                             var dur = loanDet.duration??0 - capcount; // payment duration left
                             var capAmount = deposit.amount - interestamount;
@@ -180,33 +182,66 @@ namespace PallyWad.AdminApi.Controllers
                        bankAcc.accountno, loanAccNo, member.UserName, "(" + pid + ")", "", endOfMonth, fullname, category);
                              capcount +=1 ;
                             lodgeLoanDeductions(deposit, repayment, member.UserName,pid, loanCapital, deposit.amount,newInterest??0,
-                                repayment.interestRate??0,capcount);
+                                repayment.interestRate??0,capcount,repayment.repaymentDate.AddMonths(1), 0);
 
                             await SendLoanInterestPaymentMail(mailReq, repayment, fullname, interestamount);
 
                             await SendLoanCapitalPaymentMail(mailReq, repayment, fullname, capAmount);
 
-                            //if (repay > 0)
-                            //{
-                            //    double loanAmount = repayment.loanamount - (deposit.loanDeductAmount ?? 0);
-                            //    double repayAmount = (deposit.loanDeductAmount ?? 0);
 
-                            //    lodgeLoanDeductions(deposit, repayment, member.UserName, pid, loanAmount, repayAmount);
-                            //}
-                            //else
-                            //{
-                            //    // update loan as fully paid
-                            //}
-                        }
+                    }
+                    else if (deposit.amount > interestbal)
+                    {
+                        /// continuation of part payment
+                        /// 
+
+                        var dur = loanDet.duration ?? 0 - capcount; // payment duration left
+                        var capAmount = deposit.amount - interestbal;
+                        var loanCapital = repayment.loanamount - capAmount;
+
+                        if (dur < 1)
+                            dur = 1;
+
+                        var newInterest = loanCapital * repayment.interestRate / 100;
+
+                        var interestpayable = gLPostingRepository.PostInterestPaymentOnLoan(interestbal, bankAcc.accountno, loanAccNo,
+                            member.UserName, "(" + pid + ")", "", endOfMonth, fullname, category);
+
+                        var deductloan = gLPostingRepository.PostCapitalPaymentToLoan((capAmount),
+                       bankAcc.accountno, loanAccNo, member.UserName, "(" + pid + ")", "", endOfMonth, fullname, category);
+                        capcount += 1;
+
+                        lodgeLoanDeductions(deposit, repayment, member.UserName, pid, loanCapital, deposit.amount, newInterest ?? 0,
+                            repayment.interestRate ?? 0, capcount, repayment.repaymentDate.AddMonths(1), 0);
+
+
+                        await SendLoanInterestPaymentMail(mailReq, repayment, fullname, deposit.amount);
+
+                        await SendLoanCapitalPaymentMail(mailReq, repayment, fullname, capAmount);
+
+                    }
+                    else if(deposit.amount == interestamount)
+                    {
+                        // only interest payable
+
+                        var interestpayable = gLPostingRepository.PostInterestPaymentOnLoan(deposit.amount, bankAcc.accountno, loanAccNo,
+                            member.UserName, "(" + pid + ")", "", endOfMonth, fullname, category);
+
+                        lodgeLoanDeductions(deposit, repayment, member.UserName, pid, repayment.loanamount, deposit.amount,
+                            deposit.amount, repayment.interestRate ?? 0, capcount, repayment.repaymentDate.AddMonths(1), 0);
+
+                        await SendLoanInterestPaymentMail(mailReq, repayment, fullname, deposit.amount);
+
+                    }
                         else
                         {
-                            // only interest payable
-
+                        // only interest payable
+                        var interestbalance = interestamount - deposit.amount;
                             var interestpayable = gLPostingRepository.PostInterestPaymentOnLoan(deposit.amount, bankAcc.accountno, loanAccNo,
                                 member.UserName, "(" + pid + ")", "", endOfMonth, fullname, category);
 
                             lodgeLoanDeductions(deposit, repayment, member.UserName, pid, repayment.loanamount, deposit.amount,
-                                deposit.amount,repayment.interestRate??0, capcount);
+                                deposit.amount,repayment.interestRate??0, capcount, repayment.repaymentDate, interestbalance);
 
                             await SendLoanInterestPaymentMail(mailReq, repayment, fullname, deposit.amount);
 
@@ -307,7 +342,7 @@ namespace PallyWad.AdminApi.Controllers
         }
 
         private void lodgeLoanDeductions(BankDeposit mntly, LoanRepayment loan, string memberId, string postedBy, double loanAmount,
-            double repayAmount, double interestamt, double interestRate, int capcount)
+            double repayAmount, double interestamt, double interestRate, int capcount, DateTime repayDate, double interestbalance)
         {
 
             var loanrepay = new LoanRepayment() { };
@@ -327,6 +362,8 @@ namespace PallyWad.AdminApi.Controllers
             loanrepay.transyear = (DateTime.Now.Year);
             loanrepay.interestRate = interestRate; // loan.interestRate;
             loanrepay.cappaymentcount = capcount;
+            loanrepay.interestbalance = interestbalance;
+            loanrepay.repaymentDate = repayDate;
 
             _loanRepaymentService.AddLoanRepayment(loanrepay);
 

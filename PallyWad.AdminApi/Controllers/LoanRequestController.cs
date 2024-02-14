@@ -616,7 +616,9 @@ namespace PallyWad.AdminApi.Controllers
                 created_date = DateTime.Now,
                 updated = 1,
                 Id = 0,
-                cappaymentcount = 0
+                cappaymentcount = 0,
+                interestbalance = currLoan.interestamt,
+                repaymentDate = DateTime.Now.AddMonths(1),
                 //Updated = 1
             };
             _loanRepaymentService.AddLoanRepayment(repayment);

@@ -14,9 +14,11 @@ namespace PallyWad.AdminApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        public UserController(IUserService userService)
+        private readonly INotificationsService _notificationsService;
+        public UserController(IUserService userService, INotificationsService notificationsService)
         {
             _userService = userService;
+            _notificationsService = notificationsService;
         }
         [Authorize]
         [AcceptVerbs("Get")]
@@ -98,6 +100,16 @@ namespace PallyWad.AdminApi.Controllers
             //var result = _repo.GetAllUsers();
             var result = _userService.GetAllUsers().Where(u => u.EmailConfirmed == false);
             return Ok(result);
+        }
+
+        [AcceptVerbs("Get", "Post")]
+        [Route("SendNotification")]
+        public IActionResult SendNotification(string memberId, string message)
+        {
+            //var result = _repo.GetAllUsers();
+            NotificationHelper.Notificatio(_notificationsService);
+            NotificationHelper.SendUserNotification(memberId, message);
+            return Ok();
         }
 
     }

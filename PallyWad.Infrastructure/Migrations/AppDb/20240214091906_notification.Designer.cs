@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PallyWad.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using PallyWad.Infrastructure.Data;
 namespace PallyWad.Infrastructure.Migrations.AppDb
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240214091906_notification")]
+    partial class notification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -255,9 +258,6 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
                     b.Property<double>("interestamt")
                         .HasColumnType("float");
 
-                    b.Property<double>("interestbalance")
-                        .HasColumnType("float");
-
                     b.Property<double>("loanamount")
                         .HasColumnType("float");
 
@@ -275,9 +275,6 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
 
                     b.Property<double>("repayamount")
                         .HasColumnType("float");
-
-                    b.Property<DateTime>("repaymentDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("repayrefnumber")
                         .IsRequired()
