@@ -11,6 +11,8 @@
 
   <ItemGroup>
     <!--<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6-Preview.2" />-->
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.300" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.305.26" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="AWSSDK.SimpleEmail" Version="3.7.300.28" />
     <PackageReference Include="Asp.Versioning.Mvc" Version="8.0.0" />
@@ -21,6 +23,7 @@
     <ProjectReference Include="..\PallyWad.Infrastructure\PallyWad.Infrastructure.csproj" />
     <ProjectReference Include="..\PallyWad.ServiceDefaults\PallyWad.ServiceDefaults.csproj" />
     <ProjectReference Include="..\PallyWad.Services\PallyWad.Services.csproj" />
+    <ProjectReference Include="..\PallyWad.Setup\PallyWad.Setup.csproj" />
   </ItemGroup>
 
   <ItemGroup>

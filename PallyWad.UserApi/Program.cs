@@ -10,6 +10,8 @@ using Microsoft.IdentityModel.Tokens;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
+using PallyWad.Services;
+using Amazon.S3;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +40,7 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailS
 
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonSimpleEmailService>();
+builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.RegisterServices(builder.Configuration);
 
 // Add services to the container.
