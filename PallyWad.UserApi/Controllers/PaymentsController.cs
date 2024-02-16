@@ -74,6 +74,43 @@ namespace PallyWad.UserApi.Controllers
             return Ok(result);
         }
 
+        [HttpGet, Route("imageUrl")]
+        public async Task<IActionResult> GetPaymentUrl(string id)
+        {
+            try
+            {
+                var princ = HttpContext.User;
+                var memberId = princ.Identity?.Name;
+                var upfile = _appUploadedFilesService.ListAllSetupAppUploadedFiles()
+                    .Where(u => u.comment == id && u.transOwner == "Deposit").FirstOrDefault();
+                var path = Path.Combine(
+                               Directory.GetCurrentDirectory(),
+                               upfile.fileurl);
+
+                var memory = new MemoryStream();
+                using (var stream = new FileStream(path, FileMode.Open))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+                memory.Position = 0;
+                return File(memory, GetContentType(path), Path.GetFileName(path));
+            }
+            catch
+            {
+                var path = Path.Combine(
+                              Directory.GetCurrentDirectory(),
+                              "NC","R.png");
+
+                var memory = new MemoryStream();
+                using (var stream = new FileStream(path, FileMode.Open))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+                memory.Position = 0;
+                return File(memory, GetContentType(path), Path.GetFileName(path));
+            }
+        }
+
         //[HttpGet, Route("LoanAcc")]
         //public string GetAccNo(string loanrefno, string memberId)
         //{
@@ -180,6 +217,29 @@ namespace PallyWad.UserApi.Controllers
         #endregion
 
         #region helper
+        private string GetContentType(string path)
+        {
+            var types = GetMimeTypes();
+            var ext = Path.GetExtension(path).ToLowerInvariant();
+            return types[ext];
+        }
+        private Dictionary<string, string> GetMimeTypes()
+        {
+            return new Dictionary<string, string>
+            {
+                {".txt", "text/plain"},
+                {".pdf", "application/pdf"},
+                {".doc", "application/vnd.ms-word"},
+                {".docx", "application/vnd.ms-word"},
+                {".xls", "application/vnd.ms-excel"},
+                {".xlsx", "application/vnd.openxmlformats officedocument.spreadsheetml.sheet"},
+                {".png", "image/png"},
+                {".jpg", "image/jpeg"},
+                {".jpeg", "image/jpeg"},
+                {".gif", "image/gif"},
+                {".csv", "text/csv"}
+            };
+        }
         private string GetFormattedCurrency(decimal value, int decimalPlaces, string culture)
         {
             var cultureInfo = new System.Globalization.CultureInfo(culture);

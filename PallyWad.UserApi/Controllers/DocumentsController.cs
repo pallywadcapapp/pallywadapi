@@ -79,6 +79,7 @@ namespace PallyWad.UserApi.Controllers
         [HttpGet, Route("FileUploads")]
         public async Task<IActionResult> FileDownload(string filepath)
         {
+            try { 
             if (filepath == null)
                 return BadRequest("filename not present");
 
@@ -93,6 +94,21 @@ namespace PallyWad.UserApi.Controllers
             }
             memory.Position = 0;
             return File(memory, GetContentType(path), Path.GetFileName(path));
+            }
+            catch
+            {
+                var path = Path.Combine(
+                              Directory.GetCurrentDirectory(),
+                              "NC", "R.png");
+
+                var memory = new MemoryStream();
+                using (var stream = new FileStream(path, FileMode.Open))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+                memory.Position = 0;
+                return File(memory, GetContentType(path), Path.GetFileName(path));
+            }
         }
         #endregion
 

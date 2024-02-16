@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using PallyWad.Domain;
 using PallyWad.Services;
+using System.IO;
+using System;
 
 namespace PallyWad.UserApi.Controllers
 {
@@ -79,6 +81,7 @@ namespace PallyWad.UserApi.Controllers
         [HttpGet, Route("FileUploads")]
         public async Task<IActionResult> FileDownload(string filepath)
         {
+            try { 
             if (filepath == null)
                 return BadRequest("filename not present");
 
@@ -92,7 +95,21 @@ namespace PallyWad.UserApi.Controllers
                 await stream.CopyToAsync(memory);
             }
             memory.Position = 0;
-            return File(memory, GetContentType(path), Path.GetFileName(path));
+            return File(memory, GetContentType(path), Path.GetFileName(path)); 
+            }
+            catch
+            {
+                var path = Path.Combine(
+                              Directory.GetCurrentDirectory(),
+                              "NC", "R.png");
+                var memory = new MemoryStream();
+                using (var stream = new FileStream(path, FileMode.Open))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+                memory.Position = 0;
+                return File(memory, GetContentType(path), Path.GetFileName(path));
+            }
         }
 
         [HttpGet, Route("Files")]
