@@ -16,18 +16,13 @@ namespace PallyWad.Domain.Dto
         //public string memberId { get; set; }
         [Required]
         public double amount { get; set; }
-        //public string status { get; set; }
-        //public string processState { get; set; }
-        //[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        //public DateTime requestDate { get; set; }
-        //public DateTime? approvalDate { get; set; }
-        //public string approvedBy { get; set; }
-        //public string postedBy { get; set; }
-        //public int? duration { get; set; }
-        //public double? loaninterest { get; set; }
         public string? category { get; set; }
         public List<string> documentIdRefs { get; set; }
-        //public double processingFee { get; set; }
+        public string? age { get; set; }
+        public string purpose { get; set; }
+        public string? businessname { get; set; }
+        public string? sector { get; set; }
+        public double preferredRate { get; set; }
     }
 
     public class LoanRequestVM

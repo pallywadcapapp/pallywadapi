@@ -16,6 +16,7 @@ namespace PallyWad.Domain
         //public string pre { get; set; }
         public bool readStatus { get; set; }
         public string? senderId { get; set; }
+        public string subject { get; set; }
         //public int MyProperty { get; set; }
     }
 }
