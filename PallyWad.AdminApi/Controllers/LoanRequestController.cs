@@ -336,9 +336,11 @@ namespace PallyWad.AdminApi.Controllers
 
             loan.status = "Collaterized";
             loan.processState = "Collaterized";
-            loan.approvalDate = DateTime.Now;
+            loan.collaterizedDate = DateTime.Now;
             loan.updated_date = DateTime.Now;
             loan.approvedBy = username;
+            loan.isCollateralReceived = true;
+            loan.isDocmentProvided = true;
             _loanRequestService.UpdateLoanRequest(loan);
 
             var mailReq = new MailRequest()
@@ -358,7 +360,7 @@ namespace PallyWad.AdminApi.Controllers
         [Authorize]
         [HttpPut]
         [Route("ProcessLoanRequest")]
-        public IActionResult ProcessLoanRequests([FromBody] LoanRequestVM lr)
+        public async Task<IActionResult> ProcessLoanRequests([FromBody] LoanRequestVM lr)
         {
             var princ = HttpContext.User;
             var id = princ.Identity.Name;
@@ -457,6 +459,13 @@ namespace PallyWad.AdminApi.Controllers
             //PostLoanProcessedForMemberAccount(lr, glref, loanTrans.loanrefnumber, tenantId, id, repayAmount, loanSetup.loandesc, member.Fullname);
             RegisterLoanDeduction(loanTrans);
             updateProcessed(lr.Id, id);
+            var mailReq = new MailRequest()
+            {
+                Body = "",
+                ToEmail = lr.memberId,
+                Subject = "Loan Disbursement "
+            };
+            await SendLoanProcessedMail(mailReq, loanTrans, fullname);
             return Ok(loanTrans);
 
         }
@@ -478,7 +487,8 @@ namespace PallyWad.AdminApi.Controllers
             var loanreq = _loanRequestService.GetLoanRequest(id);
             loanreq.status = "Processed";
             loanreq.processState = "Processed";
-            loanreq.approvalDate = DateTime.Now;
+            loanreq.processedDate = DateTime.Now;
+            loanreq.isProcessCleared = true;
             loanreq.approvedBy = userid;
             _loanRequestService.UpdateLoanRequest(loanreq);
         }
@@ -710,7 +720,37 @@ namespace PallyWad.AdminApi.Controllers
             }
 
         }
-        
+
+        internal async Task SendLoanProcessedMail(MailRequest request, LoanTrans lr, string fullname)
+        {
+
+            var mailkey = _config.GetValue<string>("AppSettings:AWSMail");
+            var mailConfig = _smtpConfigService.ListAllSetupSmtpConfig().Where(u => u.configname == mailkey).FirstOrDefault();
+            var company = _config.GetValue<string>("AppSettings:companyName");
+            if (mailConfig == null)
+            {
+                //return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Check email configuration!" });
+            }
+            else
+            {
+                var urllink = "<a href=\"https://app.pallywad.com/login\">Here</a>";
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "loancollaterized.html");
+                string emailTemplateText = System.IO.File.ReadAllText(filePath);
+                emailTemplateText = string.Format(emailTemplateText, fullname,
+                    AppCurrFormatter.GetFormattedCurrency(lr.loanamount, 2, "HA-LATN-NG"),
+                    $"{urllink}");
+                //DateTime.Today.Date.ToShortDateString());
+
+                BodyBuilder emailBodyBuilder = new BodyBuilder();
+                emailBodyBuilder.HtmlBody = emailTemplateText;
+
+                var body = emailBodyBuilder.ToMessageBody();
+                await _mailService.SendEmailAsync(request, mailConfig, company, body);
+            }
+
+        }
+
+
 
 
         class AccFormat

@@ -21,6 +21,7 @@ namespace PallyWad.Domain.Dto
         public string email { get; set; }
         public string? employmentStatus { get; set; }
         public string? fullname { get; set; }
+        public string imgUrl { get; set; }
         //[JsonIgnore]
         //public virtual AppIdentityUser AppIdentityUser { get; set; } = new AppIdentityUser();
     }
