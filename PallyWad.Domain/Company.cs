@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PallyWad.Domain
 {
-    public class Company
+    public class Company: BaseModel
     {
         public string name { get; set; }
         public string address { get; set; }

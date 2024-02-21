@@ -54,5 +54,7 @@ namespace PallyWad.Domain
         public bool isCollateralReceived { get; set; }
         public bool isProcessCleared { get; set; }
         public string? admiDocumentRef { get; set; }
+        public double? collateralValue { get; set; }
+        public double? estimatedCollateralValue { get; set; }
     }
 }

@@ -40,13 +40,15 @@ namespace PallyWad.AdminApi.Controllers
         private readonly ISmtpConfigService _smtpConfigService;
         private readonly IConfiguration _config;
         private readonly IMailService _mailService;
+        private readonly ICompanyService _companyService;
+        private readonly IAppUploadedFilesService _appUploadedFilesService;
         public LoanRequestController(IHttpContextAccessor contextAccessor, ILogger<LoanRequestController> logger,
             ILoanSetupService loanSetupService, ILoanRequestService loanRequestService, IMembersAccountService membersAccountService,
             IGlAccountService glAccountService, IUserService userService, IGlAccountTransService glAccountTransService,
             ILoanTransService loanTransService, IChargesService chargesService, IMapper mapper, 
             //ILoanCollateralService loanCollateralService,
             IGlAccountTier3Service glAccountTier3Service, ILoanRepaymentService loanRepaymentService, ISmtpConfigService smtpConfigService,
-            IConfiguration config, IMailService mailService)
+            IConfiguration config, IMailService mailService, ICompanyService companyService, IAppUploadedFilesService appUploadedFilesService)
         {
             _contextAccessor = contextAccessor;
             _logger = logger;
@@ -66,6 +68,8 @@ namespace PallyWad.AdminApi.Controllers
             _smtpConfigService = smtpConfigService;
             _loanRepaymentService = loanRepaymentService;
             _mailService = mailService;
+            _companyService = companyService;
+            _appUploadedFilesService = appUploadedFilesService;
         }
 
         #region Get
@@ -285,13 +289,15 @@ namespace PallyWad.AdminApi.Controllers
             loan.monthtotalrepay = mtrepay;
             loan.loanmonthlyinterest = lr.loanmonthlyinterest;
             _loanRequestService.UpdateLoanRequest(loan);
+
+            var company = _companyService.GetCompany();
             var mailReq = new MailRequest()
             {
                 Body = "",
                 ToEmail = loan.memberId,
-                Subject = "Loan Approval"
+                Subject = "Loan Request Pre-Approved"
             };
-            await SendLoanApprovalMail(mailReq, loan, fullname);
+            await SendLoanApprovalMail(mailReq, loan, fullname, company);
 
             return Ok(loan);
 
@@ -311,13 +317,15 @@ namespace PallyWad.AdminApi.Controllers
             loan.approvalDate = DateTime.Now;
             loan.updated_date = DateTime.Now;
             _loanRequestService.UpdateLoanRequest(loan);
+
+            var company = _companyService.GetCompany();
             var mailReq = new MailRequest()
             {
                 Body = "",
                 ToEmail = loan.memberId,
                 Subject = "Notice: Your Loan Application Status"
             };
-            await SendLoanDeclineMail(mailReq, loan, fullname);
+            await SendLoanDeclineMail(mailReq, loan, fullname, company);
 
             return Ok(loan);
 
@@ -325,7 +333,7 @@ namespace PallyWad.AdminApi.Controllers
 
         [HttpPut]
         [Route("ApproveLoanRequestCollateral")]
-        public async Task<IActionResult> ApproveLoanRequestCollateral(int Id)
+        public async Task<IActionResult> ApproveLoanRequestCollateral(int Id, double collateralValue)
         {
             var princ = HttpContext.User;
             var username = princ.Identity.Name;
@@ -339,6 +347,7 @@ namespace PallyWad.AdminApi.Controllers
             loan.collaterizedDate = DateTime.Now;
             loan.updated_date = DateTime.Now;
             loan.approvedBy = username;
+            loan.collateralValue = collateralValue;
             loan.isCollateralReceived = true;
             loan.isDocmentProvided = true;
             _loanRequestService.UpdateLoanRequest(loan);
@@ -347,7 +356,7 @@ namespace PallyWad.AdminApi.Controllers
             {
                 Body = "",
                 ToEmail = loan.memberId,
-                Subject = "Loan Collateral Review"
+                Subject = "Loan Collateral Approved "
             };
             await SendLoanCollaterizedMail(mailReq, loan, fullname);
 
@@ -471,6 +480,67 @@ namespace PallyWad.AdminApi.Controllers
         }
 
 
+        [HttpPost, Route("UploadFile")]
+        public async Task<IActionResult> OnPostUploadAsync(UserCollateralFileDto userCollateral)
+        {
+            List<IFormFile> files = userCollateral.file;
+            long size = files.Sum(f => f.Length);
+            List<string> filenames = new List<string>();
+            List<string> status = new List<string>();
+
+            var princ = HttpContext.User;
+            var memberId = princ.Identity.Name;
+
+            var loan = _loanRequestService.GetAllLoanRequests().Where(u => u.loanId == userCollateral.loanId).FirstOrDefault();
+            
+            if (loan == null)
+                return BadRequest(new Response { Status = "error", Message = "loan type not found" });
+            if (memberId == null)
+                return Unauthorized(new Response { Status = "error", Message = "Token Expired" });
+            if (files == null)
+                return BadRequest();
+
+            foreach (var formFile in files)
+            {
+                if (formFile.Length > 0)
+                {
+                    //var filePath = Path.GetTempFileName();
+                    string dataFileName = Path.GetFileName(formFile.FileName);
+                    string extension = Path.GetExtension(dataFileName);
+
+
+                    string[] allowedExtsnions = new string[] { ".png", ".jpg", ".jpeg", ".pdf" };
+                    if (!allowedExtsnions.Contains(extension))
+                    {
+                        status.Add("Invalid File " + dataFileName + " for upload");
+                    }
+                    else
+                    {
+
+                        var filename = Path.GetRandomFileName() + Path.GetExtension(formFile.FileName);
+                        string dirPath = Path.Combine(_config["StoredFilesPath"]);
+                        var filePath = Path.Combine(_config["StoredFilesPath"], filename);
+                        if (!Directory.Exists(dirPath))
+                        {
+                            Directory.CreateDirectory(dirPath);
+                        }
+
+                        filenames.Add(filename);
+                        status.Add("File " + dataFileName + " valid for upload");
+                        using (var stream = System.IO.File.Create(filePath))
+                        {
+                            await formFile.CopyToAsync(stream);
+                            saveUpload(filename, filePath, memberId, Path.GetExtension(formFile.FileName),userCollateral.loanId);
+                        }
+                    }
+                }
+            }
+
+            // Process uploaded files
+            // Don't rely on or trust the FileName property without validation.
+
+            return Ok(new { count = files.Count, size, filenames, status, id = userCollateral.loanId });
+        }
 
 
         #endregion
@@ -634,7 +704,7 @@ namespace PallyWad.AdminApi.Controllers
             _loanRepaymentService.AddLoanRepayment(repayment);
         }
 
-        internal async Task SendLoanApprovalMail(MailRequest request, LoanRequest lr, string fullname)
+        internal async Task SendLoanApprovalMail(MailRequest request, LoanRequest lr, string fullname, Company _company)
         {
 
             var mailkey = _config.GetValue<string>("AppSettings:AWSMail");
@@ -651,7 +721,9 @@ namespace PallyWad.AdminApi.Controllers
                 string emailTemplateText = System.IO.File.ReadAllText(filePath);
                 emailTemplateText = string.Format(emailTemplateText, fullname,
                     AppCurrFormatter.GetFormattedCurrency(lr.amount, 2, "HA-LATN-NG"),
-                    $"{urllink}");
+                    $"{urllink}", lr.purpose, lr.duration, lr.loaninterest, lr.monthlyrepay, lr.category, lr.collateral,
+                    AppCurrFormatter.GetFormattedCurrency(lr.estimatedCollateralValue??0, 2, "HA-LATN-NG"),
+                    _company.address, _company.phoneno);
                     //DateTime.Today.Date.ToShortDateString());
 
                 BodyBuilder emailBodyBuilder = new BodyBuilder();
@@ -663,7 +735,7 @@ namespace PallyWad.AdminApi.Controllers
 
         }
 
-        internal async Task SendLoanDeclineMail(MailRequest request, LoanRequest lr, string fullname)
+        internal async Task SendLoanDeclineMail(MailRequest request, LoanRequest lr, string fullname, Company _company)
         {
 
             var mailkey = _config.GetValue<string>("AppSettings:AWSMail");
@@ -680,7 +752,7 @@ namespace PallyWad.AdminApi.Controllers
                 string emailTemplateText = System.IO.File.ReadAllText(filePath);
                 emailTemplateText = string.Format(emailTemplateText, fullname,
                     AppCurrFormatter.GetFormattedCurrency(lr.amount, 2, "HA-LATN-NG"),
-                    $"{urllink}");
+                    lr.reason, lr.purpose, lr.duration, lr.category, _company.phoneno, $"{urllink}");
                 //DateTime.Today.Date.ToShortDateString());
 
                 BodyBuilder emailBodyBuilder = new BodyBuilder();
@@ -709,7 +781,7 @@ namespace PallyWad.AdminApi.Controllers
                 string emailTemplateText = System.IO.File.ReadAllText(filePath);
                 emailTemplateText = string.Format(emailTemplateText, fullname,
                     AppCurrFormatter.GetFormattedCurrency(lr.amount, 2, "HA-LATN-NG"),
-                    $"{urllink}");
+                    $"{urllink}", lr.collateral, lr.collateralValue);
                 //DateTime.Today.Date.ToShortDateString());
 
                 BodyBuilder emailBodyBuilder = new BodyBuilder();
@@ -750,13 +822,58 @@ namespace PallyWad.AdminApi.Controllers
 
         }
 
+        void saveUpload(string filename, string path, string Id, string filetype, string loanId)
+        {
+            var newAppUpload = new AppUploadedFiles()
+            {
+                created_date = DateTime.Now,
+                comment = loanId,
+                filename = filename,
+                fileurl = path,
+                uploaderId = Id,
+                type = filetype,
+                year = DateTime.Now.Year,
+                transOwner = "admincollateral"
+            };
+            _appUploadedFilesService.AddAppUploadedFiles(newAppUpload);
+        }
 
+        private string GetContentType(string path)
+        {
+            var types = GetMimeTypes();
+            var ext = Path.GetExtension(path).ToLowerInvariant();
+            return types[ext];
+        }
+        private Dictionary<string, string> GetMimeTypes()
+        {
+            return new Dictionary<string, string>
+            {
+                {".txt", "text/plain"},
+                {".pdf", "application/pdf"},
+                {".doc", "application/vnd.ms-word"},
+                {".docx", "application/vnd.ms-word"},
+                {".xls", "application/vnd.ms-excel"},
+                {".xlsx", "application/vnd.openxmlformats officedocument.spreadsheetml.sheet"},
+                {".png", "image/png"},
+                {".jpg", "image/jpeg"},
+                {".jpeg", "image/jpeg"},
+                {".gif", "image/gif"},
+                {".csv", "text/csv"}
+            };
+        }
 
 
         class AccFormat
         {
             public string accno { get; set; }
             public string accd { get; set; }
+        }
+
+        public class UserCollateralFileDto
+        {
+            public string loanId { get; set; }
+            public List<IFormFile> file { get; set; }
+            public string otherdetails { get; set; }
         }
 
         #endregion

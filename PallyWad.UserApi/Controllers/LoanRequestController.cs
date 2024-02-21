@@ -231,7 +231,7 @@ namespace PallyWad.UserApi.Controllers
             {
                 Body = "",
                 ToEmail = memberId,
-                Subject = "Loan Request"
+                Subject = "Loan Request Received"
             };
             await SendConfMail(mailReq, loanRequest, fullname);
             return Ok(new Response { Status = "success", Message = loanRequest });
@@ -268,7 +268,8 @@ namespace PallyWad.UserApi.Controllers
             string emailTemplateText = System.IO.File.ReadAllText(filePath);
             emailTemplateText = string.Format(emailTemplateText, fullname,
                 AppCurrFormatter.GetFormattedCurrency(lr.amount, 2, "HA-LATN-NG"),
-                DateTime.Today.Date.ToShortDateString());
+                DateTime.Today.Date.ToShortDateString(), lr.category, lr.purpose, lr.duration, lr.preferredRate, lr.collateral,
+                AppCurrFormatter.GetFormattedCurrency(lr.estimatedCollateralValue??0, 2, "HA-LATN-NG"));
 
             BodyBuilder emailBodyBuilder = new BodyBuilder();
             emailBodyBuilder.HtmlBody = emailTemplateText;

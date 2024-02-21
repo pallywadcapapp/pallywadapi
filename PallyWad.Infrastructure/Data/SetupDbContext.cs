@@ -54,9 +54,14 @@ namespace PallyWad.Infrastructure.Data
         public virtual DbSet<ProductNo> ProductNos { get; set; }
         public virtual DbSet<NumbComp> NumbComps { get; set; }
         public virtual DbSet<NumbCompOrder> NumbCompOrders { get; set; }
+        public virtual DbSet<Company> Companies { get; set; }
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Company>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
             modelBuilder.Entity<SmtpConfig>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 

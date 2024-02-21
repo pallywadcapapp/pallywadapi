@@ -24,6 +24,7 @@ namespace PallyWad.Domain.Dto
         public string? sector { get; set; }
         public double preferredRate { get; set; }
         public string collateral { get; set; }
+        public string estimatedCollateralValue { get; set; }
     }
 
     public class LoanRequestVM
