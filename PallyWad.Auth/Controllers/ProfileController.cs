@@ -134,6 +134,15 @@ namespace PallyWad.Auth.Controllers
             return Ok(usermap);
         }
 
+        [AcceptVerbs("Get")]
+        [Route("UserById")]
+        public IActionResult GetUserById(string email)
+        {
+            var members = _userManager.Users.ToList().Where(u=>u.UserName == email).FirstOrDefault();
+            var usermap = _mapper.Map<UserProfileDto>(members);
+            return Ok(usermap);
+        }
+
 
         #endregion
 
