@@ -53,6 +53,16 @@ namespace PallyWad.AdminApi.Controllers
 
         #region get
 
+        [HttpGet, Route("PendingDeposits")]
+        public IActionResult GetPendingDeposits()
+        {
+            var result = _bankDepositService.ListBankDeposits()
+                .Where(u=>u.status == "Pending")
+                .OrderByDescending(u => u.requestDate)
+                .Take(5);
+            return Ok(result);
+        }
+
         [HttpGet, Route("Deposits")]
         public IActionResult Get()
         {
