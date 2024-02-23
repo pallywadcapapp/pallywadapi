@@ -59,7 +59,16 @@ builder.Services.AddHttpClient<SMSConfigService>(httpClient =>
 .AddHttpMessageHandler<LoggingDelegatingHandler>();
 
 // For Identity
-builder.Services.AddIdentity<AppIdentityUser, IdentityRole>()
+builder.Services.AddIdentity<AppIdentityUser, IdentityRole>(config =>
+{
+    
+    config.Password.RequireDigit = true;
+    config.Password.RequireLowercase = true;
+    config.Password.RequireNonAlphanumeric = false;
+    config.Password.RequireUppercase = true;
+    config.Password.RequiredLength = 8;
+    config.User.RequireUniqueEmail = true;
+})
     .AddEntityFrameworkStores<AppIdentityDbContext>()
 .AddDefaultTokenProviders()
 .AddPasswordlessLoginTotpTokenProvider();
