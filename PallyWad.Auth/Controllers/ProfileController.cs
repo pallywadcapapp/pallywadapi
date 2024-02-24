@@ -189,6 +189,13 @@ namespace PallyWad.Auth.Controllers
                 user.dob = profile.dob;
                 user.sex = profile.sex;
                 user.employmentStatus = profile.employmentStatus;
+                user.street = profile.street;
+                user.city = profile.city;
+                user.lga = profile.lga;
+                user.nin = profile.nin;
+                user.houseNo = profile.houseNo;
+                    user.closest = profile.closest;
+                    user.landmark = profile.landmark;
 
                 IdentityResult result = await _userManager.UpdateAsync(user);
                 return Ok(profile);
