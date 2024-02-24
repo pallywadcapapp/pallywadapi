@@ -20,8 +20,15 @@ namespace PallyWad.Domain
         //[JsonIgnore]
         //public virtual UserProfile UserProfile { get; set; }
         public DateTime? dob { get; set; }
-        public string? bvn { get; set; }
+        public string bvn { get; set; }
         public string? address { get; set; }
         public string? imgUrl { get; set; }
+        public string nin { get; set; }
+        public string houseNo { get; set; }
+        public string street { get; set; }
+        public string city { get; set; }
+        public string lga { get; set; }
+        public string? closest { get; set; }
+        public string? landmark { get; set; }
     }
 }

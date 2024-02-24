@@ -22,6 +22,13 @@ namespace PallyWad.Domain.Dto
         public string? employmentStatus { get; set; }
         public string? fullname { get; set; }
         public string imgUrl { get; set; }
+        public string nin { get; set; }
+        public string houseNo { get; set; }
+        public string street { get; set; }
+        public string city { get; set; }
+        public string lga { get; set; }
+        public string closest { get; set; }
+        public string landmark { get; set; }
         //[JsonIgnore]
         //public virtual AppIdentityUser AppIdentityUser { get; set; } = new AppIdentityUser();
     }
