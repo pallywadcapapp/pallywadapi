@@ -109,20 +109,75 @@ namespace PallyWad.Auth.Controllers
         [HttpGet, Route("FileUploads")]
         public async Task<IActionResult> FileDownload(string filepath)
         {
-            if (filepath == null)
-                return BadRequest("filename not present");
-
-            var path = Path.Combine(
-                           Directory.GetCurrentDirectory(),
-                           filepath);
-
-            var memory = new MemoryStream();
-            using (var stream = new FileStream(path, FileMode.Open))
+            try
             {
-                await stream.CopyToAsync(memory);
+
+                if (filepath == null)
+                    return BadRequest("filename not present");
+
+                var path = Path.Combine(
+                               Directory.GetCurrentDirectory(),
+                               filepath);
+
+                var memory = new MemoryStream();
+                using (var stream = new FileStream(path, FileMode.Open))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+                memory.Position = 0;
+                return File(memory, GetContentType(path), Path.GetFileName(path));
             }
-            memory.Position = 0;
-            return File(memory, GetContentType(path), Path.GetFileName(path));
+            catch
+            {
+                var path = Path.Combine(
+                               Directory.GetCurrentDirectory(),
+                               "Templates", "user-pic.png");
+
+                var memory = new MemoryStream();
+                using (var stream = new FileStream(path, FileMode.Open))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+                memory.Position = 0;
+                return File(memory, GetContentType(path), Path.GetFileName(path));
+            }
+        }
+
+        [HttpGet, Route("DashboardFileUploads")]
+        public async Task<IActionResult> GetDashboardFileDownload(string filepath)
+        {
+            try
+            {
+
+                if (filepath == null)
+                    return BadRequest("filename not present");
+
+                var path = Path.Combine(
+                               Directory.GetCurrentDirectory(),
+                               filepath);
+
+                var memory = new MemoryStream();
+                using (var stream = new FileStream(path, FileMode.Open))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+                memory.Position = 0;
+                return File(memory, GetContentType(path), Path.GetFileName(path));
+            }
+            catch
+            {
+                var path = Path.Combine(
+                               Directory.GetCurrentDirectory(),
+                               "Templates", "icon-set.png");
+
+                var memory = new MemoryStream();
+                using (var stream = new FileStream(path, FileMode.Open))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+                memory.Position = 0;
+                return File(memory, GetContentType(path), Path.GetFileName(path));
+            }
         }
 
         [Authorize(Roles ="Admin")]
