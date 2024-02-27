@@ -1,5 +1,6 @@
 ﻿using PallyWad.Domain;
 using PallyWad.Services;
+using System.Security.Cryptography.X509Certificates;
 
 namespace PallyWad.AdminApi
 {
@@ -17,7 +18,7 @@ namespace PallyWad.AdminApi
         {
             _notificationsService = notificationsService;
         }
-        public static void SendUserNotification(string memberId, string message)
+        public static void SendUserNotification(string memberId, string message, string subject)
         {
             var notif = new Notification()
             {
@@ -25,6 +26,7 @@ namespace PallyWad.AdminApi
                 readStatus = false,
                 message = message,
                 senderId = "Admin",
+                subject = subject,
                 created_date = DateTime.Now,
             };
             _notificationsService.AddNotification(notif);

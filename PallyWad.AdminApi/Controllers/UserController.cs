@@ -104,11 +104,11 @@ namespace PallyWad.AdminApi.Controllers
 
         [AcceptVerbs("Get", "Post")]
         [Route("SendNotification")]
-        public IActionResult SendNotification(string memberId, string message)
+        public IActionResult SendNotification(string memberId, string message, string subject)
         {
             //var result = _repo.GetAllUsers();
             NotificationHelper.Notificatio(_notificationsService);
-            NotificationHelper.SendUserNotification(memberId, message);
+            NotificationHelper.SendUserNotification(memberId, message, subject);
             return Ok();
         }
 
