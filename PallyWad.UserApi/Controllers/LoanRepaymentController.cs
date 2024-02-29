@@ -50,6 +50,17 @@ namespace PallyWad.UserApi.Controllers
             return Ok(result);
         }
 
+        [HttpGet("details")]
+        public IActionResult GetDetails(int id)
+        {
+            var princ = HttpContext.User;
+            var memberid = princ.Identity.Name;
+            var result = _loanRepaymentService.GetAllLoanRepayments()
+                .Where(u => u.Id == id)
+                .FirstOrDefault();
+            return Ok(result);
+        }
+
         [HttpGet("LoanPosition")]
         public IActionResult GetLoanPosition(string loanId)
         {

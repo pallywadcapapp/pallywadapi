@@ -22,7 +22,8 @@ namespace PallyWad.UserApi.Controllers
         {
             var princ = HttpContext.User;
             var memberId = princ.Identity?.Name;
-            var result = _notificationService.ListAllNotification(memberId);
+            var result = _notificationService.ListAllNotification(memberId)
+                .OrderByDescending(u=>u.Id);
             return Ok(result);
 
         }
@@ -34,7 +35,8 @@ namespace PallyWad.UserApi.Controllers
             var princ = HttpContext.User;
             var memberId = princ.Identity?.Name;
             var result = _notificationService.ListAllNotification(memberId)
-                .Where(u=>u.readStatus ==  false);
+                .Where(u=>u.readStatus ==  false)
+                .OrderByDescending(u => u.Id);
             return Ok(result);
 
         }
@@ -48,6 +50,22 @@ namespace PallyWad.UserApi.Controllers
             var result = _notificationService.GetNotification(id);
             return Ok(result);
 
+        }
+        #endregion
+
+        #region put
+
+        [Authorize]
+        [HttpPut("read")]
+        public IActionResult Put(int id)
+        {
+            var princ = HttpContext.User;
+            var memberId = princ.Identity?.Name;
+            var not = _notificationService.GetNotification(id);
+            if(not.memberId == memberId)
+            not.readStatus = true;
+            _notificationService.UpdateNotification(not);
+            return Ok(not);
         }
         #endregion
     }

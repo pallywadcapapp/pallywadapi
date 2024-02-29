@@ -78,6 +78,27 @@ namespace PallyWad.AdminApi.Controllers
             .OrderByDescending(u => u.transdate);
             return Ok(loanHistory);
         }
+
+
+        [HttpGet("repayydetails")]
+        public IActionResult GetDetails(int id)
+        {
+            var result = _loanRepaymentService.GetAllLoanRepayments()
+                .Where(u => u.Id == id)
+                .FirstOrDefault();
+            return Ok(result);
+        }
+
+
+        [HttpGet("recentrepayydetails")]
+        public IActionResult GetMostRecentRepayDetails(string loanid)
+        {
+            var result = _loanRepaymentService.GetAllLoanRepayments()
+                .Where(u => u.loanrefnumber == loanid)
+                .OrderByDescending(u=>u.Id)
+                .FirstOrDefault();
+            return Ok(result);
+        }
         #endregion
 
         #region Post
@@ -165,6 +186,15 @@ namespace PallyWad.AdminApi.Controllers
             _loanTransService.UpdateLoanTrans(loanTrans);
             return Ok(loanTrans);
         }
+
+        [Authorize]
+        [HttpPut("changeInterestRate")]
+        public IActionResult PutChangeInterestRate(LoanRepayment loanRepay)
+        {
+            _loanRepaymentService.UpdateLoanRepayment(loanRepay);
+            return Ok(loanRepay);
+        }
+        
         #endregion
     }
 }

@@ -68,10 +68,14 @@ builder.Services.AddIdentity<AppIdentityUser, IdentityRole>(config =>
     config.Password.RequireUppercase = true;
     config.Password.RequiredLength = 8;
     config.User.RequireUniqueEmail = true;
+
+    config.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+    config.SignIn.RequireConfirmedPhoneNumber = false;
 })
     .AddEntityFrameworkStores<AppIdentityDbContext>()
 .AddDefaultTokenProviders()
-.AddPasswordlessLoginTotpTokenProvider();
+.AddPasswordlessLoginTotpTokenProvider()
+.AddPasswordlessLoginTokenProvider();
 
 var jwtAppSettingOptions = configuration.GetSection(nameof(JwtIssuerOptions));
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.GetSection("JWT:Secret").Value));
