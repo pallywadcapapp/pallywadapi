@@ -45,6 +45,17 @@ namespace PallyWad.UserApi.Controllers
                 .Take(20);
             return Ok(result);
         }
+        [HttpGet("ByLoanId")]
+        public IActionResult GwtAllDeposits(string loanId)
+        {
+            var princ = HttpContext.User;
+            var memberId = princ.Identity?.Name;
+            var result = _bankDepositService.ListMemberBankDeposits(memberId)
+                .Where(u=>u.loanRefId == loanId)
+                .OrderByDescending(u => u.requestDate)
+                .Take(20);
+            return Ok(result);
+        }
 
         [HttpGet("ByDate")]
         public IActionResult GwtAllDepositsByDate(DateTime start, DateTime end)
