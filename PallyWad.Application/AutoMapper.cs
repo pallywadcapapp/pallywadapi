@@ -32,7 +32,8 @@ namespace PallyWad.Application
             CreateMap<string, LoanDocument>().ConstructUsing(str => new LoanDocument { documentId = str });
             CreateMap<string, LoanCollateral>().ConstructUsing(str => new LoanCollateral { collateralId = str });
             CreateMap<DepositDto, BankDeposit>().ReverseMap();
-            
+            CreateMap<UserBankDto, UserBank>().ReverseMap();
+
 
         }
     }
