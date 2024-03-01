@@ -9,9 +9,11 @@ namespace PallyWad.UserApi.Controllers
     public class LoanRepaymentController : ControllerBase
     {
         private readonly ILoanRepaymentService _loanRepaymentService;
-        public LoanRepaymentController(ILoanRepaymentService loanRepaymentService)
+        private readonly ILoanTransService _loanTransService;
+        public LoanRepaymentController(ILoanRepaymentService loanRepaymentService, ILoanTransService loanTransService)
         {
             _loanRepaymentService = loanRepaymentService;
+            _loanTransService = loanTransService;
         }
 
         [HttpGet]
@@ -71,6 +73,30 @@ namespace PallyWad.UserApi.Controllers
            .OrderByDescending(u => u.Id)
            .FirstOrDefault();
             return Ok(result);
+        }
+
+        [HttpGet("LoanOverheads")]
+        public IActionResult GetLoanOverheads()
+        {
+            //eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNlZ3h5MjcwOEBob3RtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJzZWd4eTI3MDhAaG90bWFpbC5jb20iLCJsYXN0bmFtZSI6Ik9kdXdvbGUiLCJmaXJzdG5hbWUiOiJPbHV3YXNlZ3VuIiwib3RoZXJuYW1lcyI6Ik9sdXdhZ2JlbmdhIiwiYWRkcmVzcyI6IjE4IFVuaXR5IFN0cmVldCBvZmYgb2xvbXUgd2F5Iiwic2V4IjoiTWFsZSIsImRvYiI6IjEvMjQvMTk4NCA5OjQxOjQxIEFNIiwianRpIjoiOWM0YmVkZTgtYTdmNC00MzEzLTk2ZjktYjFiOGUzNDVkOTUyIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjpbIkFkbWluIiwiUHJvdmlkZXIiXSwiZXhwIjoxNzA5MzA0NDQ0LCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjUwMDAiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjQyMDAifQ.6RLdBxLiVOVa7GtAF9Tg80-1iU-XG9xcnyHoLCgjgj4
+            var princ = HttpContext.User;
+            var memberid = princ.Identity.Name;
+            var loans = _loanTransService.GetAllLoanTrans()
+                .Where(u=>u.memberid == memberid && u.repay == 1);
+
+            double sums = 0;
+
+            foreach(var l in loans)
+            {
+                var repay = _loanRepaymentService.GetAllLoanRepayments()
+                    .Where(u=>u.loanrefnumber == l.loanrefnumber)
+                    .OrderByDescending(u=>u.Id) .FirstOrDefault();
+
+                if(repay != null)
+                sums += repay.loanamount;
+            }
+           
+            return Ok(sums);
         }
 
         [HttpGet("totalPayment")]
