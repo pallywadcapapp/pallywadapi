@@ -2,17 +2,43 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Loan Request</title>
+    <title>Loan Approval</title>
 </head>
 <body>
     <h1>Hello {0}!</h1>
     <p>
-        We are glad to receive a loan request from you today 🙂
+        This is to inform you that your loan request has been approved as follows: :
     </p>
-    <p>Below are the details of the loan
-        
+    <p>
+        <b>Loan Details</b> <br />
+        Type of Loan: <b>{7}</b> <br />
+        Amount Requested: <b>{1}</b> <br />
+        Purpose: <b>{3}</b> <br />
+        Tenure: <b>{4}</b> <br />
+        Interest Rate: <b>{5}%</b> <br />
+        Interest Amount: <b>{6}</b> <br />
+        Interest Payment: <b>Monthly</b> <br />
+        Capital Repayment: <b>At maturity</b> <br />
+
     </p>
-    <p>We are working on the request processing. Thanks for your patience!</p>
-    <p>{1}</p>
+    <p>
+        <b>Collateral Details</b> <br />
+        <span>Collateral Type</span><span><b>{8}</b></span> <br />
+        <span>Collateral Value</span><span><b>{9}</b></span> <br />
+    </p>
+    <p>
+        <span>
+            We will transfer the sum of <b>{1}</b> to your account details in our records:
+
+
+        </span>
+        <br />
+        <span><b>Congratulations! </b></span> <br />
+    </p>
+    <p>
+        Best regards, 🙂 <br />
+        PallyWad Capital Team
+    </p>
+    <p></p>
 </body>
 </html>

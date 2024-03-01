@@ -356,7 +356,7 @@ namespace PallyWad.AdminApi.Controllers
             {
                 Body = "",
                 ToEmail = loan.memberId,
-                Subject = "Loan Collateral Approved "
+                Subject = "Loan Approved "
             };
             await SendLoanCollaterizedMail(mailReq, loan, fullname);
 
@@ -373,6 +373,8 @@ namespace PallyWad.AdminApi.Controllers
         {
             var princ = HttpContext.User;
             var id = princ.Identity.Name;
+
+            var __loan = _loanRequestService.GetLoanRequest(lr.loanId);
             //var bankAcc = _glAccountServiceD.GetAccByName(_config["BankAccountName"]);
             var bankAcc = _glAccountService.GetAccByName("BANK ACCOUNT");
             //var GLbankAcc = _glAccountService.GetAccByName("POLARIS");
@@ -474,7 +476,7 @@ namespace PallyWad.AdminApi.Controllers
                 ToEmail = lr.memberId,
                 Subject = "Loan Disbursement "
             };
-            await SendLoanProcessedMail(mailReq, loanTrans, fullname);
+            await SendLoanProcessedMail(mailReq, loanTrans, __loan, fullname);
             return Ok(loanTrans);
 
         }
@@ -781,7 +783,10 @@ namespace PallyWad.AdminApi.Controllers
                 string emailTemplateText = System.IO.File.ReadAllText(filePath);
                 emailTemplateText = string.Format(emailTemplateText, fullname,
                     AppCurrFormatter.GetFormattedCurrency(lr.amount, 2, "HA-LATN-NG"),
-                    $"{urllink}", lr.collateral, lr.collateralValue);
+                    $"{urllink}", lr.purpose, lr.duration, lr.loaninterest, lr.monthlyrepay,
+                    lr.category,
+                     lr.collateral,
+                     AppCurrFormatter.GetFormattedCurrency(lr.collateralValue??0, 2, "HA-LATN-NG"));
                 //DateTime.Today.Date.ToShortDateString());
 
                 BodyBuilder emailBodyBuilder = new BodyBuilder();
@@ -793,7 +798,7 @@ namespace PallyWad.AdminApi.Controllers
 
         }
 
-        internal async Task SendLoanProcessedMail(MailRequest request, LoanTrans lr, string fullname)
+        internal async Task SendLoanProcessedMail(MailRequest request, LoanTrans ltr,  LoanRequest lr, string fullname)
         {
 
             var mailkey = _config.GetValue<string>("AppSettings:AWSMail");
@@ -809,8 +814,11 @@ namespace PallyWad.AdminApi.Controllers
                 string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "loancollaterized.html");
                 string emailTemplateText = System.IO.File.ReadAllText(filePath);
                 emailTemplateText = string.Format(emailTemplateText, fullname,
-                    AppCurrFormatter.GetFormattedCurrency(lr.loanamount, 2, "HA-LATN-NG"),
-                    $"{urllink}");
+                    AppCurrFormatter.GetFormattedCurrency(ltr.loanamount, 2, "HA-LATN-NG"),
+                    $"{urllink}",  lr.purpose, lr.duration, lr.loaninterest, lr.monthlyrepay,
+                    lr.category,
+                     lr.collateral,
+                     AppCurrFormatter.GetFormattedCurrency(lr.collateralValue ?? 0, 2, "HA-LATN-NG"));
                 //DateTime.Today.Date.ToShortDateString());
 
                 BodyBuilder emailBodyBuilder = new BodyBuilder();
