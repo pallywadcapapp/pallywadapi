@@ -27,4 +27,5 @@ RUN dotnet publish "./PallyWad.AdminApi.csproj" -c $BUILD_CONFIGURATION -o /app/
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+RUN mkdir -p /app/FileUploads
 ENTRYPOINT ["dotnet", "PallyWad.AdminApi.dll"]

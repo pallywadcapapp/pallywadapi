@@ -27,4 +27,5 @@ RUN dotnet publish "./PallyWad.Auth.csproj" -c $BUILD_CONFIGURATION -o /app/publ
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+RUN mkdir -p /app/FileUploads
 ENTRYPOINT ["dotnet", "PallyWad.Auth.dll"]

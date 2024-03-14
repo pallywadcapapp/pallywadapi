@@ -53,8 +53,9 @@ namespace PallyWad.Infrastructure.Data
         
         public virtual DbSet<Notification> Notifications { get; set; }
         public virtual DbSet<UserBank> UserBanks { get; set; }
+		public virtual DbSet<BusinessInformation> BusinessInformation { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<GL>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
@@ -77,7 +78,10 @@ namespace PallyWad.Infrastructure.Data
             modelBuilder.Entity<UserBank>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 
-            modelBuilder.Entity<BankDeposit>().Property(u => u.Id)
+			modelBuilder.Entity<BusinessInformation>().Property(u => u.Id)
+			  .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
+			modelBuilder.Entity<BankDeposit>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
             modelBuilder.Entity<BankDeposit>(entity => {
                 //entity.ToTable("BankDeposits");

@@ -15,6 +15,8 @@ namespace PallyWad.Auth.Extensions
             var email = await manager.GetEmailAsync(user);
             return "PasswordlessLogin:" + purpose + ":" + email;
         }
+
+        
     }
 }
 

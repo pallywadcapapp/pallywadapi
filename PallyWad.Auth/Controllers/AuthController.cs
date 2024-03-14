@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using MimeKit;
 using PallyWad.Auth.Models;
 using PallyWad.Domain;
+using PallyWad.Infrastructure.Migrations;
 using PallyWad.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Json;
@@ -83,7 +84,47 @@ namespace PallyWad.Auth.Controllers
             return Ok(BaseAddress);
         }
 
-        [HttpGet("checkUser")]
+        [HttpGet("welcomemail")]
+        public async Task<IActionResult> TestWelcomeEmail(string email)
+        {
+			var user = await _userManager.FindByNameAsync(email);
+			if (user != null)
+			{
+				var mailkey = _configuration.GetValue<string>("AppSettings:AWSMail");
+				var mailConfig = _smtpConfigService.ListAllSetupSmtpConfig().Where(u => u.configname == mailkey).FirstOrDefault();
+                await SendWelcomeEmail(user, mailConfig);
+			}
+			else
+			{
+				return Ok(false);
+			}
+            return Ok(true);
+
+		}
+
+
+		[HttpGet("testsendemailtoken")]
+		public async Task<IActionResult> TestSendEmailToken(string email)
+		{
+			var user = new AppIdentityUser()
+			{
+				Email = email,
+				UserName = email,
+				NormalizedEmail = email.ToUpper(),
+				NormalizedUserName = email.ToUpper(),
+			};
+			var token = await _userManager.GenerateUserTokenAsync(
+			user, "PasswordlessLoginTotpProvider", "passwordless-auth");
+			var mailkey = _configuration.GetValue<string>("AppSettings:AWSMail");
+				var mailConfig = _smtpConfigService.ListAllSetupSmtpConfig().Where(u => u.configname == mailkey).FirstOrDefault();
+				await SendEmailToken(user, mailConfig, token);
+			
+			return Ok(true);
+
+		}
+		
+
+		[HttpGet("checkUser")]
         public async Task<IActionResult> CheckUser(string username)
         {
             var user = await _userManager.FindByNameAsync(username);
@@ -211,6 +252,7 @@ namespace PallyWad.Auth.Controllers
                 type = model.type,
                 PhoneNumber = model.phoneNo,
                 EmailConfirmed = true,
+                nin = model.SSN,
                 //UserProfile = {},
                 sex = ""
             };
@@ -251,7 +293,9 @@ namespace PallyWad.Auth.Controllers
             }
 
             //await SendRegEmail(user, model, mailConfig, "register");
-            return Ok(new Response { Status = "Success", Message = "User created successfully!" });
+            await SendWelcomeEmail(user, mailConfig);
+
+			return Ok(new Response { Status = "Success", Message = "User created successfully!" });
         }
 
         [HttpPost]
@@ -468,7 +512,7 @@ namespace PallyWad.Auth.Controllers
 
                     MailboxAddress emailTo = new MailboxAddress(fullname, user.Email);
                     emailMessage.To.Add(emailTo);
-                    emailMessage.Subject = $"Confirm Your PallyWad Capital Account";
+                    emailMessage.Subject = $"OTP Token"; //$"Confirm Your PallyWad Capital Account";
                     baseUrl = $"{this.Request.Scheme}://{this.Request.Host.Value.ToString()}{this.Request.PathBase.Value.ToString()}";
                     var tkvUrl = $"{baseUrl}{HttpContext.Request.Path.Value.Replace("EmailActivationCode", "")}verify?id={user.Id}&token={base64EncodedToken}";
 
@@ -810,6 +854,8 @@ namespace PallyWad.Auth.Controllers
                 //throw;
             }
         }
+
+       
         async Task SendWelcomeEmail(AppIdentityUser user, SmtpConfig mailConfig)
         {
             try
@@ -819,7 +865,7 @@ namespace PallyWad.Auth.Controllers
 
                     var fullname = user.firstname + " " + user.othernames + " " + user.lastname;
                     var company = _configuration.GetValue<string>("AppSettings:companyName");
-                    MailboxAddress emailFrom = new MailboxAddress(company, mailConfig.mailfrom);
+                    MailboxAddress emailFrom = new MailboxAddress($" {company} 🚀🚀🚀 ", mailConfig.mailfrom);
                     emailMessage.From.Add(emailFrom);
 
                     MailboxAddress emailTo = new MailboxAddress(fullname, user.Email);
