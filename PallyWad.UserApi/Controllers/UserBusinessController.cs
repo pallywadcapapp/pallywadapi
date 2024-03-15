@@ -67,8 +67,8 @@ namespace PallyWad.UserApi.Controllers
 			var princ = HttpContext.User;
 			var memberId = princ.Identity?.Name;
 			var _info = _mapper.Map<BusinessInformation>(info);
-			var result = _businessInformation.GetBusinessInformations(memberId);
-			_info.Id = result.Id;
+			//var result = _businessInformation.GetBusinessInformations(memberId);
+			//_info.Id = result.Id;
 			_businessInformation.UpdateBusinessInformation(_info);
 			return Ok(_info);
 		}
