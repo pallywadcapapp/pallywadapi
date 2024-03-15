@@ -17,6 +17,7 @@ namespace PallyWad.UserApi.Controllers
 		public UserBusinessController(IBusinessInformationService businessInformation, IMapper mapper)
         {
 			_businessInformation = businessInformation;
+			_mapper = mapper;
 
 		}
 
