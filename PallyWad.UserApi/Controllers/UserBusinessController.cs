@@ -66,11 +66,15 @@ namespace PallyWad.UserApi.Controllers
 		{
 			var princ = HttpContext.User;
 			var memberId = princ.Identity?.Name;
-			var _info = _mapper.Map<BusinessInformation>(info);
-			//var result = _businessInformation.GetBusinessInformations(memberId);
-			//_info.Id = result.Id;
-			_businessInformation.UpdateBusinessInformation(_info);
-			return Ok(_info);
+			//var _info = _mapper.Map<BusinessInformation>(info);
+			var result = _businessInformation.GetBusinessInformations(memberId);
+			result.address = info.address;
+			result.name = info.name;
+			result.cacno = info.cacno;
+			result.landmark = info.landmark;
+			result.type = info.type;
+			_businessInformation.UpdateBusinessInformation(result);
+			return Ok(result);
 		}
 		#endregion
 	}
