@@ -80,6 +80,36 @@ namespace PallyWad.Setup.Controllers
         #endregion
 
         #region put
+        [HttpPut("loandesc")]
+        public IActionResult Put(LoanSetupDto _loanSetup, int id)
+        {
+            try
+            {
+                if (_loanSetup != null)
+                {
+                    var loanSetup = _mapper.Map<LoanSetup>(_loanSetup);
+                    var ldoc = _mapper.Map<List<LoanDocument>>(_loanSetup.LoanDocumentRefId);
+                    var lcoll = _mapper.Map<List<LoanCollateral>>(_loanSetup.LoanCollateralRefId);
+
+                    loanSetup.LoanDocuments = ldoc;
+                    loanSetup.LoanCollaterals = lcoll;
+
+                    var loan = _loanSetupService.GetLoanSetup(id);
+                    loan.loandesc = _loanSetup.loandesc;
+                    _loanSetupService.UpdateLoanSetup(loan);
+                    return Ok(new { status = "success", message = $"Loan  {loanSetup.loancode} Updated Successfully" });
+                }
+                else
+                {
+                    return BadRequest(new { status = "error", message = "parameter is empty" });
+                }
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(new { status = "error", message = ex.Message });
+            }
+        }
         #endregion
     }
 }

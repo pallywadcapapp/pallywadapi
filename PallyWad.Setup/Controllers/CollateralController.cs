@@ -21,6 +21,8 @@ public class CollateralController : ControllerBase
         _collateralService = collateralService;
         _mapper = mapper;
     }
+
+    #region get
     [HttpGet]
     public IActionResult Get()
     {
@@ -35,6 +37,7 @@ public class CollateralController : ControllerBase
         //var result = _mapper.Map<SetupDto>(collaterals);
         return Ok(result);
     }
+    #endregion
 
     [HttpPost(nameof(Collateral))]
     public IActionResult Post(SetupDto events)
@@ -61,19 +64,22 @@ public class CollateralController : ControllerBase
     }
 
     [HttpPut(nameof(Collateral))]
-    public IActionResult Put(SetupDto events) {
+    public IActionResult Put(SetupDto events, int id) {
         try
         {
-            if (events != null)
-            {
-                var collateral = _mapper.Map<Collateral>(events);
+            //if (events != null)
+            //{
+            //var collateral = _mapper.Map<Collateral>(events);
+            var collateral = _collateralService.GetCollateralById(id);
+            collateral.description =events.description;
+            collateral.name =events.name;
                 _collateralService.UpdateCollateral(collateral);
                 return Ok(new { status = "success", message = $"Collateral {collateral.name} Updated Successfully" });
-            }
-            else
-            {
-                return BadRequest(new { status = "error", message = "parameter is empty" });
-            }
+            //}
+            //else
+            //{
+            //    return BadRequest(new { status = "error", message = "parameter is empty" });
+            //}
         }
         catch (Exception ex)
         {

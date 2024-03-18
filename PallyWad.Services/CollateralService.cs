@@ -39,6 +39,11 @@ namespace PallyWad.Services
             return ListAllCollateral().Select(u => u.name).ToList();
         }
 
+        public Collateral GetCollateralById(int id)
+        {
+            return ListAllCollateral().Where(u => u.Id == id).FirstOrDefault();
+        }
+
         public Collateral GetCollateralByName(string name)
         {
             return ListAllCollateral().Where(u => u.name == name).FirstOrDefault();
@@ -71,5 +76,6 @@ namespace PallyWad.Services
         void DeleteCollateral(Collateral Collateral);
         void UpdateCollateral(Collateral Collateral);
         Collateral GetCollateralByName(string name);
+        Collateral GetCollateralById(int id);
     }
 }

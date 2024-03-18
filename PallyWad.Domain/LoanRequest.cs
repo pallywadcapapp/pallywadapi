@@ -47,7 +47,8 @@ namespace PallyWad.Domain
         public string? sector { get; set; }
         public string? businessname { get; set; }
         public double preferredRate { get; set; }
-        public double? loanmonthlyinterest { get; set; }
+		public int preferredTenor { get; set; }
+		public double? loanmonthlyinterest { get; set; }
         public bool runningState { get; set; }
 
         public bool isDocmentProvided { get; set; }

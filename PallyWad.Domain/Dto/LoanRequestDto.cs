@@ -23,7 +23,9 @@ namespace PallyWad.Domain.Dto
         public string? businessname { get; set; }
         public string? sector { get; set; }
         public double preferredRate { get; set; }
-        public string collateral { get; set; }
+		public int preferredTenor { get; set; }
+		
+		public string collateral { get; set; }
         public string estimatedCollateralValue { get; set; }
     }
 

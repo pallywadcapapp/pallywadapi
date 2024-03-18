@@ -41,7 +41,7 @@ namespace PallyWad.Domain.Dto
         public int? age { get; set; }
         public double collateralPercentage { get; set; }
         public int repayOrder { get; set; }
-        public virtual List<string> LoanDocumentRefId { get; set; }
-        public virtual List<string> LoanCollateralRefId { get; set; }
+        public virtual List<string>? LoanDocumentRefId { get; set; }
+        public virtual List<string>? LoanCollateralRefId { get; set; }
     }
 }
