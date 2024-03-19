@@ -35,7 +35,7 @@ namespace PallyWad.Setup.Controllers
         [Route("type")]
         public IActionResult GetDocType()
         {
-            string[] result = ["Address","Identity"];
+            string[] result = ["Address", "Company Documents", "Identity", "Others"];
             //var result = _mapper.Map<SetupDto>(Documents);
             return Ok(result);
         }
