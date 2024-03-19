@@ -17,5 +17,8 @@ namespace PallyWad.Domain.Dto
         public string loanRefId { get; set; }
         public bool verificationStatus { get; set; }
         public string url { get; set; }
+        public string? make { get; set; }
+        public string? model { get; set; }
+        public string? year { get; set; }
     }
 }

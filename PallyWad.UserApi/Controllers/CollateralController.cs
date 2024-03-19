@@ -162,7 +162,8 @@ namespace PallyWad.UserApi.Controllers
             if (files == null)
                 return BadRequest();
 
-            int collateralId = saveUserCollateralUploads(collateral.Id.ToString(), collateral.name, userCollateral.estimatedValue, memberId, userCollateral.otherdetails);
+            int collateralId = saveUserCollateralUploads(collateral.Id.ToString(), collateral.name, userCollateral.estimatedValue, memberId,
+                userCollateral.otherdetails, userCollateral.make, userCollateral.model, userCollateral.year);
 
             foreach (var formFile in files)
             {
@@ -228,7 +229,8 @@ namespace PallyWad.UserApi.Controllers
             _appUploadedFilesService.AddAppUploadedFiles(newAppUpload);
         }
 
-        int saveUserCollateralUploads(string collateralNo, string collateralName, double value, string memberId, string otherdetails)
+        int saveUserCollateralUploads(string collateralNo, string collateralName, double value, string memberId, string otherdetails,
+            string make, string model, string year)
         {
             var userCollateral = new UserCollateral()
             {
@@ -244,6 +246,9 @@ namespace PallyWad.UserApi.Controllers
                 userId = memberId,
                 verificationStatus = false,
                 updated_date = DateTime.Now,
+                make = make,
+                model = model,
+                year = year
             };
             _userCollateralService.AddUserCollateral(userCollateral);
             return userCollateral.Id;
@@ -284,6 +289,9 @@ namespace PallyWad.UserApi.Controllers
             //public bool status { get; set; }
             public List<IFormFile> file { get; set; }
             public string otherdetails { get; set; }
+            public string? make { get; set; }
+            public string? model { get; set; }
+            public string? year { get; set; }
         }
         #endregion
     }
