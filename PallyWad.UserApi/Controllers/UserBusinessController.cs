@@ -73,6 +73,11 @@ namespace PallyWad.UserApi.Controllers
 			result.cacno = info.cacno;
 			result.landmark = info.landmark;
 			result.type = info.type;
+			result.business_email = info.business_email;
+			result.business_phoneNo = info.business_phoneNo;
+			result.sector = info.sector;
+			result.services = info.services;
+			result.tin = info.tin;
 			_businessInformation.UpdateBusinessInformation(result);
 			return Ok(result);
 		}

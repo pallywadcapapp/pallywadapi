@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using AutoMapper.Execution;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MimeKit;
 using PallyWad.Domain;
 using PallyWad.Domain.Dto;
 using PallyWad.Services;
@@ -35,7 +37,8 @@ namespace PallyWad.UserApi.Controllers
         {
             var princ = HttpContext.User;
             var memberId = princ.Identity?.Name;
-            var result = _userBankService.GetUserBank(memberId);
+            var result = _userBankService.GetUserBank(memberId)
+                .Where(u=>u.isDelete == false);
             return Ok(result);
         }
 
@@ -75,6 +78,43 @@ namespace PallyWad.UserApi.Controllers
             var _userBank = _mapper.Map<UserBank>(userBank);
             _userBankService.UpdateUserBank(_userBank);
             return Ok(_userBank);
+        }
+
+        [HttpPut("makedefault")]
+        [Authorize]
+        public IActionResult Put(int id)
+        {
+            var princ = HttpContext.User;
+            var memberId = princ.Identity?.Name;
+            var defaultB = _userBankService.GetDefaultUserBank(memberId);
+            
+            if(defaultB != null)
+            {
+                defaultB.isDefault = false;
+                _userBankService.UpdateUserBank(defaultB);
+            }
+            
+            var curr = _userBankService.GetUserBank(id);
+            curr.isDefault = true;
+            _userBankService.UpdateUserBank(curr);
+            return Ok(curr);
+        }
+
+        #endregion
+
+        #region del
+
+
+        [HttpDelete("deletebank")]
+        [Authorize]
+        public IActionResult Delete(int id)
+        {
+            var princ = HttpContext.User;
+            var memberId = princ.Identity?.Name;
+            var curr = _userBankService.GetUserBank(id);
+            curr.isDelete = true;
+            _userBankService.UpdateUserBank(curr);
+            return Ok(curr);
         }
         #endregion
     }

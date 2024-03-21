@@ -10,6 +10,7 @@ namespace PallyWad.Domain.Dto
     {
         public string name { get; set; }
         public string accountno { get; set; }
+        public string accountname { get; set; }
         public bool isDefault { get; set; }
         public string memberId { get; set; }
     }

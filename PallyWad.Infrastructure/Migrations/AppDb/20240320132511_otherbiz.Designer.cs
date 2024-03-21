@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PallyWad.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using PallyWad.Infrastructure.Data;
 namespace PallyWad.Infrastructure.Migrations.AppDb
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240320132511_otherbiz")]
+    partial class otherbiz
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -728,10 +731,6 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("accountname")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("accountno")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -740,9 +739,6 @@ namespace PallyWad.Infrastructure.Migrations.AppDb
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("isDefault")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("isDelete")
                         .HasColumnType("bit");
 
                     b.Property<string>("memberId")
