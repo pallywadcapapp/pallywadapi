@@ -54,9 +54,13 @@ namespace PallyWad.Infrastructure.Data
         public virtual DbSet<Notification> Notifications { get; set; }
         public virtual DbSet<UserBank> UserBanks { get; set; }
 		public virtual DbSet<BusinessInformation> BusinessInformation { get; set; }
+        public virtual DbSet<CompanyBank> CompanyBanks { get; set; }
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<CompanyBank>().Property(u => u.Id)
+               .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
+
             modelBuilder.Entity<GL>().Property(u => u.Id)
                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
 

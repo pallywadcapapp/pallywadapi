@@ -1,12 +1,18 @@
 ﻿using AutoMapper;
 using AutoMapper.Execution;
+//using MailKit;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using MimeKit;
+using PallyWad.Application;
 using PallyWad.Domain;
 using PallyWad.Domain.Dto;
+using PallyWad.Domain.Entities;
 using PallyWad.Services;
 using System.ComponentModel.DataAnnotations;
-using static Microsoft.IO.RecyclableMemoryStreamManager;
+//using static Microsoft.IO.RecyclableMemoryStreamManager;
 
 namespace PallyWad.UserApi.Controllers
 {
@@ -22,8 +28,12 @@ namespace PallyWad.UserApi.Controllers
         private readonly IUserService _userService;
         private readonly IAppUploadedFilesService _appUploadedFilesService;
         private readonly IMapper _mapper;
+        private readonly ICompanyBankService _companyBankService;
+        private readonly ISmtpConfigService _smtpConfigService;
+        private readonly IMailService _mailService;
         public PaymentsController(IPaymentService paymentService, IBankDepositService bankDepositService, IConfiguration configuration,
-            IUserService userService, IAppUploadedFilesService appUploadedFilesService, IMapper mapper)
+            IUserService userService, IAppUploadedFilesService appUploadedFilesService, IMapper mapper, ICompanyBankService companyBankService,
+            ISmtpConfigService smtpConfigService, IMailService mailService)
         {
             _paymentService = paymentService;
             _bankDepositService = bankDepositService;
@@ -31,6 +41,9 @@ namespace PallyWad.UserApi.Controllers
             _config = configuration;
             _appUploadedFilesService = appUploadedFilesService;
             _mapper = mapper;
+            _companyBankService = companyBankService;
+            _smtpConfigService = smtpConfigService;
+            _mailService = mailService;
         }
 
         #region Get
@@ -128,6 +141,36 @@ namespace PallyWad.UserApi.Controllers
         //    var result = _membersAccountService.GetLoanTransMemberAcc(memberId, loanrefno).Accountno;
         //    return result;
         //}
+
+
+        [HttpGet("CompanyAccount")]
+        public async Task<IActionResult> GwtCompanyAccount()
+        {
+            var princ = HttpContext.User;
+            var memberId = princ.Identity?.Name;
+            var companyAcc = _companyBankService.ListAllCompanyBank();
+            Random rnd = new Random();
+            int accSel = rnd.Next(1, companyAcc.Count);
+            var result = companyAcc[accSel - 1];
+
+            var user = _userService.GetUser(memberId);
+
+            if (user == null)
+            {
+                return BadRequest(new Response { Status = "error", Message = "Invalid Token" });
+            }
+
+
+            var fullname = $"{user.lastname}, {user.firstname} {user.othernames}";
+            var mailReq = new MailRequest()
+            {
+                Body = "",
+                ToEmail = memberId,
+                Subject = "PallyWad Capital Bank Account"
+            };
+            await SendBankMail(mailReq, result, fullname);
+            return Ok(result);
+        }
 
         #endregion
 
@@ -301,6 +344,36 @@ namespace PallyWad.UserApi.Controllers
             }
             return deposit.Id;
         }
+
+        internal async Task SendBankMail(MailRequest request, CompanyBank bank, string fullname)
+        {
+
+            var mailkey = _config.GetValue<string>("AppSettings:AWSMail");
+            var mailConfig = _smtpConfigService.ListAllSetupSmtpConfig().Where(u => u.configname == mailkey).FirstOrDefault();
+            var company = _config.GetValue<string>("AppSettings:companyName");
+            if (mailConfig == null)
+            {
+                //return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "Check email configuration!" });
+            }
+            else
+            {
+
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "companyaccount.html");
+                //string filePath = Directory.GetCurrentDirectory() + "\\Templates\\loanrequest.html";
+                string emailTemplateText = System.IO.File.ReadAllText(filePath);
+                emailTemplateText = string.Format(emailTemplateText, fullname,
+                    bank.name,bank.accountname, bank.accountno);
+
+                BodyBuilder emailBodyBuilder = new BodyBuilder();
+                emailBodyBuilder.HtmlBody = emailTemplateText;
+                emailBodyBuilder.TextBody = "Plain Text goes here to avoid marked as spam for some email servers.";
+
+                var body = emailBodyBuilder.ToMessageBody();
+                await _mailService.SendEmailAsync(request, mailConfig, company, body);
+            }
+
+        }
+
 
         #endregion
     }

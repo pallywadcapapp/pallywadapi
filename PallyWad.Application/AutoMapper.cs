@@ -34,8 +34,9 @@ namespace PallyWad.Application
             CreateMap<DepositDto, BankDeposit>().ReverseMap();
             CreateMap<UserBankDto, UserBank>().ReverseMap();
 			CreateMap<UserBusinessInfoDto, BusinessInformation>().ReverseMap();
+            CreateMap<CompanyBankDto, CompanyBank>().ReverseMap();
 
 
-		}
+        }
     }
 }
