@@ -268,7 +268,7 @@ namespace PallyWad.UserApi.Controllers
             string emailTemplateText = System.IO.File.ReadAllText(filePath);
             emailTemplateText = string.Format(emailTemplateText, fullname,
                 AppCurrFormatter.GetFormattedCurrency(lr.amount, 2, "HA-LATN-NG"),
-                DateTime.Today.Date.ToShortDateString(), lr.category, lr.purpose, lr.duration, lr.preferredRate, lr.collateral,
+                DateTime.Today.Date.ToShortDateString(), lr.category, lr.purpose, lr.preferredTenor, lr.preferredRate, lr.collateral,
                 AppCurrFormatter.GetFormattedCurrency(lr.estimatedCollateralValue??0, 2, "HA-LATN-NG"));
 
             BodyBuilder emailBodyBuilder = new BodyBuilder();
