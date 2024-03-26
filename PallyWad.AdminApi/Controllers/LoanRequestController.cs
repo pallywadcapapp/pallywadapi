@@ -42,13 +42,15 @@ namespace PallyWad.AdminApi.Controllers
         private readonly IMailService _mailService;
         private readonly ICompanyService _companyService;
         private readonly IAppUploadedFilesService _appUploadedFilesService;
+        private readonly INotificationsService _notificationsService;
         public LoanRequestController(IHttpContextAccessor contextAccessor, ILogger<LoanRequestController> logger,
             ILoanSetupService loanSetupService, ILoanRequestService loanRequestService, IMembersAccountService membersAccountService,
             IGlAccountService glAccountService, IUserService userService, IGlAccountTransService glAccountTransService,
             ILoanTransService loanTransService, IChargesService chargesService, IMapper mapper, 
             //ILoanCollateralService loanCollateralService,
             IGlAccountTier3Service glAccountTier3Service, ILoanRepaymentService loanRepaymentService, ISmtpConfigService smtpConfigService,
-            IConfiguration config, IMailService mailService, ICompanyService companyService, IAppUploadedFilesService appUploadedFilesService)
+            IConfiguration config, IMailService mailService, ICompanyService companyService, IAppUploadedFilesService appUploadedFilesService,
+            INotificationsService notificationsService)
         {
             _contextAccessor = contextAccessor;
             _logger = logger;
@@ -70,6 +72,7 @@ namespace PallyWad.AdminApi.Controllers
             _mailService = mailService;
             _companyService = companyService;
             _appUploadedFilesService = appUploadedFilesService;
+            _notificationsService = notificationsService;
         }
 
         #region Get
@@ -298,7 +301,9 @@ namespace PallyWad.AdminApi.Controllers
                 Subject = "Loan Request Pre-Approved"
             };
             await SendLoanApprovalMail(mailReq, loan, fullname, company);
-
+            SendNotification(loan.memberId, "Your Loan " + $"{loan.loanId} of " +
+                $"{AppCurrFormatter.GetFormattedCurrency(loan.amount, 2, "HA-LATN-NG")}" +
+                " has been pre-approved", $"Loan Pre-Approved " );
             return Ok(loan);
 
         }
@@ -844,6 +849,12 @@ namespace PallyWad.AdminApi.Controllers
                 transOwner = "admincollateral"
             };
             _appUploadedFilesService.AddAppUploadedFiles(newAppUpload);
+        }
+
+        public void SendNotification(string memberId, string message, string subject)
+        {
+            NotificationHelper.Notification(_notificationsService);
+            NotificationHelper.SendUserNotification(memberId, message, subject);
         }
 
         private string GetContentType(string path)

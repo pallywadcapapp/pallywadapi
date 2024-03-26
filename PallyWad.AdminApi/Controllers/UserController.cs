@@ -107,7 +107,7 @@ namespace PallyWad.AdminApi.Controllers
         public IActionResult SendNotification(string memberId, string message, string subject)
         {
             //var result = _repo.GetAllUsers();
-            NotificationHelper.Notificatio(_notificationsService);
+            NotificationHelper.Notification(_notificationsService);
             NotificationHelper.SendUserNotification(memberId, message, subject);
             return Ok();
         }

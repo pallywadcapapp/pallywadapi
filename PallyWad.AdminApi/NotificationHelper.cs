@@ -14,7 +14,7 @@ namespace PallyWad.AdminApi
                 return _notificationsService;
             }
         }
-        public static void  Notificatio(INotificationsService notificationsService)
+        public static void  Notification(INotificationsService notificationsService)
         {
             _notificationsService = notificationsService;
         }

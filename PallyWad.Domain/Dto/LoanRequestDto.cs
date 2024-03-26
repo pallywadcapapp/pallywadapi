@@ -27,6 +27,7 @@ namespace PallyWad.Domain.Dto
 		
 		public string collateral { get; set; }
         public string estimatedCollateralValue { get; set; }
+        public string repaymentPlan { get; set; }
     }
 
     public class LoanRequestVM
