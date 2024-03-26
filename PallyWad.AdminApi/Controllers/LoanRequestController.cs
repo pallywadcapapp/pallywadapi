@@ -851,7 +851,7 @@ namespace PallyWad.AdminApi.Controllers
             _appUploadedFilesService.AddAppUploadedFiles(newAppUpload);
         }
 
-        public void SendNotification(string memberId, string message, string subject)
+        private void SendNotification(string memberId, string message, string subject)
         {
             NotificationHelper.Notification(_notificationsService);
             NotificationHelper.SendUserNotification(memberId, message, subject);

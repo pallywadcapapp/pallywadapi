@@ -42,6 +42,39 @@ namespace PallyWad.UserApi.Controllers
         }
 
         [Authorize]
+        [HttpGet("clickview")]
+        public IActionResult GetUnreadClickview()
+        {
+            var princ = HttpContext.User;
+            var memberId = princ.Identity?.Name;
+            var result = _notificationService.ListAllNotification(memberId)
+                .Where(u => u.clickView == false)
+                .OrderByDescending(u => u.Id);
+            return Ok(result);
+
+        }
+
+        [Authorize]
+        [HttpGet("readclickview")]
+        public IActionResult GetReadClickview()
+        {
+            var princ = HttpContext.User;
+            var memberId = princ.Identity?.Name;
+            var result = _notificationService.ListAllNotification(memberId)
+                .Where(u => u.clickView == false)
+                .OrderByDescending(u => u.Id);
+
+            foreach (var item in result)
+            {
+                item.clickView = true;
+                _notificationService.UpdateNotification(item);
+            };
+
+            return Ok(result);
+
+        }
+
+        [Authorize]
         [HttpGet("byId")]
         public IActionResult GetById(int id)
         {
