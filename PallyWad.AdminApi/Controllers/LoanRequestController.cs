@@ -488,7 +488,7 @@ namespace PallyWad.AdminApi.Controllers
             };
             await SendLoanProcessedMail(mailReq, loanTrans, __loan, fullname);
             SendNotification(__loan.memberId, "Your Loan " + $"{__loan.loanId} of " +
-               $"{AppCurrFormatter.GetFormattedCurrency(loan.amount, 2, "HA-LATN-NG")}" +
+               $"{AppCurrFormatter.GetFormattedCurrency(__loan.amount, 2, "HA-LATN-NG")}" +
                " has been fully processed and disbursed to your account.", $"Loan Disbursed ");
             return Ok(loanTrans);
 
