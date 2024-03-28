@@ -117,7 +117,7 @@ namespace PallyWad.AdminApi.Controllers
                 var currLoan = _loanTransService.GetLoanTransByRef(savingsDeduction.loanRef);
                 repayment = new LoanRepayment()
                 {
-                    description = currLoan.description,
+                    description = $"{currLoan.loancode} log on {DateTime.Now}",
                     interestamt = currLoan.interestamt,
                     //branchname = currLoan.Branchname,
                     loanamount = currLoan.totrepayable,

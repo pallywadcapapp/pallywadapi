@@ -44,10 +44,11 @@ namespace PallyWad.Services
             return role;
         }
 
-        public IEnumerable<IdentityRole> GetAllUsersInRoles()
+        public IEnumerable<AppsRole> GetAllUsersInRoles()
         {
+            //IdentityRole
             var parameters = new DynamicParameters();
-            var role = _roleRepository.Query<IdentityRole>("GetAllUsersInRole", parameters);// GetAll().Where(u => u.tenantId == tenantId);
+            var role = _roleRepository.Query<AppsRole>("GetAllUsersInRole", parameters);// GetAll().Where(u => u.tenantId == tenantId);
             return role;
         }
 
@@ -86,7 +87,7 @@ namespace PallyWad.Services
         IEnumerable<IdentityRole> GetAllRoles();
         //IEnumerable<Role> GetAllUserRoles(string username);
         //IEnumerable<Role> GetUserRoles(string userId);
-        IEnumerable<IdentityRole> GetAllUsersInRoles();
+        IEnumerable<AppsRole> GetAllUsersInRoles(); //IdentityRole
         void CreateRole(IdentityRole role);
         AppIdentityUser GetUserFromEmail(string email);
 

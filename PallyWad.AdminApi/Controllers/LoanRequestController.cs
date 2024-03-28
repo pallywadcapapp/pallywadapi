@@ -331,6 +331,9 @@ namespace PallyWad.AdminApi.Controllers
                 Subject = "Notice: Your Loan Application Status"
             };
             await SendLoanDeclineMail(mailReq, loan, fullname, company);
+            SendNotification(loan.memberId, "Your Loan " + $"{loan.loanId} of " +
+               $"{AppCurrFormatter.GetFormattedCurrency(loan.amount, 2, "HA-LATN-NG")}" +
+               " has been rejected. Kindly check your email inbox for further details", $"Loan Request Denied ");
 
             return Ok(loan);
 
@@ -364,8 +367,10 @@ namespace PallyWad.AdminApi.Controllers
                 Subject = "Loan Approved "
             };
             await SendLoanCollaterizedMail(mailReq, loan, fullname);
+            SendNotification(loan.memberId, "Your Loan " + $"{loan.loanId} of " +
+               $"{AppCurrFormatter.GetFormattedCurrency(loan.amount, 2, "HA-LATN-NG")}" +
+               " have been fully collateralized.", $"Loan Collateralized ");
 
-           
 
             return Ok(loan);
 
@@ -444,7 +449,7 @@ namespace PallyWad.AdminApi.Controllers
                 glbankaccount = "", // GLbankAcc.accountno,
                 gapproved = true,
                 accountno = accno,
-                description = loanSetup.loandesc,
+                description = $"{loanSetup.category} {loanSetup.loancode}" ,
                 repay = 1,
                 loancode = loanSetup.loancode,
                 repayOrder = repayOrder
@@ -482,6 +487,9 @@ namespace PallyWad.AdminApi.Controllers
                 Subject = "Loan Disbursement "
             };
             await SendLoanProcessedMail(mailReq, loanTrans, __loan, fullname);
+            SendNotification(__loan.memberId, "Your Loan " + $"{__loan.loanId} of " +
+               $"{AppCurrFormatter.GetFormattedCurrency(loan.amount, 2, "HA-LATN-NG")}" +
+               " has been fully processed and disbursed to your account.", $"Loan Disbursed ");
             return Ok(loanTrans);
 
         }
@@ -695,7 +703,7 @@ namespace PallyWad.AdminApi.Controllers
                 loancode = currLoan.loancode,
                 loanrefnumber = currLoan.loanrefnumber,
                 memberid = currLoan.memberid,
-                repayamount = currLoan.repayamount,
+                repayamount = 0,//currLoan.repayamount,
                 repayrefnumber = "LRPY/" + refno,
                 transdate = DateTime.Now, //DateTime.Now,
                 transmonth = DateTime.Now.Month, //DateTime.Now.Month,

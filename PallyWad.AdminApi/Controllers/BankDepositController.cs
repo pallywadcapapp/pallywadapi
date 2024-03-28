@@ -27,11 +27,12 @@ namespace PallyWad.AdminApi.Controllers
         GLPostingRepository gLPostingRepository;
         private readonly ILoanRequestService _loanRequestService;
         private readonly IMailService _mailService;
+        private readonly INotificationsService _notificationsService;
         public BankDepositController(IUserService userService, IBankDepositService bankDepositService,
             IGlAccountService glAccountService, IGlAccountTransService glAccountTransService,
             ILoanRepaymentService loanRepaymentService, ILoanTransService loanTransService,
             IMembersAccountService membersAccountService, ILoanSetupService loanSetupService, ISmtpConfigService smtpConfigService,
-             IConfiguration config, ILoanRequestService loanRequestService, IMailService mailService) 
+             IConfiguration config, ILoanRequestService loanRequestService, IMailService mailService, INotificationsService notificationsService) 
         {
             _bankDepositService = bankDepositService;
             //_memberService = memberService;
@@ -45,6 +46,7 @@ namespace PallyWad.AdminApi.Controllers
             _userService = userService;
             _loanRequestService = loanRequestService;
             _mailService = mailService;
+            _notificationsService = notificationsService;
 
 
             gLPostingRepository = new GLPostingRepository(_glAccountTransService);
@@ -472,6 +474,12 @@ namespace PallyWad.AdminApi.Controllers
                 await _mailService.SendEmailAsync(request, mailConfig, company, body);
             }
 
+        }
+
+        private void SendNotification(string memberId, string message, string subject)
+        {
+            NotificationHelper.Notification(_notificationsService);
+            NotificationHelper.SendUserNotification(memberId, message, subject);
         }
         #endregion
     }

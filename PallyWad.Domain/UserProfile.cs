@@ -16,4 +16,11 @@ namespace PallyWad.Domain
         //[JsonIgnore]
         //public virtual AppIdentityUser AppIdentityUser { get; set; }
     }
+    public class AppsRole
+    {
+        public string users { get; set; }
+        public string userId { get; set; }
+        public string role { get; set; }
+        public string roleId { get; set; }
+    }
 }
