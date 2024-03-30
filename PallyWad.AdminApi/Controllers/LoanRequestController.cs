@@ -15,6 +15,7 @@ using PallyWad.Infrastructure.Migrations;
 using PallyWad.Infrastructure.Migrations.AccountDb;
 using PallyWad.Services;
 using PallyWad.Services.Repository;
+using System.Runtime.InteropServices;
 
 namespace PallyWad.AdminApi.Controllers
 {
@@ -43,6 +44,7 @@ namespace PallyWad.AdminApi.Controllers
         private readonly ICompanyService _companyService;
         private readonly IAppUploadedFilesService _appUploadedFilesService;
         private readonly INotificationsService _notificationsService;
+        private readonly IUserBankService _userBankService;
         public LoanRequestController(IHttpContextAccessor contextAccessor, ILogger<LoanRequestController> logger,
             ILoanSetupService loanSetupService, ILoanRequestService loanRequestService, IMembersAccountService membersAccountService,
             IGlAccountService glAccountService, IUserService userService, IGlAccountTransService glAccountTransService,
@@ -50,7 +52,7 @@ namespace PallyWad.AdminApi.Controllers
             //ILoanCollateralService loanCollateralService,
             IGlAccountTier3Service glAccountTier3Service, ILoanRepaymentService loanRepaymentService, ISmtpConfigService smtpConfigService,
             IConfiguration config, IMailService mailService, ICompanyService companyService, IAppUploadedFilesService appUploadedFilesService,
-            INotificationsService notificationsService)
+            INotificationsService notificationsService, IUserBankService userBankService)
         {
             _contextAccessor = contextAccessor;
             _logger = logger;
@@ -73,6 +75,7 @@ namespace PallyWad.AdminApi.Controllers
             _companyService = companyService;
             _appUploadedFilesService = appUploadedFilesService;
             _notificationsService = notificationsService;
+            _userBankService = userBankService;
         }
 
         #region Get
@@ -385,7 +388,7 @@ namespace PallyWad.AdminApi.Controllers
             var id = princ.Identity.Name;
 
             var __loan = _loanRequestService.GetLoanRequest(lr.loanId);
-            //var bankAcc = _glAccountServiceD.GetAccByName(_config["BankAccountName"]);
+            var userbankAcc = _userBankService.GetDefaultUserBank(lr.memberId);
             var bankAcc = _glAccountService.GetAccByName("BANK ACCOUNT");
             //var GLbankAcc = _glAccountService.GetAccByName("POLARIS");
             var loanSetup = _loanSetupService.GetLoanSetup(lr.loanCode);
@@ -484,12 +487,26 @@ namespace PallyWad.AdminApi.Controllers
             {
                 Body = "",
                 ToEmail = lr.memberId,
-                Subject = "Loan Disbursement "
+                Subject = "Loan Disbursed "
             };
-            await SendLoanProcessedMail(mailReq, loanTrans, __loan, fullname);
-            SendNotification(__loan.memberId, "Your Loan " + $"{__loan.loanId} of " +
-               $"{AppCurrFormatter.GetFormattedCurrency(__loan.amount, 2, "HA-LATN-NG")}" +
-               " has been fully processed and disbursed to your account.", $"Loan Disbursed ");
+
+            
+            if(userbankAcc != null)
+            {
+                await SendLoanProcessedMail(mailReq, loanTrans, __loan, fullname, userbankAcc);
+                SendNotification(__loan.memberId, "Your Loan " + $"{__loan.loanId} of " +
+                   $"{AppCurrFormatter.GetFormattedCurrency(__loan.amount, 2, "HA-LATN-NG")}" +
+                   " has been disbursed to your account.<br />" +
+                   $"Bank: {userbankAcc.name} <br /> Account Name: {userbankAcc.accountname} <br /> Account No: {userbankAcc.accountno}", $"Loan Disbursed ");
+            }
+            else
+            {
+                await SendLoanProcessedMail(mailReq, loanTrans, __loan, fullname);
+                SendNotification(__loan.memberId, "Your Loan " + $"{__loan.loanId} of " +
+                   $"{AppCurrFormatter.GetFormattedCurrency(__loan.amount, 2, "HA-LATN-NG")}" +
+                   " has been disbursed to your account.", $"Loan Disbursed ");
+            }
+           
             return Ok(loanTrans);
 
         }
@@ -736,9 +753,11 @@ namespace PallyWad.AdminApi.Controllers
                 string emailTemplateText = System.IO.File.ReadAllText(filePath);
                 emailTemplateText = string.Format(emailTemplateText, fullname,
                     AppCurrFormatter.GetFormattedCurrency(lr.amount, 2, "HA-LATN-NG"),
-                    $"{urllink}", lr.purpose, lr.duration, lr.loaninterest, lr.monthlyrepay, lr.category, lr.collateral,
+                    $"{urllink}", lr.purpose, lr.duration, lr.loaninterest,
+                    AppCurrFormatter.GetFormattedCurrency(lr.monthlyrepay??0.00, 2, "HA-LATN-NG"),
+                    lr.category, lr.collateral,
                     AppCurrFormatter.GetFormattedCurrency(lr.estimatedCollateralValue??0, 2, "HA-LATN-NG"),
-                    _company.address, _company.phoneno);
+                    _company.address, _company.phoneno, lr.repaymentPlan);
                     //DateTime.Today.Date.ToShortDateString());
 
                 BodyBuilder emailBodyBuilder = new BodyBuilder();
@@ -799,7 +818,7 @@ namespace PallyWad.AdminApi.Controllers
                     $"{urllink}", lr.purpose, lr.duration, lr.loaninterest, lr.monthlyrepay,
                     lr.category,
                      lr.collateral,
-                     AppCurrFormatter.GetFormattedCurrency(lr.collateralValue??0, 2, "HA-LATN-NG"));
+                     AppCurrFormatter.GetFormattedCurrency(lr.collateralValue??0, 2, "HA-LATN-NG"), lr.repaymentPlan);
                 //DateTime.Today.Date.ToShortDateString());
 
                 BodyBuilder emailBodyBuilder = new BodyBuilder();
@@ -811,7 +830,7 @@ namespace PallyWad.AdminApi.Controllers
 
         }
 
-        internal async Task SendLoanProcessedMail(MailRequest request, LoanTrans ltr,  LoanRequest lr, string fullname)
+        internal async Task SendLoanProcessedMail(MailRequest request, LoanTrans ltr,  LoanRequest lr, string fullname, [Optional] UserBank userBank)
         {
 
             var mailkey = _config.GetValue<string>("AppSettings:AWSMail");
@@ -823,22 +842,45 @@ namespace PallyWad.AdminApi.Controllers
             }
             else
             {
-                var urllink = "<a href=\"https://app.pallywad.com/login\">Here</a>";
-                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "loancollaterized.html");
-                string emailTemplateText = System.IO.File.ReadAllText(filePath);
-                emailTemplateText = string.Format(emailTemplateText, fullname,
-                    AppCurrFormatter.GetFormattedCurrency(ltr.loanamount, 2, "HA-LATN-NG"),
-                    $"{urllink}",  lr.purpose, lr.duration, lr.loaninterest, lr.monthlyrepay,
-                    lr.category,
-                     lr.collateral,
-                     AppCurrFormatter.GetFormattedCurrency(lr.collateralValue ?? 0, 2, "HA-LATN-NG"));
-                //DateTime.Today.Date.ToShortDateString());
+                if(userBank != null)
+                {
 
-                BodyBuilder emailBodyBuilder = new BodyBuilder();
-                emailBodyBuilder.HtmlBody = emailTemplateText;
+                    var urllink = "<a href=\"https://app.pallywad.com/login\">Here</a>";
+                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "loanprocessed.html");
+                    string emailTemplateText = System.IO.File.ReadAllText(filePath);
+                    emailTemplateText = string.Format(emailTemplateText, fullname,
+                        AppCurrFormatter.GetFormattedCurrency(ltr.loanamount, 2, "HA-LATN-NG"),
+                        $"{urllink}", lr.purpose, lr.duration, lr.loaninterest, lr.monthlyrepay,
+                        lr.category,
+                         lr.collateral,
+                         AppCurrFormatter.GetFormattedCurrency(lr.collateralValue ?? 0, 2, "HA-LATN-NG"), lr.repaymentPlan,
+                         userBank.name, userBank.accountname, userBank.accountno);
+                    //DateTime.Today.Date.ToShortDateString());
 
-                var body = emailBodyBuilder.ToMessageBody();
-                await _mailService.SendEmailAsync(request, mailConfig, company, body);
+                    BodyBuilder emailBodyBuilder = new BodyBuilder();
+                    emailBodyBuilder.HtmlBody = emailTemplateText;
+
+                    var body = emailBodyBuilder.ToMessageBody();
+                    await _mailService.SendEmailAsync(request, mailConfig, company, body);
+                }else {
+
+                    var urllink = "<a href=\"https://app.pallywad.com/login\">Here</a>";
+                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "loanprocessed.html");
+                    string emailTemplateText = System.IO.File.ReadAllText(filePath);
+                    emailTemplateText = string.Format(emailTemplateText, fullname,
+                        AppCurrFormatter.GetFormattedCurrency(ltr.loanamount, 2, "HA-LATN-NG"),
+                        $"{urllink}", lr.purpose, lr.duration, lr.loaninterest, lr.monthlyrepay,
+                        lr.category,
+                         lr.collateral,
+                         AppCurrFormatter.GetFormattedCurrency(lr.collateralValue ?? 0, 2, "HA-LATN-NG"), lr.repaymentPlan);
+                    //DateTime.Today.Date.ToShortDateString());
+
+                    BodyBuilder emailBodyBuilder = new BodyBuilder();
+                    emailBodyBuilder.HtmlBody = emailTemplateText;
+
+                    var body = emailBodyBuilder.ToMessageBody();
+                    await _mailService.SendEmailAsync(request, mailConfig, company, body);
+                }
             }
 
         }

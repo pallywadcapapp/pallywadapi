@@ -142,11 +142,18 @@ namespace PallyWad.AdminApi.Controllers
             DateTime endOfMonth = DateTime.Now; //deposit.approvalDate.Value; //
             var fullname = member.lastname + " " + member.firstname + " " + member.othernames;
 
-            var mailReq = new MailRequest()
+            var intMailReq = new MailRequest()
             {
                 Body = "",
                 ToEmail = deposit.memberId,
-                Subject = "Loan Payment"
+                Subject = "Interest Payment Confirmation!"
+            };
+
+            var capMailReq = new MailRequest()
+            {
+                Body = "",
+                ToEmail = deposit.memberId,
+                Subject = "Loan Re-Payment Confirmation!"
             };
 
             //var interestRate = header.savingsIntRate;
@@ -196,9 +203,9 @@ namespace PallyWad.AdminApi.Controllers
                             lodgeLoanDeductions(deposit, repayment, member.UserName,pid, loanCapital, deposit.amount,newInterest??0,
                                 repayment.interestRate??0,capcount,repayment.repaymentDate.AddMonths(1), 0);
 
-                            await SendLoanInterestPaymentMail(mailReq, repayment, fullname, interestamount);
+                            await SendLoanInterestPaymentMail(intMailReq, repayment, fullname, interestamount);
 
-                            await SendLoanCapitalPaymentMail(mailReq, repayment, fullname, capAmount);
+                            await SendLoanCapitalPaymentMail(capMailReq, repayment, fullname, capAmount);
 
 
                     }
@@ -227,9 +234,9 @@ namespace PallyWad.AdminApi.Controllers
                             repayment.interestRate ?? 0, capcount, repayment.repaymentDate.AddMonths(1), 0);
 
 
-                        await SendLoanInterestPaymentMail(mailReq, repayment, fullname, deposit.amount);
+                        await SendLoanInterestPaymentMail(intMailReq, repayment, fullname, deposit.amount);
 
-                        await SendLoanCapitalPaymentMail(mailReq, repayment, fullname, capAmount);
+                        await SendLoanCapitalPaymentMail(capMailReq, repayment, fullname, capAmount);
 
                     }
                     else if(deposit.amount == interestamount)
@@ -242,7 +249,7 @@ namespace PallyWad.AdminApi.Controllers
                         lodgeLoanDeductions(deposit, repayment, member.UserName, pid, repayment.loanamount, deposit.amount,
                             deposit.amount, repayment.interestRate ?? 0, capcount, repayment.repaymentDate.AddMonths(1), 0);
 
-                        await SendLoanInterestPaymentMail(mailReq, repayment, fullname, deposit.amount);
+                        await SendLoanInterestPaymentMail(intMailReq, repayment, fullname, deposit.amount);
 
                     }
                         else
@@ -255,7 +262,7 @@ namespace PallyWad.AdminApi.Controllers
                             lodgeLoanDeductions(deposit, repayment, member.UserName, pid, repayment.loanamount, deposit.amount,
                                 deposit.amount,repayment.interestRate??0, capcount, repayment.repaymentDate, interestbalance);
 
-                            await SendLoanInterestPaymentMail(mailReq, repayment, fullname, deposit.amount);
+                            await SendLoanInterestPaymentMail(intMailReq, repayment, fullname, deposit.amount);
 
                         }
 
@@ -434,6 +441,7 @@ namespace PallyWad.AdminApi.Controllers
                 string emailTemplateText = System.IO.File.ReadAllText(filePath);
                 emailTemplateText = string.Format(emailTemplateText, fullname,
                     AppCurrFormatter.GetFormattedCurrency(amount, 2, "HA-LATN-NG"),
+                    lr.created_date.ToShortDateString(),
                     $"{urllink}");
                 //DateTime.Today.Date.ToShortDateString());
 
@@ -464,6 +472,7 @@ namespace PallyWad.AdminApi.Controllers
                 string emailTemplateText = System.IO.File.ReadAllText(filePath);
                 emailTemplateText = string.Format(emailTemplateText, fullname,
                     AppCurrFormatter.GetFormattedCurrency(capAmount, 2, "HA-LATN-NG"),
+                    lr.created_date.ToShortDateString(),
                     $"{urllink}");
                 //DateTime.Today.Date.ToShortDateString());
 
