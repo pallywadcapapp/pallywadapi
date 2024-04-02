@@ -58,5 +58,6 @@ namespace PallyWad.Domain
         public double? collateralValue { get; set; }
         public double? estimatedCollateralValue { get; set; }
         public string repaymentPlan { get; set; }
+        public bool repaidStatus { get; set; }
     }
 }

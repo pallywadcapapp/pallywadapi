@@ -205,6 +205,7 @@ namespace PallyWad.AdminApi.Controllers
                 loanrefnumber = loanRequest.loanId,
                 transdate = loanRequest.approvalDate??DateTime.Now, //DateTime.Now,
                 repaystartdate = loanRequest.approvalDate?.AddMonths(1)?? DateTime.Now.AddMonths(1), //DateTime.Now,
+                nextRepayDate = loanRequest.approvalDate?.AddMonths(1) ?? DateTime.Now.AddMonths(1), 
                 loanamount = (loanRequest.amount),
                 totrepayable = (repayAmount),
                 repayamount = (monthlyPay??0),
@@ -436,7 +437,8 @@ namespace PallyWad.AdminApi.Controllers
                 memberid = lr.memberId,
                 loanrefnumber = lr.loanId,
                 transdate = lr.approvalDate, //DateTime.Now,
-                repaystartdate = lr.approvalDate.AddMonths(1), //DateTime.Now,
+                repaystartdate = Convert.ToDateTime(lr.processedDate).AddMonths(1), //DateTime.Now,
+                nextRepayDate = Convert.ToDateTime(lr.processedDate).AddMonths(1), //DateTime.Now,
                 loanamount = (lr.amount),
                 monthlyInterest = lr.monthlyrepay, // monthly interest amount payable
                 totrepayable = (repayAmount),
@@ -906,6 +908,16 @@ namespace PallyWad.AdminApi.Controllers
             NotificationHelper.Notification(_notificationsService);
             NotificationHelper.SendUserNotification(memberId, message, subject);
         }
+
+        /*private DateTime returnDate(DateTime? date)
+        {
+            if(date == null) 
+            { date = DateTime.Now; 
+            } else
+            {
+                return Convert.ToDateTime(date);
+            }
+        }*/
 
         private string GetContentType(string path)
         {

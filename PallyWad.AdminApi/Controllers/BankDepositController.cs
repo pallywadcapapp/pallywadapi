@@ -441,7 +441,7 @@ namespace PallyWad.AdminApi.Controllers
                 string emailTemplateText = System.IO.File.ReadAllText(filePath);
                 emailTemplateText = string.Format(emailTemplateText, fullname,
                     AppCurrFormatter.GetFormattedCurrency(amount, 2, "HA-LATN-NG"),
-                    lr.created_date.ToShortDateString(),
+                    lr.created_date.ToString("dddd, dd MMMM yyyy"),
                     $"{urllink}");
                 //DateTime.Today.Date.ToShortDateString());
 
@@ -472,7 +472,7 @@ namespace PallyWad.AdminApi.Controllers
                 string emailTemplateText = System.IO.File.ReadAllText(filePath);
                 emailTemplateText = string.Format(emailTemplateText, fullname,
                     AppCurrFormatter.GetFormattedCurrency(capAmount, 2, "HA-LATN-NG"),
-                    lr.created_date.ToShortDateString(),
+                    lr.created_date.ToString("dddd, dd MMMM yyyy"),
                     $"{urllink}");
                 //DateTime.Today.Date.ToShortDateString());
 
