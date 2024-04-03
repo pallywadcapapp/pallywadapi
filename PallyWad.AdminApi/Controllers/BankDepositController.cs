@@ -4,6 +4,7 @@ using MimeKit;
 using PallyWad.Application;
 using PallyWad.Domain;
 using PallyWad.Domain.Entities;
+using PallyWad.Infrastructure.Migrations.AppDb;
 using PallyWad.Services;
 using System.Globalization;
 using System.Net.Mail;
@@ -156,11 +157,6 @@ namespace PallyWad.AdminApi.Controllers
                 Subject = "Loan Re-Payment Confirmation!"
             };
 
-            //var interestRate = header.savingsIntRate;
-            //double interest = fundsRequest.amount * interestRate / 100;
-
-            //var glref = gLPostingRepository.PostMemberSaving(Convert.ToDecimal(deposit.amount), member.Accountno,
-            //   bankAcc.accountno, member.Memberid, "(" + pid + ")", "", endOfMonth, fullname);
             if (deposit.amount > 0)
             {
 
@@ -179,8 +175,22 @@ namespace PallyWad.AdminApi.Controllers
                         var capcount = repayment.cappaymentcount;
                     var interestbal = repayment.interestbalance;
                         
+                    if(repayment.loanamount <= 0)
+                    {
 
-                        if(deposit.amount > interestamount && (interestamount == interestbal))
+                    }
+                    else if(interestbal <= 0)
+                    {
+                        var capAmount = deposit.amount;
+                        var loanCapital = repayment.loanamount - capAmount;
+                        var newInterest = loanCapital * repayment.interestRate / 100;
+                        var deductloan = gLPostingRepository.PostCapitalPaymentToLoan((capAmount),
+                     bankAcc.accountno, loanAccNo, member.UserName, "(" + pid + ")", "", endOfMonth, fullname, category);
+                        lodgeLoanDeductions(deposit, repayment, member.UserName, pid, loanCapital, deposit.amount, newInterest ?? 0,
+                                repayment.interestRate ?? 0, capcount, repayment.repaymentDate, 0);
+                        await SendLoanCapitalPaymentMail(capMailReq, repayment, fullname, capAmount);
+                    }   
+                    else if(deposit.amount > interestamount && (interestamount == interestbal))
                         {
                         //fresh payment
                             //var repay = repayment.loanamount - repayment.repayamount;
@@ -284,6 +294,7 @@ namespace PallyWad.AdminApi.Controllers
             return Ok(deposit);
         }
 
+        
         [HttpPost, Route("fundrequestdecline")]
         public async Task<IActionResult> ProcessFundRequest(int id)
         {

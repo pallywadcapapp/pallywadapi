@@ -11,6 +11,8 @@ using PallyWad.Services.Extensions;
 using Microsoft.AspNetCore.Identity;
 using PallyWad.Domain;
 using PallyWad.Services.Connection;
+using Hangfire;
+using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,6 +67,14 @@ builder.Services.AddCors(setup =>
 builder.Services.AddIdentity<AppIdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<AppIdentityDbContext>()
 .AddDefaultTokenProviders();
+
+builder.Services.AddHangfire(_configuration => _configuration
+      .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+      .UseSimpleAssemblyNameTypeSerializer()
+.UseRecommendedSerializerSettings()
+      .UseSqlServerStorage(configuration.GetConnectionString("ConnStr")));
+builder.Services.AddHangfireServer();
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -174,6 +184,8 @@ app.UseCors(builder =>
     .SetIsOriginAllowed(origin => true)
     .AllowAnyHeader();
 });
+
+app.UseHangfireDashboard();
 
 app.UseHttpsRedirection();
 

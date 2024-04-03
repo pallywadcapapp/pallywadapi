@@ -18,6 +18,7 @@ namespace PallyWad.Domain
         public string loancode { get; set; }
 
         public DateTime repaystartdate { get; set; }
+        public DateTime nextRepayDate { get; set; }
 
         public double loanamount { get; set; }
 

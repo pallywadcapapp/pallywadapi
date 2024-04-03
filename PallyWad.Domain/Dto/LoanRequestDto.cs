@@ -53,6 +53,7 @@ namespace PallyWad.Domain.Dto
         public string processState { get; set; }
         public DateTime? requestDate { get; set; }
         public DateTime approvalDate { get; set; }
+        public DateTime? processedDate { get; set; }
         public string approvedBy { get; set; }
         public string? postedBy { get; set; }
         public int? duration { get; set; }
