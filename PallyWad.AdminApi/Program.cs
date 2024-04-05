@@ -13,6 +13,8 @@ using PallyWad.Domain;
 using PallyWad.Services.Connection;
 using Hangfire;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Mvc.Filters;
+using PallyWad.AdminApi.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -190,6 +192,11 @@ app.UseHangfireDashboard();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseHangfireDashboard("/pallyjobs", new DashboardOptions
+{
+    Authorization = new[] { new HangFireAuthorizationFilter() }
+});
 
 app.MapControllers();
 
