@@ -89,7 +89,7 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1",
         Contact = new OpenApiContact
         {
-            Name = "RoadAlly Dev",
+            Name = "PallyWad Dev",
             Email = "dev@roadally.com",
             Url = new Uri("https://pallywad.com/contact"),
         },

@@ -18,6 +18,7 @@
     <ProjectReference Include="..\PallyWad.AdminApi\PallyWad.AdminApi.csproj" />
     <ProjectReference Include="..\PallyWad.Auth\PallyWad.Auth.csproj" />
     <ProjectReference Include="..\PallyWad.GateWay\PallyWad.GateWay.csproj" />
+    <ProjectReference Include="..\PallyWad.Notifier\PallyWad.Notifier.csproj" />
     <ProjectReference Include="..\PallyWad.Setup\PallyWad.Setup.csproj" />
     <ProjectReference Include="..\PallyWad.UserApi\PallyWad.UserApi.csproj" />
   </ItemGroup>

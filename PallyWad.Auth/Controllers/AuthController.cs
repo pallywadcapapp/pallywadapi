@@ -254,7 +254,8 @@ namespace PallyWad.Auth.Controllers
                 EmailConfirmed = true,
                 nin = model.SSN,
                 //UserProfile = {},
-                sex = ""
+                sex = "",
+                imgUrl = "R.png"
             };
 
             string fullname = user.firstname + " " + user.othernames + " " + user.lastname;

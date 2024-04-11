@@ -12,7 +12,7 @@ namespace PallyWad.Domain
     {
         public string firstname { get; set; }
         public string lastname { get; set; }
-        public string othernames { get; set; }
+        public string? othernames { get; set; }
         public string? sex { get; set; }
         public string? employmentStatus { get; set; }
         public string type { get; set; }

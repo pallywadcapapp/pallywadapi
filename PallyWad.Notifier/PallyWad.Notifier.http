@@ -1,0 +1,6 @@
+@PallyWad.Notifier_HostAddress = http://localhost:5232
+
+GET {{PallyWad.Notifier_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

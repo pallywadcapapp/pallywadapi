@@ -12,4 +12,6 @@ builder.AddProject<Projects.PallyWad_UserApi>("pallywad.userapi");
 
 builder.AddProject<Projects.PallyWad_AdminApi>("pallywad.adminapi");
 
+builder.AddProject<Projects.PallyWad_Notifier>("pallywad-notifier");
+
 builder.Build().Run();
