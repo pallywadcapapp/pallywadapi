@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -10,7 +11,9 @@ namespace PallyWad.Domain
 {
     public class AppIdentityUser: IdentityUser
     {
+        [MinLength(1)]
         public string firstname { get; set; }
+        [MinLength(1)]
         public string lastname { get; set; }
         public string? othernames { get; set; }
         public string? sex { get; set; }
