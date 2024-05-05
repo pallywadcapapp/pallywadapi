@@ -41,6 +41,19 @@ builder.Services.AddHangfire(_configuration => _configuration
       .UseSqlServerStorage(configuration.GetConnectionString("ConnStr")));
 builder.Services.AddHangfireServer();
 
+builder.Services.AddCors(setup =>
+{
+    setup.AddDefaultPolicy(policy =>
+    {
+        //policy.AllowCredentials();
+        policy.WithOrigins("http://localhost:5135", "https://app.pallywad.com",
+        "https://admin.pallywad.com", "http://localhost:8100", "https://app");
+        policy.AllowAnyHeader();
+        policy.AllowAnyMethod();
+        policy.AllowAnyOrigin();
+    });
+});
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -58,6 +71,13 @@ if (app.Environment.IsDevelopment())
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.UseCors(builder =>
+{
+    builder.AllowAnyOrigin()
+    .AllowAnyMethod()
+    .SetIsOriginAllowed(origin => true)
+    .AllowAnyHeader();
+});
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

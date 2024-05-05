@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using PallyWad.Domain.Entities;
 using PallyWad.Services;
 
 namespace PallyWad.AdminApi.Controllers
@@ -17,10 +18,11 @@ namespace PallyWad.AdminApi.Controllers
         private readonly IGlAccountService _glAccountService;
         private readonly IMembersAccountService _membersAccountService;
         private readonly IGlAccountTransService _glAccountTransService;
+        private readonly ILoanRepaymentService _loanRepaymentService;
         public ReportController(ILogger<ReportController> logger, IHttpContextAccessor contextAccessor,
             ILoanRequestService loanRequestService, ILoanTransService loanTransService, IUserService userService, 
             IGlAccountService   glAccountService, IMembersAccountService membersAccountService,
-            IGlAccountTransService glAccountTransService)
+            IGlAccountTransService glAccountTransService, ILoanRepaymentService loanRepaymentService)
         {
 
             _logger = logger;
@@ -31,6 +33,7 @@ namespace PallyWad.AdminApi.Controllers
             _glAccountService = glAccountService;
             _membersAccountService = membersAccountService;
             _glAccountTransService = glAccountTransService;
+            _loanRepaymentService = loanRepaymentService;
         }
 
         #region Get
@@ -66,7 +69,58 @@ namespace PallyWad.AdminApi.Controllers
                 //.Count();
             return Ok(result);
         }
-        
+
+        [HttpGet("DueInterest")]
+        public async Task<IActionResult> GetDueInterest()
+        {
+            var date = DateTime.Now.Date;
+            var prevDate = date.AddDays(-5);
+            var nextDate = date.AddDays(5);
+            var result = _loanRepaymentService.GetAllLoanRepayments()
+                .Where(u => u.repaymentDate >= date && u.repaymentDate <= nextDate && u.interestbalance > 0);
+            //var company = _companyService.GetCompany();
+
+            //foreach (var item in result)
+            //{
+            //    var loan = _loanRequestService.GetAllLoanRequests().Where(u => u.loanId == item.loanrefnumber).FirstOrDefault();
+            //    var user = _userService.GetUserByEmail(item.memberid);
+            //    var fullname = $"{user.lastname}, {user.firstname} {user.othernames}";
+            //    var mailReq = new MailRequest()
+            //    {
+            //        Body = "",
+            //        ToEmail = item.memberid,
+            //        Subject = "Loan Interest Payment Reminder"
+            //    };
+            //    await SendLoanMail(mailReq, item, loan, fullname, company, " \"loanInterestDue.html\"");
+            //}
+            return Ok(result);
+        }
+
+        [HttpGet("ElapsedInterest")]
+        public async Task<IActionResult> GetElapsedInterest()
+        {
+            var date = DateTime.Now.Date;
+            var result = _loanRepaymentService.GetAllLoanRepayments()
+                .Where(u => u.repaymentDate < date && u.interestbalance > 0);
+            //var company = _companyService.GetCompany();
+
+            //foreach (var item in result)
+            //{
+            //    var loan = _loanRequestService.GetAllLoanRequests().Where(u => u.loanId == item.loanrefnumber).FirstOrDefault();
+            //    var user = _userService.GetUserByEmail(item.memberid);
+            //    var fullname = $"{user.lastname}, {user.firstname} {user.othernames}";
+            //    var mailReq = new MailRequest()
+            //    {
+            //        Body = "",
+            //        ToEmail = item.memberid,
+            //        Subject = "Late Interest Payment Notice"
+            //    };
+            //    await SendLoanMail(mailReq, item, loan, fullname, company, "loanInterestElapsed.html");
+            //}
+            return Ok(result);
+            //
+        }
+
 
         #endregion
     }
